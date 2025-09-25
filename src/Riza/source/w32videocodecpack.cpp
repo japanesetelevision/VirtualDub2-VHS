@@ -187,7 +187,7 @@ private:
 	sint32		mQualityLast;
 	sint32		mQualityHi;
 
-	void		*pConfigData;
+	char*		pConfigData;
 	int			cbConfigData;
 
 	VDStringW	mCodecName;
@@ -213,8 +213,8 @@ VDVideoCompressorVCM::~VDVideoCompressorVCM() {
 	if (mbOwnHandle)
 		delete driver;
 
-	delete[] (char*)pConfigData;
-	delete pPrevBuffer;
+	delete[] pConfigData;
+	delete[] pPrevBuffer;
 }
 
 void VDVideoCompressorVCM::SetDriver(EncoderHIC* driver, uint32 kilobytesPerSecond, long quality, long keyrate, bool ownHandle) {
