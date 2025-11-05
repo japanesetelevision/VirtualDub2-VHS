@@ -442,7 +442,7 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 	if (portableAltFile) {
 		portableRegPath = portableAltFile;
 	} else {
-		portableRegPath = VDMakePath(VDGetProgramPath().c_str(), L"VirtualDub.ini");
+		portableRegPath = VDMakePath(VDGetProgramPath().c_str(), L"VirtualDub2.ini");
 	}
 
 	if (portableAltFile || cmdLine.FindAndRemoveSwitch(L"portable") || VDDoesPathExist(portableRegPath.c_str())) {
@@ -1120,7 +1120,7 @@ int ProcessCommandLine::scan(const VDCommandLine& cmdLine, const bool execute) {
 					if (execute) {
 						g_VDStartupArguments.clear();
 						while(cmdLine.GetNextNonSwitchArgument(it, token))
-							g_VDStartupArguments.push_back(VDTextWToU8(VDStringW(token)));
+							g_VDStartupArguments.push_back(VDTextWToU8(token));
 
 						RunScript(filename);
 					} else {

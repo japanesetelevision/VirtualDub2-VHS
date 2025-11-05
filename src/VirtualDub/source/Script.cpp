@@ -1303,15 +1303,17 @@ namespace {
 
 		VDPluginDescription *pDesc = VDGetPluginDescription(pFilt->mFilterName.c_str(), kVDXPluginType_Audio);
 
-		if (!pDesc)
-			throw MyError("VDAFiltInst: Unknown audio filter: \"%s\"", VDTextWToA(pFilt->mFilterName).c_str());
+		if (!pDesc) {
+			throw MyError(L"VDAFiltInst: Unknown audio filter: \"%s\"", pFilt->mFilterName.c_str());
+		}
 
 		VDPluginPtr lock(pDesc);
 
 		const VDXPluginConfigEntry *pEnt = GetFilterParamEntry(((VDAudioFilterDefinition *)lock->mpInfo->mpTypeSpecificInfo)->mpConfigInfo, idx);
 
-		if (!pEnt)
-			throw MyError("VDAFiltInst: Audio filter \"%s\" does not have a parameter with id %d", VDTextWToA(pFilt->mFilterName).c_str(), idx);
+		if (!pEnt) {
+			throw MyError(L"VDAFiltInst: Audio filter \"%s\" does not have a parameter with id %d", pFilt->mFilterName.c_str(), idx);
+		}
 
 		VDPluginConfigVariant& var = pFilt->mConfig[idx];
 
@@ -1375,7 +1377,7 @@ namespace {
 
 		pFilt->mConfig.erase(idx);
 
-		throw MyError("VDAFiltInst: Type mismatch on audio filter \"%s\" param %d (\"%s\")", VDTextWToA(pFilt->mFilterName).c_str(), idx, VDTextWToA(pEnt->name).c_str());
+		throw MyError(L"VDAFiltInst: Type mismatch on audio filter \"%s\" param %d (\"%s\")", pFilt->mFilterName.c_str(), idx, pEnt->name);
 	}
 };
 
@@ -1424,7 +1426,7 @@ static void func_VDAFiltInst_SetDouble(IVDScriptInterpreter *isi, VDScriptValue 
 static void func_VDAFiltInst_SetString(IVDScriptInterpreter *isi, VDScriptValue *argv, int argc) {
 	VDPluginConfigVariant v;
 
-	v.SetWStr(VDTextU8ToW(*argv[1].asString(), -1).c_str());
+	v.SetWStr(VDTextU8ToW(*argv[1].asString()).c_str());
 
 	SetFilterParam(argv[-1].asObjectPtr(), argv[0].asInt(), v);
 }
@@ -1497,12 +1499,13 @@ static void func_VDAFilters_Clear(IVDScriptInterpreter *, VDScriptValue *, int) 
 static void func_VDAFilters_Add(IVDScriptInterpreter *isi, VDScriptValue *argv, int argc) {
 	VDAudioFilterGraph::FilterEntry filt;
 
-	filt.mFilterName = VDTextU8ToW(*argv[0].asString(), -1);
+	filt.mFilterName = VDTextU8ToW(*argv[0].asString());
 
 	VDPluginDescription *pDesc = VDGetPluginDescription(filt.mFilterName.c_str(), kVDXPluginType_Audio);
 
-	if (!pDesc)
-		throw MyError("VDAFilters.Add(): Unknown audio filter: \"%s\"", VDTextWToA(filt.mFilterName).c_str());
+	if (!pDesc) {
+		throw MyError(L"VDAFilters.Add(): Unknown audio filter: \"%s\"", filt.mFilterName.c_str());
+	}
 
 	const VDAudioFilterDefinition *pDef = reinterpret_cast<const VDAudioFilterDefinition *>(pDesc->mpInfo->mpTypeSpecificInfo);
 
@@ -1676,11 +1679,11 @@ static void func_VDAudio_SetSource(IVDScriptInterpreter *, VDScriptValue *arglis
 
 static void func_VDAudio_SetSourceExternal(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
 	IVDInputDriver *pDriver = NULL;
-	VDStringW s(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW s(VDTextU8ToW(*arglist[0].asString()));
 	VDStringW fileName(g_project->ExpandProjectPath(s.c_str()));
 
 	if (arg_count >= 2) {
-		const VDStringW driverName(VDTextU8ToW(*arglist[1].asString(), -1));
+		const VDStringW driverName(VDTextU8ToW(*arglist[1].asString()));
 
 		if (driverName.empty())
 			pDriver = VDAutoselectInputDriverForFile(fileName.c_str(), IVDInputDriver::kF_Audio);
@@ -1780,8 +1783,9 @@ static void func_VDAudio_SetCompressionWithHint(IVDScriptInterpreter *isi, VDScr
 
 	func_VDAudio_SetCompression(isi, arglist, arg_count - 1);
 
-	if (g_ACompressionFormat)
-		g_ACompressionFormatHint.assign(*arglist[arg_count - 1].asString());
+	if (g_ACompressionFormat) {
+		g_ACompressionFormatHint.assign(VDTextU8ToW(*arglist[arg_count - 1].asString()));
+	}
 }
 
 static void func_VDAudio_SetCompData(IVDScriptInterpreter *isi, VDScriptValue *arglist, int arg_count) {
@@ -2055,7 +2059,7 @@ static void func_VirtualDub_OpenOld(IVDScriptInterpreter *, VDScriptValue *argli
 }
 
 static void VirtualDub_Open2(VDScriptValue *arglist, int arg_count, int fAutoScan) {
-	VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	IVDInputDriver *pDriver = NULL;
 	VDStringW signature;
 	int open_flags = f_open_quiet;
@@ -2102,13 +2106,13 @@ static void func_VirtualDub_intOpenTest(IVDScriptInterpreter *, VDScriptValue *a
 }
 
 static void func_VirtualDub_Append(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 
 	AppendAVI(filename.c_str(),IVDInputDriver::kOF_SingleFile);
 }
 
 static void func_VirtualDub_AppendSequence(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 
 	AppendAVI(filename.c_str(),IVDInputDriver::kOF_Sequence);
 }
@@ -2162,7 +2166,7 @@ namespace {
 }
 
 static void func_VirtualDub_SaveAVI(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2177,16 +2181,14 @@ static void func_VirtualDub_SaveAVI(IVDScriptInterpreter *, VDScriptValue *argli
 
 	IVDOutputDriver *driver = VDGetOutputDriverByName(g_FileOutDriver.c_str());
 	if (!driver) {
-		VDStringA drv = VDTextWToA(g_FileOutDriver);
-		throw MyError("Cannot save video with '%s': no such driver loaded", drv.c_str());
+		throw MyError(L"Cannot save video with '%s': no such driver loaded", g_FileOutDriver.c_str());
 	}
 	for(int i=0; ; i++){
 		wchar_t filter[128];
 		wchar_t ext[128];
 		char name[128];
 		if (!driver->GetDriver()->EnumFormats(i,filter,ext,name)) {
-			VDStringA drv = VDTextWToA(g_FileOutDriver);
-			throw MyError("Cannot save video with '%s / %s': no such format supported by driver", drv.c_str(), g_FileOutFormat.c_str());
+			throw MyError(L"Cannot save video with '%s / %hs': no such format supported by driver", g_FileOutDriver.c_str(), g_FileOutFormat.c_str());
 		}
 
 		if (g_FileOutFormat == name) {
@@ -2203,7 +2205,7 @@ static void func_VirtualDub_SaveAVI(IVDScriptInterpreter *, VDScriptValue *argli
 }
 
 static void func_VirtualDub_SaveCompatibleAVI(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2216,7 +2218,7 @@ static void func_VirtualDub_SaveCompatibleAVI(IVDScriptInterpreter *, VDScriptVa
 }
 
 static void func_VirtualDub_SaveSegmentedAVI(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2240,8 +2242,8 @@ static void func_VirtualDub_SaveSegmentedAVI(IVDScriptInterpreter *, VDScriptVal
 }
 
 static void func_VirtualDub_SaveImageSequence(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW prefix(VDTextU8ToW(VDStringA(*arglist[0].asString())));
-	const VDStringW suffix(VDTextU8ToW(VDStringA(*arglist[1].asString())));
+	const VDStringW prefix(VDTextU8ToW(*arglist[0].asString()));
+	const VDStringW suffix(VDTextU8ToW(*arglist[1].asString()));
 
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
@@ -2261,8 +2263,8 @@ static void func_VirtualDub_SaveImageSequence(IVDScriptInterpreter *, VDScriptVa
 }
 
 static void func_VirtualDub_SaveImageSequence2(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW prefix(VDTextU8ToW(VDStringA(*arglist[0].asString())));
-	const VDStringW suffix(VDTextU8ToW(VDStringA(*arglist[1].asString())));
+	const VDStringW prefix(VDTextU8ToW(*arglist[0].asString()));
+	const VDStringW suffix(VDTextU8ToW(*arglist[1].asString()));
 
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
@@ -2282,7 +2284,7 @@ static void func_VirtualDub_SaveImageSequence2(IVDScriptInterpreter *, VDScriptV
 }
 
 static void func_VirtualDub_SaveWAV(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2298,7 +2300,7 @@ static void func_VirtualDub_SaveWAV(IVDScriptInterpreter *, VDScriptValue *argli
 }
 
 static void func_VirtualDub_SaveAudio(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2314,16 +2316,14 @@ static void func_VirtualDub_SaveAudio(IVDScriptInterpreter *, VDScriptValue *arg
 
 	IVDOutputDriver *driver = VDGetOutputDriverByName(g_AudioOutDriver.c_str());
 	if (!driver) {
-		VDStringA drv = VDTextWToA(g_AudioOutDriver);
-		throw MyError("Cannot save audio with '%s': no such driver loaded", drv.c_str());
+		throw MyError(L"Cannot save audio with '%s': no such driver loaded", g_AudioOutDriver.c_str());
 	}
 	for(int i=0; ; i++){
 		wchar_t filter[128];
 		wchar_t ext[128];
 		char name[128];
 		if (!driver->GetDriver()->EnumFormats(i,filter,ext,name)) {
-			VDStringA drv = VDTextWToA(g_AudioOutDriver);
-			throw MyError("Cannot save audio with '%s / %s': no such format supported by driver", drv.c_str(), g_AudioOutFormat.c_str());
+			throw MyError(L"Cannot save audio with '%s / %hs': no such format supported by driver", g_AudioOutDriver.c_str(), g_AudioOutFormat.c_str());
 		}
 
 		if (g_AudioOutFormat == name) {
@@ -2341,7 +2341,7 @@ static void func_VirtualDub_SaveAudio(IVDScriptInterpreter *, VDScriptValue *arg
 }
 
 static void func_VirtualDub_SaveRawAudio(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2349,7 +2349,7 @@ static void func_VirtualDub_SaveRawAudio(IVDScriptInterpreter *, VDScriptValue *
 }
 
 static void func_VirtualDub_SaveRawVideo(IVDScriptInterpreter *isi, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2374,7 +2374,7 @@ static void func_VirtualDub_SaveRawVideo(IVDScriptInterpreter *isi, VDScriptValu
 }
 
 static void func_VirtualDub_SaveAnimatedGIF(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2382,7 +2382,7 @@ static void func_VirtualDub_SaveAnimatedGIF(IVDScriptInterpreter *, VDScriptValu
 }
 
 static void func_VirtualDub_SaveAnimatedPNG(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2390,8 +2390,8 @@ static void func_VirtualDub_SaveAnimatedPNG(IVDScriptInterpreter *, VDScriptValu
 }
 
 static void func_VirtualDub_ExportViaEncoderSet(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW filename(VDTextU8ToW(VDStringA(*arglist[0].asString())));
-	const VDStringW encSetName(VDTextU8ToW(VDStringA(*arglist[1].asString())));
+	const VDStringW filename(VDTextU8ToW(*arglist[0].asString()));
+	const VDStringW encSetName(VDTextU8ToW(*arglist[1].asString()));
 	DubOptions opts(g_dubOpts);
 	InitBatchOptions(opts);
 
@@ -2399,7 +2399,7 @@ static void func_VirtualDub_ExportViaEncoderSet(IVDScriptInterpreter *, VDScript
 }
 
 static void func_VirtualDub_Log(IVDScriptInterpreter *, VDScriptValue *arglist, int arg_count) {
-	const VDStringW text(VDTextU8ToW(VDStringA(*arglist[0].asString())));
+	const VDStringW text(VDTextU8ToW(*arglist[0].asString()));
 
 	VDLog(kVDLogInfo, text);
 }

@@ -151,7 +151,7 @@ extern IVDPositionControlCallback *VDGetPositionControlCallbackTEMP() {
 extern char PositionFrameTypeCallback(HWND hwnd, void *pvData, long pos);
 
 extern void ChooseCompressor(HWND hwndParent, COMPVARS2 *lpCompVars);
-extern WAVEFORMATEX *AudioChooseCompressor(HWND hwndParent, WAVEFORMATEX *, WAVEFORMATEX *, VDStringA& shortNameHint, vdblock<char>& config, bool enable_plugin=true);
+extern WAVEFORMATEX *AudioChooseCompressor(HWND hwndParent, WAVEFORMATEX *, WAVEFORMATEX *, VDStringW& shortNameHint, vdblock<char>& config, bool enable_plugin=true);
 extern void VDDisplayLicense(HWND hwndParent, bool conditional);
 
 extern void OpenInput(bool append=false, bool audio=false, const wchar_t* filename=0, MyError* err=0);
@@ -544,7 +544,7 @@ INT_PTR CALLBACK max_host_proc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 				}
 			}
 			MONITORINFO info = {sizeof(MONITORINFO)};
-			GetMonitorInfo(mon,&info);
+			GetMonitorInfoW(mon,&info);
 			RECT r = info.rcMonitor;
 			pwp->x = r.left;
 			pwp->y = r.top;
@@ -3752,7 +3752,7 @@ void VDProjectUI::UpdateMaximize() {
 	if(style1!=style0){
 		HMONITOR mon = MonitorFromWindow((HWND)mhwnd,MONITOR_DEFAULTTONEAREST);
 		MONITORINFO info = {sizeof(MONITORINFO)};
-		GetMonitorInfo(mon,&info);
+		GetMonitorInfoW(mon,&info);
 		RECT rr = info.rcWork;
 		int x = rr.left;
 		int y = rr.top;

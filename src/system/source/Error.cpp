@@ -31,8 +31,7 @@
 #include <vd2/system/Error.h>
 #include <vd2/system/log.h>
 
-MyError::MyError() {
-}
+MyError::MyError() = default;
 
 MyError::MyError(const MyError& err) {
 	mbuf = _wcsdup(err.mbuf);
@@ -141,9 +140,9 @@ void MyError::post(HWND hWndParent, const char *title) const {
 		return;
 	}
 
-	VDDEBUG("*** %s: %s\n", title, mbuf);
+	VDDEBUG(L"*** %hs: %s\n", title, mbuf);
 
-	VDLog(kVDLogError, VDswprintf(L"Error: %s", 1, mbuf));
+	VDLog(kVDLogError, VDswprintf(L"Error: %s", 1, &mbuf));
 
 	MessageBoxW(hWndParent, mbuf, VDTextAToW(title).c_str(), MB_OK | MB_ICONERROR | MB_SETFOREGROUND);
 }

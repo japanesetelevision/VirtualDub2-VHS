@@ -38,7 +38,7 @@ class IVDAsyncErrorCallback;
 class VDScheduler {
 public:
 	VDScheduler();
-	~VDScheduler();
+	~VDScheduler() = default;
 
 	void setSignal(VDSignal *);
 	VDSignal *getSignal() { return pWakeupSignal; }
@@ -113,7 +113,7 @@ class VDSchedulerThread : public VDThread {
 	VDSchedulerThread& operator=(const VDSchedulerThread&);
 public:
 	VDSchedulerThread();
-	~VDSchedulerThread();
+	~VDSchedulerThread() = default;;
 
 	bool Start(VDScheduler *pScheduler);
 
@@ -121,7 +121,7 @@ protected:
 	void ThreadRun();
 
 	VDScheduler *mpScheduler;
-	uint32 mAffinity;
+	//uint32 mAffinity;
 };
 
 class VDSchedulerThreadPool {

@@ -5,17 +5,6 @@
 #include <vd2/system/thunk.h>
 #include <vd2/system/w32assist.h>
 
-VDFileWatcher::VDFileWatcher()
-	: mChangeHandle(INVALID_HANDLE_VALUE)
-	, mLastWriteTime(0)
-	, mbWatchDir(false)
-	, mbRepeatRequested(false)
-	, mbThunksInited(false)
-	, mpThunk(NULL)
-	, mTimerId(0)
-{
-}
-
 VDFileWatcher::~VDFileWatcher() {
 	Shutdown();
 }

@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 
+class VDStringSpanA;
 class VDStringA;
 class VDStringW;
 
@@ -44,11 +45,11 @@ VDStringW VDTextAToW(const char *src, int length = -1);
 VDStringW VDTextAToW(const VDStringA& sw);
 
 VDStringA VDTextWToU8(const VDStringW& s);
-VDStringA VDTextWToU8(const wchar_t *s, int length);
+VDStringA VDTextWToU8(const wchar_t *s, int length = -1);
 VDStringW VDTextU8ToW(const VDStringA& s);
-VDStringW VDTextU8ToW(const char *s, int length);
+VDStringW VDTextU8ToW(const char *s, int length = -1);
 
-VDStringW VDTextLinesU8orAToW(const char* s, int length);
+VDStringW VDTextLinesU8orAToW(const char* s, int length = -1);
 
 // The terminating NULL character is not included in these.
 
@@ -58,5 +59,12 @@ int VDTextAToWLength(const char *s, int length=-1);
 VDStringW VDaswprintf(const wchar_t *format, int args, const void *const *argv);
 VDStringW VDvswprintf(const wchar_t *format, int args, va_list val);
 VDStringW VDswprintf(const wchar_t *format, int args, ...);
+
+// Replace control characters. Wide strings will first be converted to UTF-8.
+
+VDStringA VDEncodeString(const VDStringSpanA& sa);
+VDStringA VDEncodeString(const VDStringW& sw);
+VDStringA VDEncodeString(const char* sa);
+VDStringA VDEncodeString(const wchar_t* sw);
 
 #endif

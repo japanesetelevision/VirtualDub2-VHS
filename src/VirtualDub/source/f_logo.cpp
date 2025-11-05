@@ -709,10 +709,10 @@ bool VDVFLogo::Configure(VDXHWND hwnd) {
 }
 
 void VDVFLogo::GetSettingString(char *buf, int maxlen) {
-	VDStringA logoFnameU8 = VDTextWToU8(VDFileSplitPath(mConfig.szLogoPath), -1);
+	VDStringA logoFnameU8 = VDTextWToU8(VDFileSplitPath(mConfig.szLogoPath));
 
 	if (mConfig.bEnableAlphaBlending && mConfig.bEnableSecondaryAlpha) {
-		VDStringA alphaFnameU8 = VDTextWToU8(VDFileSplitPath(mConfig.szAlphaPath), -1);
+		VDStringA alphaFnameU8 = VDTextWToU8(VDFileSplitPath(mConfig.szAlphaPath));
 
 		SafePrintf(buf, maxlen, " (logo:\"%s\", alpha:\"%s\")", logoFnameU8.c_str(), alphaFnameU8.c_str());
 	} else {
@@ -730,11 +730,11 @@ void VDVFLogo::ScriptConfig(IVDXScriptInterpreter *, const VDXScriptValue *argv,
 
 	mConfig.bEnableSecondaryAlpha = false;
 
-	wcsncpy(mConfig.szLogoPath, VDTextU8ToW(*argv[0].asString(), -1).c_str(), std::size(mConfig.szLogoPath));
+	wcsncpy(mConfig.szLogoPath, VDTextU8ToW(*argv[0].asString()).c_str(), std::size(mConfig.szLogoPath));
 	mConfig.szLogoPath[std::size(mConfig.szLogoPath) - 1] = 0;
 
 	if (argv[3].isString()) {
-		wcsncpy(mConfig.szAlphaPath, VDTextU8ToW(*argv[3].asString(), -1).c_str(), std::size(mConfig.szAlphaPath));
+		wcsncpy(mConfig.szAlphaPath, VDTextU8ToW(*argv[3].asString()).c_str(), std::size(mConfig.szAlphaPath));
 		mConfig.szAlphaPath[std::size(mConfig.szAlphaPath) - 1] = 0;
 		mConfig.bEnableAlphaBlending = true;
 		mConfig.bEnableSecondaryAlpha = true;
@@ -765,10 +765,10 @@ VDXVF_BEGIN_SCRIPT_METHODS(VDVFLogo)
 VDXVF_END_SCRIPT_METHODS()
 
 void VDVFLogo::GetScriptString(char *buf, int buflen) {
-	VDStringA logoPath = VDEncodeScriptString(mConfig.szLogoPath);
+	VDStringA logoPath = VDEncodeString(mConfig.szLogoPath);
 
 	if (mConfig.bEnableAlphaBlending && mConfig.bEnableSecondaryAlpha) {
-		VDStringA alphaPath = VDEncodeScriptString(mConfig.szAlphaPath);
+		VDStringA alphaPath = VDEncodeString(mConfig.szAlphaPath);
 
 		SafePrintf(buf, buflen, "Config(\"%s\", %d, %d, \"%s\", %d, %d, %d, %d)",
 			logoPath.c_str(), mConfig.pos_x, mConfig.pos_y, alphaPath.c_str(), mConfig.bNonPremultAlpha, mConfig.justify_x, mConfig.justify_y, mConfig.opacity);

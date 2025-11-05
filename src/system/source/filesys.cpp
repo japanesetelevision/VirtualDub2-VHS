@@ -574,8 +574,9 @@ void VDCreateDirectory(const wchar_t *path) {
 
 	BOOL succeeded = CreateDirectoryW(path, NULL);
 
-	if (!succeeded)
+	if (!succeeded) {
 		throw MyWin32Error("Cannot create directory: %%s", GetLastError());
+	}
 }
 
 void VDRemoveDirectory(const wchar_t *path) {
@@ -592,23 +593,15 @@ void VDRemoveDirectory(const wchar_t *path) {
 
 	BOOL succeeded = RemoveDirectoryW(path);
 
-	if (!succeeded)
+	if (!succeeded) {
 		throw MyWin32Error("Cannot remove directory: %%s", GetLastError());
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
-bool VDDeletePathAutodetect(const wchar_t *path);
-bool (*VDRemoveFile)(const wchar_t *path) = VDDeletePathAutodetect;
-
-bool VDDeleteFileNT(const wchar_t *path) {
+bool VDRemoveFile(const wchar_t *path) {
 	return !!DeleteFileW(path);
-}
-
-bool VDDeletePathAutodetect(const wchar_t *path) {
-	VDRemoveFile = VDDeleteFileNT;
-
-	return VDRemoveFile(path);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -616,8 +609,9 @@ bool VDDeletePathAutodetect(const wchar_t *path) {
 void VDMoveFile(const wchar_t *srcPath, const wchar_t *dstPath) {
 	bool success = MoveFileW(srcPath, dstPath) != 0;
 
-	if (!success)
-		throw MyWin32Error("Cannot rename \"%ls\" to \"%ls\": %%s", GetLastError(), srcPath, dstPath);
+	if (!success) {
+		throw MyWin32Error(L"Cannot rename \"%s\" to \"%s\": %%s", GetLastError(), srcPath, dstPath);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -678,32 +672,7 @@ VDStringW VDGetFullPath(const wchar_t *partialPath) {
 	return VDStringW(partialPath);
 }
 
-VDStringW VDGetLongPathA(const wchar_t *s) {
-	const VDStringA& pathA = VDTextWToA(s);
-	CHAR buf[MAX_PATH];
-
-	DWORD len = GetLongPathNameA(pathA.c_str(), buf, MAX_PATH);
-	VDStringW longPath;
-
-	if (!len)
-		longPath = s;
-	else if (len <= MAX_PATH)
-		longPath = VDTextAToW(buf);
-	else if (len > MAX_PATH) {
-		vdfastvector<CHAR> extbuf(len, 0);
-
-		DWORD len2 = GetLongPathNameA(pathA.c_str(), extbuf.data(), len);
-
-		if (len2 && len2 <= len)
-			longPath = VDTextAToW(extbuf.data());
-		else
-			longPath = s;
-	}
-
-	return longPath;
-}
-
-VDStringW VDGetLongPathW(const wchar_t *s) {
+VDStringW VDGetLongPath(const wchar_t *s) {
 	WCHAR buf[MAX_PATH];
 
 	DWORD len = GetLongPathNameW(s, buf, MAX_PATH);
@@ -726,18 +695,6 @@ VDStringW VDGetLongPathW(const wchar_t *s) {
 
 	return longPath;
 }
-
-#if VD_CPU_X86
-	VDStringW VDGetLongPathAutodetect(const wchar_t *s) {
-		VDGetLongPath = VDGetLongPathW;
-
-		return VDGetLongPath(s);
-	}
-
-	extern VDStringW (*VDGetLongPath)(const wchar_t *path) = VDGetLongPathAutodetect;
-#else
-	extern VDStringW (*VDGetLongPath)(const wchar_t *path) = VDGetLongPathW;
-#endif
 
 VDStringW VDMakePath(const wchar_t *base, const wchar_t *file) {
 	if (!*base)
@@ -840,8 +797,9 @@ VDStringW VDGetProgramFilePath() {
 	VDStringW wstr;
 
 	{
-		if (!GetModuleFileNameW(NULL, buf, MAX_PATH))
+		if (!GetModuleFileNameW(NULL, buf, MAX_PATH)) {
 			throw MyWin32Error("Unable to get program path: %%s", GetLastError());
+		}
 
 		wstr = buf;
 	}
@@ -852,8 +810,9 @@ VDStringW VDGetProgramFilePath() {
 VDStringW VDGetSystemPath() {
 	wchar_t path[MAX_PATH];
 
-	if (!GetSystemDirectoryW(path, MAX_PATH))
+	if (!GetSystemDirectoryW(path, MAX_PATH)) {
 		throw MyWin32Error("Cannot locate system directory: %%s", GetLastError());
+	}
 
 	return VDStringW(path);
 }
@@ -973,15 +932,13 @@ void VDFileSetAttributes(const wchar_t *path, uint32 attrsToChange, uint32 newAt
 		}
 	}
 
-	throw MyWin32Error("Cannot change attributes on \"%ls\": %%s.", GetLastError(), path);
+	throw MyWin32Error(L"Cannot change attributes on \"%s\": %%s.", GetLastError(), path);
 }
 
 ///////////////////////////////////////////////////////////////////////////
 
 VDDirectoryIterator::VDDirectoryIterator(const wchar_t *path)
 	: mSearchPath(path)
-	, mpHandle(NULL)
-	, mbSearchComplete(false)
 {
 	mBasePath = VDFileSplitPathLeft(mSearchPath);
 	VDFileFixDirPath(mBasePath);

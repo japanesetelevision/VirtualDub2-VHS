@@ -154,7 +154,7 @@ namespace {
 		virtual void Init(const VDPluginInfo *pInfo, VDExternalModule *pModule) {
 			VDShadowedPluginDescription::Init(pInfo, pModule);
 
-			const VDXAudioEncDefinition *def = static_cast<const VDXAudioEncDefinition *>(pInfo->mpTypeSpecificInfo);
+			const VDXAudioEncDefinition2 *def = static_cast<const VDXAudioEncDefinition2 *>(pInfo->mpTypeSpecificInfo);
 			memset(&mDefinition, 0, sizeof mDefinition);
 			memcpy(&mDefinition, def, std::min<uint32>(def->mSize, sizeof mDefinition));
 			mShadowedInfo.mpTypeSpecificInfo = &mDefinition;
@@ -166,10 +166,10 @@ namespace {
 		}
 
 	protected:
-		VDXAudioEncDefinition	mDefinition;
+		VDXAudioEncDefinition2	mDefinition;
 
 		VDStringW				mDriverName;
-		VDStringA				mDriverTagName;
+		VDStringW				mDriverTagName;
 	};
 }
 
@@ -272,7 +272,7 @@ bool VDConnectPluginDescriptions(const VDPluginInfo *const *ppInfos, VDExternalM
 			VDConnectPluginDescription(pInfo, pModule);
 		} catch(const MyError& e) {
 			VDStringW msg;
-			msg.sprintf(L"Error loading plugin \"%ls\" from module %ls: %hs.", pInfo->mpName, VDFileSplitPath(pModule->GetFilename().c_str()), e.gets());
+			msg.sprintf(L"Error loading plugin \"%ls\" from module %ls: %s.", pInfo->mpName, VDFileSplitPath(pModule->GetFilename().c_str()), e.gets());
 
 			VDLog(kVDLogWarning, msg);
 			allOk = false;
@@ -326,8 +326,9 @@ bool VDExternalModule::Lock() {
 			VDExternalCodeBracket bracket(mFilename.c_str(), __FILE__, __LINE__);
 
 			HANDLE h = CreateFileW(mFilename.c_str(), GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-			if (h==INVALID_HANDLE_VALUE)
-				throw MyWin32Error("Cannot load plugin module \"%ls\": %%s", GetLastError(), mFilename.c_str());
+			if (h == INVALID_HANDLE_VALUE) {
+				throw MyWin32Error(L"Cannot load plugin module \"%s\": %%s", GetLastError(), mFilename.c_str());
+			}
 
 			const int size = 4096;
 			char buf[size];
@@ -339,20 +340,23 @@ bool VDExternalModule::Lock() {
 				IMAGE_NT_HEADERS* h1 = (IMAGE_NT_HEADERS*)(buf+h0->e_lfanew);
 				IMAGE_FILE_HEADER* fh = &h1->FileHeader;
 				#ifdef _M_AMD64
-				if (fh->Machine==IMAGE_FILE_MACHINE_I386)
-					throw MyError("Cannot load plugin module \"%ls\": this is 32-bit plugin", mFilename.c_str());
+				if (fh->Machine == IMAGE_FILE_MACHINE_I386) {
+					throw MyError(L"Cannot load plugin module \"%s\": this is 32-bit plugin", mFilename.c_str());
+				}
 				#endif
 				#ifdef _M_IX86
-				if (fh->Machine==IMAGE_FILE_MACHINE_AMD64)
-					throw MyError("Cannot load plugin module \"%ls\": this is 64-bit plugin", mFilename.c_str());
+				if (fh->Machine == IMAGE_FILE_MACHINE_AMD64) {
+					throw MyError(L"Cannot load plugin module \"%s\": this is 64-bit plugin", mFilename.c_str());
+				}
 				#endif
 			}
 
 			mhModule = LoadLibraryW(mFilename.c_str());
 		}
 
-		if (!mhModule)
-			throw MyWin32Error("Cannot load plugin module \"%ls\": %%s", GetLastError(), mFilename.c_str());
+		if (!mhModule) {
+			throw MyWin32Error(L"Cannot load plugin module \"%s\": %%s", GetLastError(), mFilename.c_str());
+		}
 
 		ReconnectOldPlugins();
 		allOk = ReconnectPlugins();
@@ -372,7 +376,7 @@ void VDExternalModule::Unlock() {
 		VDDisconnectPluginDescriptions(this);
 		FreeLibrary(mhModule);
 		mhModule = 0;
-		VDDEBUG("Plugins: Unloading module \"%s\"\n", VDTextWToA(mFilename).c_str());
+		VDDEBUG(L"Plugins: Unloading module \"%s\"\n", mFilename.c_str());
 	}
 }
 
@@ -587,7 +591,7 @@ void VDLoadPlugins(const VDStringW& path, int& succeeded, int& failed) {
 				else
 					++failed;
 			} catch(const MyError& e) {
-				VDLog(kVDLogWarning, VDStringW().sprintf(L"Plugins: Failed to load \"%ls\": %hs", it.GetFullPath().c_str(), e.gets()));
+				VDLog(kVDLogWarning, VDStringW().sprintf(L"Plugins: Failed to load \"%ls\": %s", it.GetFullPath().c_str(), e.gets()));
 				++failed;
 			}
 		}

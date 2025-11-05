@@ -1199,7 +1199,7 @@ void VDProject::OpenProject(const wchar_t *pFilename, bool readOnly) {
 			SaveProjectPath(VDStringW(pFilename), VDTextU8ToW(subDir), readOnly);
 			mProjectName = job->GetName();
 			VDStringW base = VDFileSplitPathLeft(mProjectFilename);
-			VDStringW back = VDTextU8ToW(VDStringA(job->GetProjectDir()));
+			VDStringW back = VDTextU8ToW(job->GetProjectDir());
 			if (back!=base) mProjectBack = back;
 			RunScriptMemory(job->GetScript(), job->GetScriptLine(), true);
 			mProjectBack = L"";
@@ -1629,7 +1629,9 @@ void VDProject::Open(const wchar_t *pFilename, IVDInputDriver *pSelectedDriver, 
 		Close();
 		if (pSelectedDriver) {
 			const wchar_t* driver_name = pSelectedDriver->GetSignatureName();
-			if (VDToolsHandleFileOpenError(filename.c_str(), driver_name, e)) throw MyError();
+			if (VDToolsHandleFileOpenError(filename.c_str(), driver_name, e)) {
+				throw MyError();
+			}
 		}
 		throw;
 	}
