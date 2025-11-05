@@ -2639,7 +2639,7 @@ LRESULT VDCaptureProjectUI::CommonWndProc(UINT msg, WPARAM wParam, LPARAM lParam
 
 		case WM_ACTIVATEAPP:
 			if (!wParam && IsFullScreen())
-				SetFullScreen(false);
+		//		SetFullScreen(false);
 			break;
 
 		case WM_TIMER:
