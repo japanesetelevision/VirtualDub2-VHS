@@ -28,20 +28,20 @@ public:
 		kStateCount			= 8
 	};
 
-	IVDJobQueue	*mpJobQueue;
+	IVDJobQueue* mpJobQueue = nullptr;
 
-	uint32		mCreationRevision;
-	uint32		mChangeRevision;
-	uint64		mId;
-	uint64		mDateStart;		///< Same units as NT FILETIME.
-	uint64		mDateEnd;		///< Same units as NT FILETIME.
+	uint32		mCreationRevision = 0;
+	uint32		mChangeRevision   = 0;
+	uint64		mId        = 0;
+	uint64		mDateStart = 0;	///< Same units as NT FILETIME.
+	uint64		mDateEnd   = 0;	///< Same units as NT FILETIME.
 
 	typedef VDAutoLogger::tEntries tLogEntries;
 	tLogEntries	mLogEntries;
 
 	/////
-	VDJob();
-	~VDJob();
+	VDJob() = default;
+	~VDJob() = default;
 
 	bool operator==(const VDJob& job) const;
 
@@ -65,7 +65,7 @@ public:
 	const wchar_t*	GetError() const					{ return mError.c_str(); }
 	void			SetError(const wchar_t* err)		{ mError = err; }
 
-	const char *	GetRunnerName() const			{ return mRunnerName.c_str(); }
+	const wchar_t*	GetRunnerName() const			{ return mRunnerName.c_str(); }
 	uint64			GetRunnerId() const				{ return mRunnerId; }
 
 	bool	IsRunning() const { return mState == kStateInProgress || mState == kStateAborting; }
@@ -77,7 +77,7 @@ public:
 
 	uint64	GetId() const { return mId; }
 
-	void	SetRunner(uint64 id, const char *name);
+	void	SetRunner(uint64 id, const wchar_t* name);
 
 	bool	IsReloadMarkerPresent() const { return mbContainsReloadMarker; }
 
@@ -93,20 +93,20 @@ public:
 
 	VDStringA	ToString() const;
 
-	uint64		mRunnerId;
-	VDStringA	mRunnerName;
+	uint64		mRunnerId = 0;
+	VDStringW	mRunnerName;
 protected:
 	VDStringA	mName;
 	VDStringW	mInputFile;
 	VDStringW	mOutputFile;
 	VDStringW	mError;
 	VDStringA	mScript;
-	int mScriptLine;
+	int mScriptLine = -1;
 	VDStringA	mProjectSubdir;
 	VDStringA	mProjectDir;
-	int			mState;
-	bool		mbContainsReloadMarker;
-	bool		mbModified;
+	int			mState = VDJob::kStateWaiting;
+	bool		mbContainsReloadMarker = false;
+	bool		mbModified = false;
 };
 
 #endif

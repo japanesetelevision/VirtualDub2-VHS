@@ -2,21 +2,6 @@
 #include <vd2/system/thread.h>
 #include <vd2/VDLib/Job.h>
 
-VDJob::VDJob()
-	: mpJobQueue(NULL)
-	, mState(VDJob::kStateWaiting)
-	, mId(0)
-	, mRunnerId(0)
-	, mDateStart(0)
-	, mDateEnd(0)
-	, mbContainsReloadMarker(false)
-{
-	mScriptLine = -1;
-}
-
-VDJob::~VDJob() {
-}
-
 bool VDJob::operator==(const VDJob& job) const {
 #define TEST(field) if (field != job.field) return false
 	TEST(mCreationRevision);
@@ -58,7 +43,7 @@ void VDJob::SetState(int state) {
 	}
 }
 
-void VDJob::SetRunner(uint64 id, const char *name) {
+void VDJob::SetRunner(uint64 id, const wchar_t* name) {
 	mRunnerId = id;
 	mRunnerName = name;
 }
