@@ -84,8 +84,8 @@ namespace {
 
 ///////////////////////////////////////////////////////////////////////////
 
-extern const char g_szError[];
-extern const char g_szWarning[];
+extern const wchar_t g_szError[];
+extern const wchar_t g_szWarning[];
 
 extern HINSTANCE g_hInst;
 
@@ -1713,7 +1713,7 @@ void VDProject::InnerReopen() {
 
 					VDStringW msg(VDswprintf(VDLoadString(0, kVDST_Project, kVDM_ReopenChangesImminent), 2, &newCount, &oldCount));
 
-					if (IDCANCEL == MessageBoxW((HWND)mhwnd, msg.c_str(), VDTextAToW(g_szError).c_str(), MB_OKCANCEL)) {
+					if (IDCANCEL == MessageBoxW((HWND)mhwnd, msg.c_str(), g_szError, MB_OKCANCEL)) {
 						return;
 					}
 
@@ -2747,7 +2747,7 @@ void VDProject::ResetTimeline() {
 
 void VDProject::ResetTimelineWithConfirmation() {
 	if (inputAVI) {
-		if (IDOK == MessageBoxA((HWND)mhwnd, "Discard edits and reset timeline?", g_szWarning, MB_OKCANCEL|MB_TASKMODAL|MB_SETFOREGROUND|MB_ICONEXCLAMATION)) {
+		if (IDOK == MessageBoxW((HWND)mhwnd, L"Discard edits and reset timeline?", g_szWarning, MB_OKCANCEL|MB_TASKMODAL|MB_SETFOREGROUND|MB_ICONEXCLAMATION)) {
 			ResetTimeline();
 		}
 	}

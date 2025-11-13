@@ -186,8 +186,8 @@ static const char *const g_szCapVideoProcAmpItems[]={
 };
 
 extern HINSTANCE g_hInst;
-extern const char g_szError[];
-extern const char g_szWarning[];
+extern const wchar_t g_szError[];
+extern const wchar_t g_szWarning[];
 
 static char g_szStripeFile[MAX_PATH];
 
@@ -2762,7 +2762,7 @@ LRESULT VDCaptureProjectUI::MainWndProc(UINT msg, WPARAM wParam, LPARAM lParam) 
 				try {
 					mpProject->Capture(false);
 				} catch(const MyError& e) {
-					e.post((HWND)mhwnd, "Capture error");
+					e.post((HWND)mhwnd, L"Capture error");
 				}
 			}
 			break;
@@ -3812,8 +3812,8 @@ bool VDCaptureProjectUI::OnCommand(UINT id) {
 			} else if (id >= ID_AUDIO_CAPTURE_SOURCE && id < ID_AUDIO_CAPTURE_SOURCE+50) {
 
 				if (mbSwitchSourcesTogether) {
-					DWORD result = MessageBoxA((HWND)mhwnd,
-							"The audio source setting is currently being auto-set to match the video source. "
+					DWORD result = MessageBoxW((HWND)mhwnd,
+							L"The audio source setting is currently being auto-set to match the video source. "
 							"This will be disabled if you manually switch the audio source. Proceed?\n"
 							"\n"
 							"(Auto-switching can be re-enabled in Device, Device Settings.)",
@@ -3854,7 +3854,7 @@ bool VDCaptureProjectUI::OnCommand(UINT id) {
 			break;
 		}
 	} catch(const MyError& e) {
-		e.post((HWND)mhwnd, "Capture error");
+		e.post((HWND)mhwnd, L"Capture error");
 	}
 
 	return true;
@@ -4794,7 +4794,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 				pbih->biClrImportant	= 0;
 
 				if (!pProject->SetVideoFormat(*pbih, pbih.size())) {
-					MessageBoxA(NULL, "The capture device does not support the selected video format.", g_szError, MB_OK|MB_ICONEXCLAMATION);
+					MessageBoxW(NULL, L"The capture device does not support the selected video format.", g_szError, MB_OK|MB_ICONEXCLAMATION);
 					return TRUE;
 				}
 			} while(false);

@@ -95,9 +95,8 @@ wchar_t g_szFile[MAX_PATH];
 
 char g_serverName[256];
 
-extern const char g_szError[]="VirtualDub Error";
-extern const char g_szWarning[]="VirtualDub Warning";
-extern const wchar_t g_szWarningW[]=L"VirtualDub Warning";
+extern const wchar_t g_szError[]   = L"VirtualDub Error";
+extern const wchar_t g_szWarning[] = L"VirtualDub Warning";
 
 static const char g_szRegKeyPersistence[]="Persistence";
 static const char g_szRegKeyAutoAppendByName[]="Auto-append by name";
@@ -749,12 +748,12 @@ void OpenInput(bool append, bool audio, const wchar_t* filename, MyError* err) {
 	vdvector<VDStringW> filter_list;
 	VDGetInputDriverFileFilters(dlg.inputDrivers, filter_list);
 
-	OPENFILENAMEW fn = {sizeof(fn),0};
-	fn.Flags = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
-	fn.hInstance = GetModuleHandle(0);
+	OPENFILENAMEW fn  = {sizeof(fn),0};
+	fn.Flags          = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
+	fn.hInstance      = GetModuleHandleW(0);
 	fn.lpTemplateName = MAKEINTRESOURCEW(IDD_OPENVIDEO);
-	fn.lpfnHook = OpenVideoProc;
-	fn.lCustData = (LONG_PTR)&dlg;
+	fn.lpfnHook       = OpenVideoProc;
+	fn.lCustData      = (LONG_PTR)&dlg;
 	VDStringW filter_id;
 
 	if (audio) {
@@ -1141,7 +1140,7 @@ public:
 
 void SaveAVI(HWND hWnd, bool fUseCompatibility, bool queueAsJob) {
 	if (!inputVideo) {
-		MessageBoxA(hWnd, "No input video stream to process.", g_szError, MB_OK);
+		MessageBoxW(hWnd, L"No input video stream to process.", g_szError, MB_OK);
 		return;
 	}
 
@@ -1152,12 +1151,12 @@ void SaveAVI(HWND hWnd, bool fUseCompatibility, bool queueAsJob) {
 	dlg.os_driver = g_FileOutDriver;
 	dlg.os_format = g_FileOutFormat;
 
-	OPENFILENAMEW fn = {sizeof(fn),0};
-	fn.Flags = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
-	fn.hInstance = GetModuleHandle(0);
+	OPENFILENAMEW fn  = {sizeof(fn),0};
+	fn.Flags          = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
+	fn.hInstance      = GetModuleHandleW(0);
 	fn.lpTemplateName = MAKEINTRESOURCEW(IDD_SAVEVIDEO_FORMAT);
-	fn.lpfnHook = SaveVideoProc;
-	fn.lCustData = (LONG_PTR)&dlg;
+	fn.lpfnHook       = SaveVideoProc;
+	fn.lCustData      = (LONG_PTR)&dlg;
 
 	VDStringW filters;
 	filters += L"Audio-Video Interleave (*.avi)";
@@ -1288,7 +1287,7 @@ public:
 
 void SaveAudio(HWND hWnd, bool queueAsJob) {
 	if (!inputAudio) {
-		MessageBoxA(hWnd, "No input audio stream to extract.", g_szError, MB_OK);
+		MessageBoxW(hWnd, L"No input audio stream to extract.", g_szError, MB_OK);
 		return;
 	}
 
@@ -1299,12 +1298,12 @@ void SaveAudio(HWND hWnd, bool queueAsJob) {
 	dlg.os_driver = g_AudioOutDriver;
 	dlg.os_format = g_AudioOutFormat;
 
-	OPENFILENAMEW fn = {sizeof(fn),0};
-	fn.Flags = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
-	fn.hInstance = GetModuleHandle(0);
+	OPENFILENAMEW fn  = {sizeof(fn),0};
+	fn.Flags          = OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
+	fn.hInstance      = GetModuleHandleW(0);
 	fn.lpTemplateName = MAKEINTRESOURCEW(IDD_SAVEAUDIO_FORMAT);
-	fn.lpfnHook = SaveVideoProc;
-	fn.lCustData = (LONG_PTR)&dlg;
+	fn.lpfnHook       = SaveVideoProc;
+	fn.lCustData      = (LONG_PTR)&dlg;
 
 	VDStringW filters;
 	filters += L"Windows audio (*.wav, *.w64)";
@@ -1437,7 +1436,7 @@ static const char g_szRegKeySegmentDigitCount[]="Segment digit count";
 
 void SaveSegmentedAVI(HWND hWnd, bool queueAsJob) {
 	if (!inputVideo) {
-		MessageBoxA(hWnd, "No input video stream to process.", g_szError, MB_OK);
+		MessageBoxW(hWnd, L"No input video stream to process.", g_szError, MB_OK);
 		return;
 	}
 
@@ -1544,7 +1543,7 @@ void SaveSegmentedAVI(HWND hWnd, bool queueAsJob) {
 			}
 
 			if (nMatchCount) {
-				if (IDOK != guiMessageBoxF(g_hWnd, g_szWarningW, MB_OKCANCEL|MB_ICONEXCLAMATION,
+				if (IDOK != guiMessageBoxF(g_hWnd, g_szWarning, MB_OKCANCEL|MB_ICONEXCLAMATION,
 					L"There %s %d existing file%s which match%s the filename pattern \"%s\". These files "
 					L"will be erased if you continue, to prevent confusion with the new files."
 					,nMatchCount==1 ? L"is" : L"are"
@@ -1927,7 +1926,7 @@ void SaveImageSeq(HWND hwnd, bool queueAsJob) {
 	dlg.addJob = queueAsJob;
 
 	if (!inputVideo) {
-		MessageBoxA(hwnd, "No input video stream to process.", g_szError, MB_OK);
+		MessageBoxW(hwnd, L"No input video stream to process.", g_szError, MB_OK);
 		return;
 	}
 
@@ -2315,14 +2314,14 @@ void SaveImage(HWND hwnd, VDPosition frame, VDPixmap* px, bool skip_dialog) {
 	name = VDAutoIncrementPath(name);
 	VDSetLastLoadSavePath(VDFSPECKEY_SAVEIMAGEFILE, name.c_str());
 
-	OPENFILENAMEW fn = {sizeof(fn),0};
-	fn.hwndOwner = hwnd;
-	fn.Flags	= OFN_PATHMUSTEXIST|OFN_ENABLESIZING|OFN_EXPLORER|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
-	fn.Flags |= OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
-	fn.hInstance = GetModuleHandle(0);
+	OPENFILENAMEW fn  = {sizeof(fn),0};
+	fn.hwndOwner      = hwnd;
+	fn.Flags	      = OFN_PATHMUSTEXIST|OFN_ENABLESIZING|OFN_EXPLORER|OFN_OVERWRITEPROMPT|OFN_HIDEREADONLY;
+	fn.Flags         |= OFN_ENABLETEMPLATE | OFN_ENABLEHOOK;
+	fn.hInstance      = GetModuleHandleW(0);
 	fn.lpTemplateName = MAKEINTRESOURCEW(IDD_SAVEIMAGE_FORMAT);
-	fn.lpfnHook = SaveImageProc;
-	fn.lCustData = (LONG_PTR)&dlg;
+	fn.lpfnHook       = SaveImageProc;
+	fn.lCustData      = (LONG_PTR)&dlg;
 
 	const wchar_t* filter = L"Images\0*.bmp;*.tga;*.jpg;*.jpeg;*.png;*.tif;*.tiff\0";
 

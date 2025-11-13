@@ -487,7 +487,7 @@ InputFileOptions *InputFileAVI::promptForOptions(VDGUIHandle hwnd) {
 
 	if (!ifo) throw MyMemoryError();
 
-	DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_EXTOPENOPTS_AVI),
+	DialogBoxParamW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(IDD_EXTOPENOPTS_AVI),
 			(HWND)hwnd, InputFileAVIOptions::SetupDlgProc, (LPARAM)ifo);
 
 	// if we were forced to AVIFile mode (possibly due to an Avisynth script),
@@ -593,8 +593,8 @@ void InputFileAVI::Init(const wchar_t *szFile) {
 					}
 				}
 			} catch(const MyError& e) {
-				char err[128];
-				sprintf(err, "Cannot load video segment %02d", nSegment);
+				wchar_t err[128];
+				swprintf_s(err, L"Cannot load video segment %02d", nSegment);
 
 				e.post(NULL, err);
 			}

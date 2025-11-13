@@ -103,8 +103,8 @@ namespace {
 
 ///////////////////////////////////////////////////////////////////////////
 
-extern const char g_szError[];
-extern const char g_szWarning[];
+extern const wchar_t g_szError[];
+extern const wchar_t g_szWarning[];
 
 extern bool g_bEnableVTuneProfiling;
 extern bool g_bAutoTest;
@@ -2039,10 +2039,10 @@ void VDProjectUI::CloseAndDelete() {
 	if (!inputAVI || !VDDoesPathExist(g_szInputAVIFile))
 		return;
 
-	VDStringA s;
-	s.sprintf("Are you sure you want to delete the file \"%ls\"?", g_szInputAVIFile);
+	VDStringW s;
+	s.sprintf(L"Are you sure you want to delete the file \"%s\"?", g_szInputAVIFile);
 
-	if (IDOK == MessageBoxA((HWND)mhwnd, s.c_str(), g_szWarning, MB_ICONEXCLAMATION | MB_OKCANCEL)) {
+	if (IDOK == MessageBoxW((HWND)mhwnd, s.c_str(), g_szWarning, MB_ICONEXCLAMATION | MB_OKCANCEL)) {
 		VDStringW fn(g_szInputAVIFile);
 
 		Close();
@@ -3465,8 +3465,9 @@ LRESULT VDProjectUI::MainWndProc( UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	case WM_CLOSE:
 		if (VDPreferencesGetConfirmExit()) {
-			if (IDOK != MessageBoxA((HWND)mhwnd, "Are you sure you want to exit?", "VirtualDub warning", MB_ICONQUESTION | MB_OKCANCEL))
+			if (IDOK != MessageBoxW((HWND)mhwnd, L"Are you sure you want to exit?", g_szWarning, MB_ICONQUESTION | MB_OKCANCEL)) {
 				return 0;
+			}
 		}
 		break;
 
@@ -3543,8 +3544,9 @@ LRESULT VDProjectUI::DubWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_CLOSE:
 		if (VDPreferencesGetConfirmExit()) {
-			if (IDOK != MessageBoxA((HWND)mhwnd, "Are you sure you want to exit?", "VirtualDub warning", MB_ICONQUESTION | MB_OKCANCEL))
+			if (IDOK != MessageBoxW((HWND)mhwnd, L"Are you sure you want to exit?", g_szWarning, MB_ICONQUESTION | MB_OKCANCEL)) {
 				return 0;
+			}
 		}
 
 		if (g_dubber->IsPreviewing() || g_bEnableVTuneProfiling) {
@@ -3554,13 +3556,14 @@ LRESULT VDProjectUI::DubWndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			if (mpDubStatus && !mpDubStatus->isVisible())
 				mpDubStatus->ToggleStatus();
 
-			if (IDYES == MessageBoxA((HWND)mhwnd,
-					"A dub operation is currently in progress. Forcing VirtualDub to abort "
+			if (IDYES == MessageBoxW((HWND)mhwnd,
+					L"A dub operation is currently in progress. Forcing VirtualDub to abort "
 					"will leave the output file unusable and may have undesirable side effects. "
 					"Do you really want to do this?"
-					,"VirtualDub warning", MB_YESNO))
+					, g_szWarning, MB_YESNO)) {
 
-					ExitProcess(1000);
+				ExitProcess(1000);
+			}
 		}
 		break;
 
@@ -4176,7 +4179,7 @@ void VDProjectUI::OpenAudioDisplay() {
 	mpUIAudioSplitBar->Create(&parms);
 
 	HWND hwndParent = vdpoly_cast<IVDUIWindowW32 *>(mpUIBase)->GetHandleW32();
-	mhwndAudioDisplay = CreateWindowExW(WS_EX_STATICEDGE, g_szAudioDisplayControlName, L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, (HWND)hwndParent, NULL, GetModuleHandle(NULL), NULL);
+	mhwndAudioDisplay = CreateWindowExW(WS_EX_STATICEDGE, g_szAudioDisplayControlName, L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, (HWND)hwndParent, NULL, GetModuleHandleW(NULL), NULL);
 	mpUIAudioDisplay = VDUICreatePeer((VDGUIHandle)mhwndAudioDisplay);
 	mpUIAudioDisplay->SetAlignment(nsVDUI::kFill, nsVDUI::kFill);
 	mpUISplitSet->AddChild(mpUIAudioDisplay);
@@ -4512,7 +4515,7 @@ void VDProjectUI::OpenCurveEditor() {
 	mpUICurveSet->Create(&parms);
 
 	HWND hwndParent = vdpoly_cast<IVDUIWindowW32 *>(mpUIBase)->GetHandleW32();
-	mhwndCurveCtl = CreateDialogParam(GetModuleHandle(NULL),MAKEINTRESOURCE(IDD_CURVE),(HWND)hwndParent,CurveProc,(LPARAM)this);
+	mhwndCurveCtl = CreateDialogParamW(GetModuleHandleW(NULL),MAKEINTRESOURCEW(IDD_CURVE),(HWND)hwndParent,CurveProc,(LPARAM)this);
 	RECT r;
 	GetWindowRect(mhwndCurveCtl,&r);
 	mpUICurveCtl = VDUICreatePeer((VDGUIHandle)mhwndCurveCtl);
@@ -4520,7 +4523,7 @@ void VDProjectUI::OpenCurveEditor() {
 	mpUICurveCtl->SetMinimumSize(vduisize(0,r.bottom-r.top));
 	mpUICurveSet->AddChild(mpUICurveCtl);
 
-	mhwndCurveEditor = CreateWindowExW(WS_EX_STATICEDGE, g_VDParameterCurveControlClass, L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, (HWND)hwndParent, NULL, GetModuleHandle(NULL), NULL);
+	mhwndCurveEditor = CreateWindowExW(WS_EX_STATICEDGE, g_VDParameterCurveControlClass, L"", WS_CHILD|WS_VISIBLE, 0, 0, 0, 0, (HWND)hwndParent, NULL, GetModuleHandleW(NULL), NULL);
 	mpUICurveEditor = VDUICreatePeer((VDGUIHandle)mhwndCurveEditor);
 	mpUICurveEditor->SetAlignment(nsVDUI::kFill, nsVDUI::kFill);
 	mpUICurveSet->AddChild(mpUICurveEditor);
