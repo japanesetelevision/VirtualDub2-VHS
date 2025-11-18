@@ -288,7 +288,7 @@ void VDDubVideoProcessor::Init() {
 void VDDubVideoProcessor::PreShutdown() {
 	// We have to ensure that the threaded compressor is stopped before we exit the processing thread.
 	// If the UI thread ends up trying to stop, the result can be a deadlock when XviD attempts to
-	// do a SendMessage() back to the UI thread from the worker thread.
+	// do a SendMessageW() back to the UI thread from the worker thread.
 	if (mpThreadedVideoCompressor)
 		mpThreadedVideoCompressor->Shutdown();
 }
@@ -1188,10 +1188,11 @@ VDDubVideoProcessor::VideoWriteResult VDDubVideoProcessor::ProcessVideoFrame() {
 	if (!pOutputReq->IsSuccessful()) {
 		const VDFilterFrameRequestError *err = pOutputReq->GetError();
 
-		if (err)
+		if (err) {
 			throw MyError("%s", err->mError.c_str());
-		else
+		} else {
 			throw MyError("An unknown error occurred during video filtering.");
+		}
 	}
 
 	VDDubVideoProcessor::VideoWriteResult getOutputResult = GetVideoOutputBuffer(~pBuffer);

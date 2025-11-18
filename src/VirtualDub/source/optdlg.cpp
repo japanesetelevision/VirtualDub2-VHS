@@ -251,7 +251,7 @@ void VDDialogAudioConversionW32::ReinitDialog() {
 		char buf[128];
 
 		const VDWaveFormat *pwfex = mpSource->getWaveFormat();
-		wsprintfA(buf, "No change (%ldHz)", pwfex->mSamplingRate);
+		wsprintfA(buf, "No change (%uHz)", pwfex->mSamplingRate);
 		SetDlgItemTextA(mhdlg, IDC_SAMPLINGRATE_NOCHANGE, buf);
 
 		if (!mbSourcePrecisionKnown)
@@ -473,7 +473,7 @@ bool VDDialogSelectVideoFormatW32::OnLoaded() {
 	RebuildList();
 
 	mListView.AutoSizeColumns();
-	SendMessage(mListView.GetHandle(), LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE_USEHEADER);
+	SendMessageW(mListView.GetHandle(), LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE_USEHEADER);
 
 	SetFocusToControl(IDC_FORMATS);
 	VDUIRestoreWindowPlacementW32(mhdlg, "FormatList", SW_SHOW);
@@ -491,7 +491,7 @@ void VDDialogSelectVideoFormatW32::OnDataExchange(bool write) {
 
 void VDDialogSelectVideoFormatW32::OnSize() {
 	mResizer.Relayout();
-	SendMessage(mListView.GetHandle(), LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE_USEHEADER);
+	SendMessageW(mListView.GetHandle(), LVM_SETCOLUMNWIDTH, 4, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 bool VDDialogSelectVideoFormatW32::OnErase(VDZHDC hdc) {
@@ -1050,7 +1050,7 @@ bool VDDialogVideoDepthW32::OnCommand(uint32 id, uint32 extcode) {
 				// There are some weird issues with BN_CLICKED being sent multiple times with
 				// keyboard selection (mouse selection is OK).
 				mbInputBrowsePending = true;
-				PostMessage(mhdlg, WM_USER + 200, 0, 0);
+				PostMessageW(mhdlg, WM_USER + 200, 0, 0);
 				return TRUE;
 
 			case IDC_CS_NONE:
@@ -1636,14 +1636,16 @@ INT_PTR VDDialogVideoFrameRateW32::DlgProc(UINT message, WPARAM wParam, LPARAM l
 				break;
 
 			case IDC_FRAMERATE_CHANGE:
-				if (SendMessage((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED)
-					EnableWindow(GetDlgItem(mhdlg, IDC_FRAMERATE),TRUE);
+				if (SendMessageW((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					EnableWindow(GetDlgItem(mhdlg, IDC_FRAMERATE), TRUE);
+				}
 				break;
 
 			case IDC_FRAMERATE_SAMELENGTH:
 			case IDC_FRAMERATE_NOCHANGE:
-				if (SendMessage((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED)
-					EnableWindow(GetDlgItem(mhdlg, IDC_FRAMERATE),FALSE);
+				if (SendMessageW((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED) {
+					EnableWindow(GetDlgItem(mhdlg, IDC_FRAMERATE), FALSE);
+				}
 				break;
 
 			case IDOK:
@@ -2009,15 +2011,15 @@ INT_PTR VDDialogAudioVolumeW32::DlgProc(UINT message, WPARAM wParam, LPARAM lPar
 			{
 				HWND hwndSlider = GetDlgItem(mhdlg, IDC_SLIDER_VOLUME);
 
-				SendMessage(hwndSlider, TBM_SETRANGE, TRUE, MAKELONG(0, 600));
-				SendMessage(hwndSlider, TBM_SETTICFREQ, 10, 0);
+				SendMessageW(hwndSlider, TBM_SETRANGE, TRUE, MAKELONG(0, 600));
+				SendMessageW(hwndSlider, TBM_SETTICFREQ, 10, 0);
 
 				if (mOpts.audio.mVolume >= 0) {
 					CheckDlgButton(mhdlg, IDC_ADJUSTVOL, BST_CHECKED);
 
-					SendMessage(hwndSlider, TBM_SETPOS, TRUE, FactorToSliderPosition(mOpts.audio.mVolume));
+					SendMessageW(hwndSlider, TBM_SETPOS, TRUE, FactorToSliderPosition(mOpts.audio.mVolume));
 				} else {
-					SendMessage(hwndSlider, TBM_SETPOS, TRUE, 300);
+					SendMessageW(hwndSlider, TBM_SETPOS, TRUE, 300);
 					EnableWindow(hwndSlider, FALSE);
 					EnableWindow(GetDlgItem(mhdlg, IDC_STATIC_VOLUME), FALSE);
 				}
@@ -2038,7 +2040,7 @@ INT_PTR VDDialogAudioVolumeW32::DlgProc(UINT message, WPARAM wParam, LPARAM lPar
 			switch(LOWORD(wParam)) {
 			case IDOK:
 				if (IsDlgButtonChecked(mhdlg, IDC_ADJUSTVOL)) {
-					int pos = SendDlgItemMessage(mhdlg, IDC_SLIDER_VOLUME, TBM_GETPOS, 0, 0);
+					int pos = SendDlgItemMessageW(mhdlg, IDC_SLIDER_VOLUME, TBM_GETPOS, 0, 0);
 
 					mOpts.audio.mVolume = SliderPositionToFactor(pos);
 				} else
@@ -2075,7 +2077,7 @@ int VDDialogAudioVolumeW32::FactorToSliderPosition(float factor) {
 
 void VDDialogAudioVolumeW32::UpdateVolumeText() {
 	char buf[64];
-	int pos = SendDlgItemMessage(mhdlg, IDC_SLIDER_VOLUME, TBM_GETPOS, 0, 0);
+	int pos = SendDlgItemMessageW(mhdlg, IDC_SLIDER_VOLUME, TBM_GETPOS, 0, 0);
 
 	float factor = SliderPositionToFactor(pos);
 	sprintf(buf, "%+.1fdB (%.1f%%)", (float)(pos - 300) * 0.1f, 100.0f*factor);
@@ -2300,11 +2302,11 @@ INT_PTR VDDialogJumpToPositionW32::DlgProc(UINT msg, WPARAM wParam, LPARAM lPara
 			break;
 		case IDC_JUMPTOFRAME:
 			SetFocus(GetDlgItem(mhdlg, IDC_FRAMENUMBER));
-			SendDlgItemMessage(mhdlg, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
+			SendDlgItemMessageW(mhdlg, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
 			break;
 		case IDC_JUMPTOTIME:
 			SetFocus(GetDlgItem(mhdlg, IDC_FRAMETIME));
-			SendDlgItemMessage(mhdlg, IDC_FRAMETIME, EM_SETSEL, 0, -1);
+			SendDlgItemMessageW(mhdlg, IDC_FRAMETIME, EM_SETSEL, 0, -1);
 			break;
 		}
 		return TRUE;
@@ -2356,10 +2358,10 @@ void VDDialogJumpToPositionW32::ReinitEdit() {
 
 void VDDialogJumpToPositionW32::ReinitDialog() {
 	if (title) SetWindowTextW(mhdlg, title);
-	SendDlgItemMessage(mhdlg, IDC_FRAMETIME, EM_LIMITTEXT, 30, 0);
+	SendDlgItemMessageW(mhdlg, IDC_FRAMETIME, EM_LIMITTEXT, 30, 0);
 	ReinitEdit();
 	SetFocus(GetDlgItem(mhdlg, IDC_FRAMENUMBER));
-	SendDlgItemMessage(mhdlg, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
+	SendDlgItemMessageW(mhdlg, IDC_FRAMENUMBER, EM_SETSEL, 0, -1);
 
 	CheckDlgButton(mhdlg, IDC_JUMPTOFRAME, BST_CHECKED);
 	CheckDlgButton(mhdlg, IDC_JUMPTOTIME, BST_UNCHECKED);
@@ -2650,8 +2652,8 @@ void VDDialogFileTextInfoW32::ReinitDialog() {
 }
 
 void VDDialogFileTextInfoW32::RedoColumnWidths() {
-	SendMessage(mhwndList, LVM_SETCOLUMNWIDTH, 0, LVSCW_AUTOSIZE);
-	SendMessage(mhwndList, LVM_SETCOLUMNWIDTH, 1, LVSCW_AUTOSIZE_USEHEADER);
+	SendMessageW(mhwndList, LVM_SETCOLUMNWIDTH, 0, LVSCW_AUTOSIZE);
+	SendMessageW(mhwndList, LVM_SETCOLUMNWIDTH, 1, LVSCW_AUTOSIZE_USEHEADER);
 }
 
 void VDDialogFileTextInfoW32::BeginEdit(int index) {
@@ -2661,19 +2663,20 @@ void VDDialogFileTextInfoW32::BeginEdit(int index) {
 
 	ListView_EnsureVisible(mhwndList, index, FALSE);
 
-	for(i=0; i<=1; i++)
-		w2 += w = SendMessage(mhwndList, LVM_GETCOLUMNWIDTH, i, 0);
+	for (i = 0; i <= 1; i++) {
+		w2 += w = SendMessageW(mhwndList, LVM_GETCOLUMNWIDTH, i, 0);
+	}
 
 	EndEdit(true);
 
 	r.left = LVIR_BOUNDS;
 
-	LVITEM lvi;
+	LVITEMW lvi;
 	lvi.mask = LVIF_PARAM;
 	lvi.iItem = index;
 	lvi.iSubItem = 0;
 	ListView_GetItem(mhwndList, &lvi);
-	SendMessage(mhwndList, LVM_GETITEMRECT, index, (LPARAM)&r);
+	SendMessageW(mhwndList, LVM_GETITEMRECT, index, (LPARAM)&r);
 
 	mID = lvi.lParam;
 	mIndex = index;
@@ -2705,7 +2708,7 @@ void VDDialogFileTextInfoW32::BeginEdit(int index) {
 			SetWindowLongPtrW(mhwndEdit, GWLP_WNDPROC, (LONG_PTR)LVStaticEditProc);
 		}
 
-		SendMessage(mhwndEdit, WM_SETFONT, SendMessage(mhwndList, WM_GETFONT, 0, 0), MAKELPARAM(FALSE,0));
+		SendMessageW(mhwndEdit, WM_SETFONT, SendMessageW(mhwndList, WM_GETFONT, 0, 0), MAKELPARAM(FALSE,0));
 
 		tTextInfo::iterator it(mTextInfo.find(mID));
 		if (it != mTextInfo.end())
@@ -2823,7 +2826,7 @@ LRESULT VDDialogFileTextInfoW32::LVWndProc(HWND hwnd, UINT msg, WPARAM wParam, L
 	case WM_LBUTTONDOWN:
 		{
 			LVHITTESTINFO htinfo;
-			LVITEM lvi;
+			LVITEMW lvi;
 			int index;
 
 			// if this isn't done, the control doesn't gain focus properly...
@@ -2884,7 +2887,7 @@ LRESULT VDDialogFileTextInfoW32::LVEditProc(HWND hwnd, UINT msg, WPARAM wParam, 
 			}
 			return 0;
 		} else if (wParam == VK_DOWN) {
-			if (mIndex < SendMessage(mhwndList, LVM_GETITEMCOUNT, 0, 0)-1) {
+			if (mIndex < SendMessageW(mhwndList, LVM_GETITEMCOUNT, 0, 0)-1) {
 				ListView_SetItemState(mhwndList, -1, 0, LVIS_SELECTED|LVIS_FOCUSED);
 				ListView_SetItemState(mhwndList, mIndex+1, LVIS_SELECTED|LVIS_FOCUSED, LVIS_SELECTED|LVIS_FOCUSED);
 				BeginEdit(mIndex+1);

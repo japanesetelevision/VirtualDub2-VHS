@@ -1744,7 +1744,7 @@ void VDAudioDisplayControl::OnLButtonDown(int x, int y, uint32 modifiers) {
 		}
 	}
 
-  SendMessage(mhwnd,WM_SETCURSOR,0,HTCLIENT);
+  SendMessageW(mhwnd,WM_SETCURSOR,0,HTCLIENT);
 }
 
 void VDAudioDisplayControl::OnLButtonUp(int x, int y, uint32 modifiers) {
@@ -1799,7 +1799,7 @@ void VDAudioDisplayControl::OnRButtonDown(int x, int y, uint32 modifiers) {
 	POINT pt = {x,y};
 	ClientToScreen(mhwnd, &pt);
 	TrackPopupMenu(mhmenuPopup, TPM_RIGHTALIGN | TPM_BOTTOMALIGN, pt.x, pt.y, 0, mhwnd, NULL);
-	PostMessage(mhwnd, WM_NULL, 0, 0);
+	PostMessageW(mhwnd, WM_NULL, 0, 0);
 }
 
 void VDAudioDisplayControl::CalcFocus(sint32& xh1, sint32& xh2, int64 p, int64 windowPosition) {

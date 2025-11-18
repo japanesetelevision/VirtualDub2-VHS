@@ -368,9 +368,11 @@ protected:
 
 	void	SetPCMAudioFormat(sint32 sampling_rate, bool is_16bit, bool is_stereo);
 
-	void	SetStatusF(const char *format, ...);
-	void	SetStatusImmediate(const char *s);
-	void	SetStatusImmediateF(const char *format, ...);
+	void	SetStatusF(const char* format, ...);
+	void	SetStatusImmediate(const wchar_t* s);
+	void	SetStatusImmediate(const char* s);
+	void	SetStatusImmediateF(const wchar_t* format, ...);
+	void	SetStatusImmediateF(const char* format, ...);
 
 	bool	IsFullScreen() const;
 	void	SetFullScreen(bool fs);
@@ -714,9 +716,9 @@ bool VDCaptureProjectUI::Attach(VDGUIHandle hwnd, IVDCaptureProject *pProject) {
 		Detach();
 		return false;
 	}
-	SendMessage(mhwndStatus, SB_SIMPLE, (WPARAM)FALSE, 0);
-	SendMessage(mhwndStatus, SB_SETPARTS, (WPARAM)6, (LPARAM)(LPINT)kStatusPartWidths);
-	SendMessage(mhwndStatus, SB_SETTEXTA, 6 | SBT_NOBORDERS, (LPARAM)"");
+	SendMessageW(mhwndStatus, SB_SIMPLE, (WPARAM)FALSE, 0);
+	SendMessageW(mhwndStatus, SB_SETPARTS, (WPARAM)6, (LPARAM)(LPINT)kStatusPartWidths);
+	SendMessageW(mhwndStatus, SB_SETTEXTA, 6 | SBT_NOBORDERS, (LPARAM)"");
 
 	// subclass the status window
 	mStatusWndProc = (WNDPROC)GetWindowLongPtr(mhwndStatus, GWLP_WNDPROC);
@@ -960,12 +962,7 @@ void VDCaptureProjectUI::SetPCMAudioFormat(sint32 sampling_rate, bool is_16bit, 
 		VDDEBUG("Couldn't set audio format!\n");
 }
 
-void VDCaptureProjectUI::SetStatusImmediate(const char *s) {
-	SendMessage(mhwndStatus, SB_SETTEXTA, 0, (LPARAM)s);
-	RedrawWindow(mhwndStatus, NULL, NULL, RDW_INVALIDATE|RDW_UPDATENOW);
-}
-
-void VDCaptureProjectUI::SetStatusF(const char *format, ...) {
+void VDCaptureProjectUI::SetStatusF(const char* format, ...) {
 	char buf[3072];
 	buf[0] = 0;
 
@@ -975,7 +972,34 @@ void VDCaptureProjectUI::SetStatusF(const char *format, ...) {
 	va_end(val);
 
 	if (buf[0]) {
-		SendMessage(mhwndStatus, SB_SETTEXTA, 0, (LPARAM)buf);
+		SendMessageW(mhwndStatus, SB_SETTEXTA, 0, (LPARAM)buf);
+	}
+}
+
+void VDCaptureProjectUI::SetStatusImmediate(const wchar_t* s)
+{
+	SendMessageW(mhwndStatus, SB_SETTEXTW, 0, (LPARAM)s);
+	RedrawWindow(mhwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+}
+
+void VDCaptureProjectUI::SetStatusImmediate(const char* s)
+{
+	SendMessageW(mhwndStatus, SB_SETTEXTA, 0, (LPARAM)s);
+	RedrawWindow(mhwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+}
+
+void VDCaptureProjectUI::SetStatusImmediateF(const wchar_t* format, ...)
+{
+	wchar_t buf[3072];
+	buf[0] = 0;
+
+	va_list val;
+	va_start(val, format);
+	_vsnwprintf_s(buf, _TRUNCATE, format, val);
+	va_end(val);
+
+	if (buf[0]) {
+		SetStatusImmediate(buf);
 	}
 }
 
@@ -1802,7 +1826,7 @@ void VDCaptureProjectUI::UICaptureDriversUpdated() {
 
 		wchar_t buf[1024];
 
-		if ((unsigned)swprintf_s(buf, L"&%c %ls", '0'+i, name) < std::size(buf)) {
+		if ((unsigned)swprintf_s(buf, L"&%c %s", '0'+i, name) < std::size(buf)) {
 			VDAppendMenuW32(hmenu, MF_ENABLED, ID_VIDEO_CAPTURE_DRIVER+i, buf);
 			++driversFound;
 		}
@@ -1895,9 +1919,9 @@ void VDCaptureProjectUI::UICaptureAudioDriversUpdated() {
 		wchar_t buf[1024];
 		int r;
 		if (i < 10) {
-			r = swprintf_s(buf, L"&%d %ls", i, name);
+			r = swprintf_s(buf, L"&%d %s", i, name);
 		} else {
-			r = swprintf_s(buf, L"%d %ls", i, name);
+			r = swprintf_s(buf, L"%d %s", i, name);
 		}
 
 		if (r < (int)std::size(buf)) {
@@ -2034,8 +2058,9 @@ void VDCaptureProjectUI::UICaptureDriverDisconnecting(int driver) {
 }
 
 void VDCaptureProjectUI::UICaptureDriverChanging(int driver) {
-	if (driver >= 0)
-		SetStatusImmediateF("Connecting to capture device: %ls", mpProject->GetDriverName(driver));
+	if (driver >= 0) {
+		SetStatusImmediateF(L"Connecting to capture device: %s", mpProject->GetDriverName(driver));
+	}
 }
 
 void VDCaptureProjectUI::UICaptureDriverChanged(int driver) {
@@ -2071,8 +2096,8 @@ void VDCaptureProjectUI::UICaptureDriverChanged(int driver) {
 		}
 
 		const wchar_t *s = mpProject->GetDriverName(driver);
-		SetStatusImmediateF("Connected to capture device: %ls", s);
-		VDLog(kVDLogInfo, VDswprintf(L"Connected to capture device: %ls", 1, &s));
+		SetStatusImmediateF(L"Connected to capture device: %s", s);
+		VDLog(kVDLogInfo, VDswprintf(L"Connected to capture device: %s", 1, &s));
 	} else
 		SetStatusImmediate("Disconnected");
 
@@ -2211,7 +2236,7 @@ void VDCaptureProjectUI::UICaptureAudioFormatUpdated() {
 		}
 	}
 
-	SendMessage(mhwndStatus, SB_SETTEXTA, 1 | SBT_POPOUT, (LPARAM)bufa);
+	SendMessageW(mhwndStatus, SB_SETTEXTA, 1 | SBT_POPOUT, (LPARAM)bufa);
 
 	RebuildPanel();
 }
@@ -2242,9 +2267,9 @@ void VDCaptureProjectUI::UICaptureParmsUpdated() {
 	if (framePeriod) {
 		double fps = 10000000.0f / (double)framePeriod;
 		sprintf(bufv, "%.02f fps", fps);
-		SendMessageA(mhwndStatus, SB_SETTEXTA, 2 | SBT_POPOUT, (LPARAM)bufv);
+		SendMessageW(mhwndStatus, SB_SETTEXTA, 2 | SBT_POPOUT, (LPARAM)bufv);
 	} else {
-		SendMessageA(mhwndStatus, SB_SETTEXTA, 2 | SBT_POPOUT, (LPARAM)"VFR");
+		SendMessageW(mhwndStatus, SB_SETTEXTA, 2 | SBT_POPOUT, (LPARAM)"VFR");
 	}
 
 	vdstructex<VDAVIBitmapInfoHeader> bih;
@@ -2270,7 +2295,7 @@ void VDCaptureProjectUI::UICaptureParmsUpdated() {
 	}
 
 	wsprintfA(bufv, "%ldKB/s", (bandwidth+1023)>>10);
-	SendMessageA(mhwndStatus, SB_SETTEXTA, 4, (LPARAM)bufv);
+	SendMessageW(mhwndStatus, SB_SETTEXTA, 4, (LPARAM)bufv);
 }
 
 bool VDCaptureProjectUI::UICaptureAnalyzeBegin(const VDPixmap& px) {
@@ -2415,7 +2440,7 @@ void VDCaptureProjectUI::UICaptureAudioPeaksUpdated(int count, float* peak) {
 	peak_count = count;
 	memcpy(this->peak,peak,count*sizeof(float));
 
-	PostMessage((HWND)mhwnd, WM_APP+1, 0, 0);
+	PostMessageW((HWND)mhwnd, WM_APP + 1, 0, 0);
 }
 
 void VDCaptureProjectUI::UICaptureStart(bool test) {
@@ -2482,14 +2507,14 @@ void VDCaptureProjectUI::UICaptureStart(bool test) {
 	}
 
 	// reset preview rate status
-	SendMessage(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)"");
+	SendMessageW(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)"");
 
 	if (test) {
 		VDLog(kVDLogInfo, VDStringW(L"Starting test capture."));
 	} else {
 		const VDStringW& s = mpProject->GetCaptureFile();
 		const wchar_t *t = s.c_str();
-		VDLog(kVDLogInfo, VDswprintf(L"Starting capture to: %ls", 1, &t));
+		VDLog(kVDLogInfo, VDswprintf(L"Starting capture to: %s", 1, &t));
 	}
 }
 
@@ -2504,7 +2529,7 @@ bool VDCaptureProjectUI::UICapturePreroll() {
 void VDCaptureProjectUI::UICaptureStatusUpdated(VDCaptureStatus& status) {
 	mCurStatus = status;
 
-	PostMessage((HWND)mhwnd, WM_APP, 0, 0);
+	PostMessageW((HWND)mhwnd, WM_APP, 0, 0);
 }
 
 void VDCaptureProjectUI::UICaptureEnd(bool success) {
@@ -2571,16 +2596,16 @@ LRESULT VDCaptureProjectUI::StatusWndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 
 			for(int i=0; i<2; i++) {
 				RECT r2;
-				if (SendMessage(hwnd, SB_GETRECT, i+1, (LPARAM)&r2)) {
+				if (SendMessageW(hwnd, SB_GETRECT, i+1, (LPARAM)&r2)) {
 					if (PtInRect(&r2, pt)) {
 						MapWindowPoints(hwnd, NULL, (LPPOINT)&r2, 2);
 
-						unsigned len = LOWORD(SendMessage(hwnd, SB_GETTEXTLENGTHA, i+1, 0));
+						unsigned len = LOWORD(SendMessageW(hwnd, SB_GETTEXTLENGTHA, i+1, 0));
 
 						vdfastvector<char> str(len+1, 0);
 
-						SendMessage(hwnd, SB_GETTEXTA, i+1, (LPARAM)str.data());
-						SendMessage(hwnd, SB_SETTEXTA, (i+1), (LPARAM)str.data());
+						SendMessageW(hwnd, SB_GETTEXTA, i+1, (LPARAM)str.data());
+						SendMessageW(hwnd, SB_SETTEXTA, (i+1), (LPARAM)str.data());
 
 						bool enabled = true;
 						if (i==0) {
@@ -2598,8 +2623,8 @@ LRESULT VDCaptureProjectUI::StatusWndProc(HWND hwnd, UINT msg, WPARAM wParam, LP
 									0, (HWND)mhwnd, NULL);
 						}
 
-						SendMessage(hwnd, SB_SETTEXTA, (i+1) | SBT_POPOUT, (LPARAM)str.data());
-						PostMessage((HWND)mhwnd, WM_NULL, 0, 0);
+						SendMessageW(hwnd, SB_SETTEXTA, (i+1) | SBT_POPOUT, (LPARAM)str.data());
+						PostMessageW((HWND)mhwnd, WM_NULL, 0, 0);
 						break;
 					}
 				}
@@ -2860,11 +2885,11 @@ void VDCaptureProjectUI::OnTimer() {
 
 	if (!fc || fc < mLastPreviewFrameCount) {
 		if (mLastPreviewFrameCount)
-			SendMessageA(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)"");
+			SendMessageW(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)"");
 	} else {
 		char buf[64];
 		wsprintfA(buf, "%u fps", fc - mLastPreviewFrameCount);
-		SendMessageA(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)buf);
+		SendMessageW(mhwndStatus, SB_SETTEXTA, 3, (LPARAM)buf);
 	}
 
 	mLastPreviewFrameCount = fc;
@@ -3045,7 +3070,7 @@ void VDCaptureProjectUI::OnSize() {
 
 	UpdateDisplayPos();
 
-	if ((nParts = SendMessage(mhwndStatus, SB_GETPARTS, 0, 0))>1) {
+	if ((nParts = SendMessageW(mhwndStatus, SB_GETPARTS, 0, 0))>1) {
 		int i;
 		INT xCoord = (rClient.right-rClient.left);
 
@@ -3062,7 +3087,7 @@ void VDCaptureProjectUI::OnSize() {
 		}
 		aWidth[nParts-1] = -1;
 
-		SendMessage(mhwndStatus, SB_SETPARTS, nParts, (LPARAM)aWidth);
+		SendMessageW(mhwndStatus, SB_SETPARTS, nParts, (LPARAM)aWidth);
 	}
 
 	InvalidateRect((HWND)mhwnd, NULL, FALSE);
@@ -3250,7 +3275,7 @@ bool VDCaptureProjectUI::OnCaptureSafeCommand(UINT id) {
 	case ID_FILE_EXITCAPTUREMODE:
 		if (mbCaptureActive) {
 			mpProject->CaptureStop();
-			PostMessage((HWND)mhwnd,WM_COMMAND,id,0);
+			PostMessageW((HWND)mhwnd, WM_COMMAND, id, 0);
 		}
 		return 0;
 	}
@@ -3887,7 +3912,7 @@ void VDCaptureProjectUI::OnUpdateVumeter() {
 
 void VDCaptureProjectUI::OnUpdateStatus() {
 	if (!mbFullScreen &&mbInfoPanel && mhwndPanel)
-		SendMessage(mhwndPanel, WM_APP, 0, (LPARAM)&mCurStatus);
+		SendMessageW(mhwndPanel, WM_APP, 0, (LPARAM)&mCurStatus);
 
 	if (!mCurStatus.mFramesCaptured)
 		return;
@@ -4118,7 +4143,7 @@ void VDCaptureProjectUI::RebuildPanel() {
 	if (!mhwndPanel)
 		return;
 
-	SendMessage(mhwndPanel,WM_SETREDRAW,false,0);
+	SendMessageW(mhwndPanel,WM_SETREDRAW,false,0);
 
 	// Delete all the children
 	mInfoPanelItems.clear();
@@ -4143,7 +4168,7 @@ void VDCaptureProjectUI::RebuildPanel() {
 	VDCapturePreferences::InfoItems infoItems;
 	GetPanelItems(infoItems);
 
-	HFONT hfont = (HFONT)SendMessage(mhwndPanel, WM_GETFONT, 0, 0);
+	HFONT hfont = (HFONT)SendMessageW(mhwndPanel, WM_GETFONT, 0, 0);
 	if (mhPanelFont2) DeleteObject(mhPanelFont2);
 	if (mhPanelFont3) DeleteObject(mhPanelFont3);
 	LOGFONT lf;
@@ -4207,9 +4232,9 @@ void VDCaptureProjectUI::RebuildPanel() {
 
 			if (hwndLabel) {
 				if (extraBig) {
-					SendMessage(hwndLabel, WM_SETFONT, (WPARAM)mhPanelFont3, TRUE);
+					SendMessageW(hwndLabel, WM_SETFONT, (WPARAM)mhPanelFont3, TRUE);
 				} else {
-					SendMessage(hwndLabel, WM_SETFONT, (WPARAM)hfont, TRUE);
+					SendMessageW(hwndLabel, WM_SETFONT, (WPARAM)hfont, TRUE);
 				}
 
 				if (hwndChild) {
@@ -4239,7 +4264,7 @@ void VDCaptureProjectUI::RebuildPanel() {
 			}
 
 			if (hwndChild) {
-				SendMessage(hwndChild, WM_SETFONT, (WPARAM)hfont, TRUE);
+				SendMessageW(hwndChild, WM_SETFONT, (WPARAM)hfont, TRUE);
 				mInfoPanelItems.push_back(infoid);
 				mInfoPanelChildren.push_back(hwndChild);
 			} else {
@@ -4259,15 +4284,16 @@ void VDCaptureProjectUI::RebuildPanel() {
 			hwndGroup = CreateWindowW(L"BUTTON", groupLabel, WS_CHILD|WS_VISIBLE|BS_GROUPBOX, x1, groupY, x2-x1, y - groupY, mhwndPanel, (HMENU)-1, g_hInst, NULL);
 
 			if (hwndGroup) {
-				if (type==kVDCaptureInfoType_Flag)
-					SendMessage(hwndGroup, WM_SETFONT, (WPARAM)mhPanelFont2, TRUE);
-				else
-					SendMessage(hwndGroup, WM_SETFONT, (WPARAM)hfont, TRUE);
+				if (type == kVDCaptureInfoType_Flag) {
+					SendMessageW(hwndGroup, WM_SETFONT, (WPARAM)mhPanelFont2, TRUE);
+				} else {
+					SendMessageW(hwndGroup, WM_SETFONT, (WPARAM)hfont, TRUE);
+				}
 			}
 		}
 	}
 
-	SendMessage(mhwndPanel,WM_SETREDRAW,true,0);
+	SendMessageW(mhwndPanel,WM_SETREDRAW,true,0);
 	InvalidateRect(mhwndPanel,0,true);
 }
 
@@ -4651,7 +4677,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 			for (i = 0; i < std::size(s_widths); i++) {
 				sprintf(buf, "%d", s_widths[i]);
 				ind = SendMessageA(hwndItem, LB_ADDSTRING, 0, (LPARAM)buf);
-				SendMessage(hwndItem, LB_SETITEMDATA, ind, i);
+				SendMessageW(hwndItem, LB_SETITEMDATA, ind, i);
 
 				if (s_widths[i] == w) {
 					found_w = i;
@@ -4662,7 +4688,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 			for (i = 0; i < std::size(s_heights ); i++) {
 				sprintf(buf, "%d", s_heights[i]);
 				ind = SendMessageA(hwndItem, LB_ADDSTRING, 0, (LPARAM)buf);
-				SendMessage(hwndItem, LB_SETITEMDATA, ind, i);
+				SendMessageW(hwndItem, LB_SETITEMDATA, ind, i);
 
 				if (s_heights[i] == h) {
 					found_h = i;
@@ -4674,12 +4700,12 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 			{
 				int tabw = 50;
 
-				SendMessage(hwndItem, LB_SETTABSTOPS, 1, (LPARAM)&tabw);
+				SendMessageW(hwndItem, LB_SETTABSTOPS, 1, (LPARAM)&tabw);
 			}
 
 			for (i = 0; i < std::size(s_formats ); i++) {
 				ind = SendMessageA(hwndItem, LB_ADDSTRING, 0, (LPARAM)s_formats[i].name);
-				SendMessage(hwndItem, LB_SETITEMDATA, ind, i + 1);
+				SendMessageW(hwndItem, LB_SETITEMDATA, ind, i + 1);
 
 				if (s_formats[i].fcc == s_fcc && s_formats[i].bpp == s_bpp) {
 					found_f = i;
@@ -4687,7 +4713,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 			}
 
 			if (found_f >= 0) {
-				SendMessage(hwndItem, LB_SETCURSEL, found_f, 0);
+				SendMessageW(hwndItem, LB_SETCURSEL, found_f, 0);
 			} else {
 				union {
 					char fccbuf[5];
@@ -4700,13 +4726,13 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 				sprintf(buf, "[Current: %s, %d bits per pixel]", fccbuf, s_bpp);
 
 				ind = SendMessageA(hwndItem, LB_INSERTSTRING, 0, (LPARAM)buf);
-				SendMessage(hwndItem, LB_SETITEMDATA, ind, 0);
-				SendMessage(hwndItem, LB_SETCURSEL, 0, 0);
+				SendMessageW(hwndItem, LB_SETITEMDATA, ind, 0);
+				SendMessageW(hwndItem, LB_SETCURSEL, 0, 0);
 			}
 
 			if (found_w >=0 && found_h >=0) {
-				SendDlgItemMessage(hdlg, IDC_FRAME_WIDTH, LB_SETCURSEL, found_w, 0);
-				SendDlgItemMessage(hdlg, IDC_FRAME_HEIGHT, LB_SETCURSEL, found_h, 0);
+				SendDlgItemMessageW(hdlg, IDC_FRAME_WIDTH, LB_SETCURSEL, found_w, 0);
+				SendDlgItemMessageW(hdlg, IDC_FRAME_HEIGHT, LB_SETCURSEL, found_h, 0);
 				SetFocus(GetDlgItem(hdlg, IDC_FRAME_WIDTH));
 			} else {
 				SetDlgItemInt(hdlg, IDC_WIDTH, w, FALSE);
@@ -4716,7 +4742,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 				CheckDlgButton(hdlg, IDC_CUSTOM, BST_CHECKED);
 			}
 
-			PostMessage(hdlg, WM_COMMAND, IDC_CUSTOM, (LPARAM)GetDlgItem(hdlg, IDC_CUSTOM));
+			PostMessageW(hdlg, WM_COMMAND, IDC_CUSTOM, (LPARAM)GetDlgItem(hdlg, IDC_CUSTOM));
 		}
 
 		return FALSE;
@@ -4747,8 +4773,8 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 					}
 
 				} else {
-					int widthIdx = SendDlgItemMessage(hdlg, IDC_FRAME_WIDTH, LB_GETCURSEL, 0, 0);
-					int heightIdx = SendDlgItemMessage(hdlg, IDC_FRAME_HEIGHT, LB_GETCURSEL, 0, 0);
+					int widthIdx = SendDlgItemMessageW(hdlg, IDC_FRAME_WIDTH, LB_GETCURSEL, 0, 0);
+					int heightIdx = SendDlgItemMessageW(hdlg, IDC_FRAME_HEIGHT, LB_GETCURSEL, 0, 0);
 
 					if ((unsigned)widthIdx >= std::size(s_widths)) {
 						MessageBeep(MB_ICONEXCLAMATION);
@@ -4766,8 +4792,8 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 					h = s_heights[heightIdx];
 				}
 
-				f = SendDlgItemMessage(hdlg, IDC_FORMATS, LB_GETITEMDATA,
-						SendDlgItemMessage(hdlg, IDC_FORMATS, LB_GETCURSEL, 0, 0), 0);
+				f = SendDlgItemMessageW(hdlg, IDC_FORMATS, LB_GETITEMDATA,
+						SendDlgItemMessageW(hdlg, IDC_FORMATS, LB_GETCURSEL, 0, 0), 0);
 
 				vdstructex<VDAVIBitmapInfoHeader> pbih;
 				pbih.resize(sizeof(VDAVIBitmapInfoHeader));
@@ -4808,7 +4834,7 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 
 		case IDC_CUSTOM:
 			{
-				BOOL fEnabled = SendMessage((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED;
+				BOOL fEnabled = SendMessageW((HWND)lParam, BM_GETSTATE, 0, 0) & BST_CHECKED;
 
 				EnableWindow(GetDlgItem(hdlg, IDC_WIDTH), fEnabled);
 				EnableWindow(GetDlgItem(hdlg, IDC_HEIGHT), fEnabled);

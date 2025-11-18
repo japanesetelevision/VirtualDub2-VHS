@@ -76,7 +76,7 @@ INT_PTR VDDialogCaptureCropping::DlgProc(UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					ClippingControlBounds ccb;
 
-					SendMessage(GetDlgItem(mhdlg, IDC_BORDERS), CCM_GETCLIPBOUNDS, 0, (LPARAM)&ccb);
+					SendMessageW(GetDlgItem(mhdlg, IDC_BORDERS), CCM_GETCLIPBOUNDS, 0, (LPARAM)&ccb);
 					mFilterSetup.mCropRect.left = ccb.x1;
 					mFilterSetup.mCropRect.top = ccb.y1;
 					mFilterSetup.mCropRect.right = ccb.x2;
@@ -215,7 +215,7 @@ void VDDialogCaptureCropping::UICaptureAnalyzeFrame(const VDPixmap& format) {
 		mDisplayBuffer.assign(format);
 	}
 
-	PostMessage(mhdlg, WM_USER+100, 0, 0);
+	PostMessageW(mhdlg, WM_USER + 100, 0, 0);
 }
 
 void VDShowCaptureCroppingDialog(VDGUIHandle hParent, IVDCaptureProject *pProject) {

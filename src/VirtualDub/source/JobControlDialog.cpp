@@ -223,7 +223,7 @@ bool VDUIJobControlDialog::OnLoaded() {
 
 	CheckButton(IDC_AUTOSTART, g_VDJobQueue.IsAutoRunEnabled());
 
-	SendDlgItemMessage(mhdlg, IDC_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0, 16384));
+	SendDlgItemMessageW(mhdlg, IDC_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0, 16384));
 
 	if (g_dubber || g_VDJobQueue.IsRunInProgress()) {
 		EnableControl(IDC_PROGRESS, false);
@@ -600,7 +600,7 @@ VDZINT_PTR VDUIJobControlDialog::DlgProc(VDZUINT msg, VDZWPARAM wParam, VDZLPARA
 				case LVN_KEYDOWN:
 					switch(((LPNMLVKEYDOWN)lParam)->wVKey) {
 					case VK_DELETE:
-						SendMessage(mhdlg, WM_COMMAND, IDC_DELETE, (LPARAM)GetDlgItem(mhdlg, IDC_DELETE));
+						SendMessageW(mhdlg, WM_COMMAND, IDC_DELETE, (LPARAM)GetDlgItem(mhdlg, IDC_DELETE));
 					}
 					return TRUE;
 
@@ -658,7 +658,7 @@ VDZINT_PTR VDUIJobControlDialog::DlgProc(VDZUINT msg, VDZWPARAM wParam, VDZLPARA
 							}
 							break;
 						default:
-							SendMessage(mhdlg, WM_COMMAND, MAKELONG(IDC_POSTPONE, BN_CLICKED), (LPARAM)GetDlgItem(mhdlg, IDC_POSTPONE));
+							SendMessageW(mhdlg, WM_COMMAND, MAKELONG(IDC_POSTPONE, BN_CLICKED), (LPARAM)GetDlgItem(mhdlg, IDC_POSTPONE));
 						}
 					}
 
@@ -792,25 +792,25 @@ void VDUIJobControlDialog::GetJobListDispInfoW(NMLVDISPINFOW *nldi) {
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				nldi->item.pszText = (LPWSTR)L"In progress";
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"In progress (%s:%d)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"In progress (%s:%u)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		case VDJob::kStateStarting:
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				nldi->item.pszText = (LPWSTR)L"Starting";
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Starting (%s:%d)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Starting (%s:%u)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		case VDJob::kStateAborting:
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				nldi->item.pszText = (LPWSTR)L"Aborting";
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Aborting (%s:%d)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Aborting (%s:%u)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		case VDJob::kStateCompleted:
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Done%hs", vdj->mLogEntries.empty() ? "" : " (warnings)");
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Done%hs (%s:%d)", vdj->mLogEntries.empty() ? "" : " (warnings)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Done%hs (%s:%u)", vdj->mLogEntries.empty() ? "" : " (warnings)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		case VDJob::kStatePostponed:
 			nldi->item.pszText = (LPWSTR)L"Postponed";
@@ -819,13 +819,13 @@ void VDUIJobControlDialog::GetJobListDispInfoW(NMLVDISPINFOW *nldi) {
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				nldi->item.pszText = (LPWSTR)L"Aborted";
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Aborted (%s:%d)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Aborted (%s:%u)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		case VDJob::kStateError:
 			if (vdj->mRunnerName.empty() || vdj->IsLocal())
 				nldi->item.pszText = (LPWSTR)L"Error";
 			else
-				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Error (%s:%d)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
+				swprintf(nldi->item.pszText, nldi->item.cchTextMax, L"Error (%s:%u)", vdj->mRunnerName.c_str(), (uint32)vdj->GetRunnerId());
 			break;
 		}
 		break;
@@ -900,12 +900,12 @@ void VDUIJobControlDialog::OnJobAdded(const VDJob& job, int index) {
 	if (!mhdlg)
 		return;
 
-	LVITEM li;
+	LVITEMW li;
 
 	li.mask		= LVIF_TEXT;
 	li.iSubItem	= 0;
 	li.iItem	= index;
-	li.pszText	= LPSTR_TEXTCALLBACK;
+	li.pszText	= LPSTR_TEXTCALLBACKW;
 
 	ListView_InsertItem(GetDlgItem(mhdlg, IDC_JOBS), &li);
 }
@@ -939,14 +939,14 @@ void VDUIJobControlDialog::OnJobStarted(const VDJob& job) {
 void VDUIJobControlDialog::OnJobEnded(const VDJob& job) {
 	EnableControl(IDC_PROGRESS, false);
 	EnableControl(IDC_PERCENT, false);
-	SendDlgItemMessage(mhdlg, IDC_PROGRESS, PBM_SETPOS, 0, 0);
+	SendDlgItemMessageW(mhdlg, IDC_PROGRESS, PBM_SETPOS, 0, 0);
 }
 
 void VDUIJobControlDialog::OnJobProgressUpdate(const VDJob& job, float completion) {
 	if (!mhdlg)
 		return;
 
-	SendDlgItemMessage(mhdlg, IDC_PROGRESS, PBM_SETPOS, (int)(completion*16384.0f + 0.5f), 0);
+	SendDlgItemMessageW(mhdlg, IDC_PROGRESS, PBM_SETPOS, (int)(completion*16384.0f + 0.5f), 0);
 	SetControlTextF(IDC_PERCENT, L"%.0f%%", completion * 100.0f);
 }
 
@@ -974,12 +974,12 @@ void VDUIJobControlDialog::OnJobQueueReloaded() {
 	ListView_DeleteAllItems(hwndItem);
 	int n = g_VDJobQueue.ListSize();
 	for(int i=0; i<n; i++) {
-		LVITEM li;
+		LVITEMW li;
 
 		li.mask		= LVIF_TEXT;
 		li.iSubItem	= 0;
 		li.iItem	= i;
-		li.pszText	= LPSTR_TEXTCALLBACK;
+		li.pszText	= LPSTR_TEXTCALLBACKW;
 
 		ListView_InsertItem(hwndItem, &li);
 	}

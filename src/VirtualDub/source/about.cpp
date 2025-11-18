@@ -281,7 +281,7 @@ static BOOL CALLBACK HideAllButOKCANCELProc(HWND hwnd, LPARAM lParam) {
 }
 
 static void CALLBACK AboutTimerProc(UINT uID, UINT, DWORD_PTR dwUser, DWORD_PTR, DWORD_PTR) {
-	PostMessage((HWND)dwUser, WM_APP+0, 0, 0);
+	PostMessageW((HWND)dwUser, WM_APP+0, 0, 0);
 }
 */
 
@@ -344,8 +344,8 @@ INT_PTR APIENTRY AboutDlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 
 							const char *pLimit = pData + SizeofResource(NULL, hrsrc);
 
-							SendMessage(hwndItem, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(TRUE, 0));
-							SendMessage(hwndItem, LB_SETTABSTOPS, 1, (LPARAM)&tab);
+							SendMessageW(hwndItem, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), MAKELPARAM(TRUE, 0));
+							SendMessageW(hwndItem, LB_SETTABSTOPS, 1, (LPARAM)&tab);
 
 							while(pData < pLimit) {
 								char *t = buf;
@@ -358,8 +358,9 @@ INT_PTR APIENTRY AboutDlgProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 
 								*t = 0;
 
-								if (t > buf)
+								if (t > buf) {
 									SendMessageA(GetDlgItem(hDlg, IDC_CREDITS), LB_ADDSTRING, 0, (LPARAM)buf);
+								}
 							}
 						}
 					}

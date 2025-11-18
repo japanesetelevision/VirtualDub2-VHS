@@ -3090,7 +3090,7 @@ INT_PTR CALLBACK InputFileMPEG::ParseDialogProc(HWND hDlg, UINT uMsg, WPARAM wPa
 			thisPtr->fIsVCD
 				? "Parsing VideoCD stream"
 				: thisPtr->fInterleaved ? "Parsing interleaved MPEG file" : "Parsing MPEG video file");
-		SendMessage(GetDlgItem(hDlg, IDC_PROGRESS), PBM_SETRANGE, 0, MAKELPARAM(0, 16384));
+		SendMessageW(GetDlgItem(hDlg, IDC_PROGRESS), PBM_SETRANGE, 0, MAKELPARAM(0, 16384));
 		SetTimer(hDlg, 1, 250, (TIMERPROC)NULL);
 
 		EnableWindow(GetParent(hDlg), FALSE);
@@ -3101,7 +3101,7 @@ INT_PTR CALLBACK InputFileMPEG::ParseDialogProc(HWND hDlg, UINT uMsg, WPARAM wPa
 		{
 			char buf[128];
 
-			SendMessage(GetDlgItem(hDlg, IDC_PROGRESS), PBM_SETPOS, (WPARAM)((thisPtr->file_cpos*16384) / thisPtr->file_len), 0);
+			SendMessageW(GetDlgItem(hDlg, IDC_PROGRESS), PBM_SETPOS, (WPARAM)((thisPtr->file_cpos*16384) / thisPtr->file_len), 0);
 
 			if (thisPtr->fIsVCD)
 				wsprintfA(buf, "%ld of %ld sectors", (long)(thisPtr->file_cpos/2352), (long)(thisPtr->file_len/2352));
@@ -3215,7 +3215,7 @@ void InputFileMPEG::_InfoDlgThread(void *pvInfo) {
 
 		++msi;
 		if (pInfo->hWndAbort) {
-			SendMessage(pInfo->hWndAbort, WM_USER+256, 0, 0);
+			SendMessageW(pInfo->hWndAbort, WM_USER+256, 0, 0);
 			return;
 		}
 	}
@@ -3247,7 +3247,7 @@ void InputFileMPEG::_InfoDlgThread(void *pvInfo) {
 
 			++msi;
 			if (pInfo->hWndAbort) {
-				SendMessage(pInfo->hWndAbort, WM_USER+256, 0, 0);
+				SendMessageW(pInfo->hWndAbort, WM_USER+256, 0, 0);
 				return;
 			}
 		}
@@ -3302,7 +3302,7 @@ INT_PTR APIENTRY InputFileMPEG::_InfoDlgProc( HWND hDlg, UINT message, WPARAM wP
 				const VDWaveFormat *fmt = pInfo->mpAudio->getWaveFormat();
 				char buf[128];
 
-				sprintf(buf, "%ldHz, %s", fmt->mSamplingRate, fmt->mChannels>1 ? "Stereo" : "Mono");
+				sprintf(buf, "%uHz, %s", fmt->mSamplingRate, fmt->mChannels>1 ? "Stereo" : "Mono");
 				SetDlgItemTextA(hDlg, IDC_AUDIO_FORMAT, buf);
 
 				sprintf(buf, "%ld", thisPtr->aframes);

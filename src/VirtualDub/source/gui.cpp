@@ -180,13 +180,14 @@ bool guiCheckDialogs(LPMSG pMsg) {
 
 			if (pmdn->hook) {
 				if(pMsg->message>=WM_KEYFIRST && pMsg->message<=WM_KEYLAST) {
-					if (SendMessage(pmdn->hdlg, pMsg->message, pMsg->wParam, pMsg->lParam))
+					if (SendMessageW(pmdn->hdlg, pMsg->message, pMsg->wParam, pMsg->lParam)) {
 						return true;
+					}
 				}
 			}
 
 			if (pmdn->edit_thunk) {
-				int x = SendMessage(pMsg->hwnd,WM_GETDLGCODE,0,(LPARAM)pMsg);
+				int x = SendMessageW(pMsg->hwnd,WM_GETDLGCODE,0,(LPARAM)pMsg);
 				if ((x & DLGC_WANTCHARS) && (x & DLGC_HASSETSEL)) {
 					if (pMsg->message==WM_KEYDOWN) {
 						switch (pMsg->wParam) {
@@ -399,12 +400,32 @@ void VDSetDialogDefaultIcons(HWND hdlg) {
 	HINSTANCE hInst = VDGetLocalModuleHandleW32();
 
 	HANDLE hLargeIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_SHARED);
-	if (hLargeIcon)
-		SendMessage(hdlg, WM_SETICON, ICON_BIG, (LPARAM)hLargeIcon);
+	if (hLargeIcon) {
+		SendMessageW(hdlg, WM_SETICON, ICON_BIG, (LPARAM)hLargeIcon);
+	}
 
 	HANDLE hSmallIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
-	if (hSmallIcon)
-		SendMessage(hdlg, WM_SETICON, ICON_SMALL, (LPARAM)hSmallIcon);
+	if (hSmallIcon) {
+		SendMessageW(hdlg, WM_SETICON, ICON_SMALL, (LPARAM)hSmallIcon);
+	}
+}
+
+void guiSetStatus(const wchar_t* format, int nPart, ...) {
+	wchar_t buf[1024];
+	buf[0] = 0;
+
+	va_list val;
+	va_start(val, nPart);
+	_vsnwprintf_s(buf, _TRUNCATE, format, val);
+	va_end(val);
+
+	// replace newlines with spaces
+	wchar_t* s = buf;
+	while (s = wcschr(s, L'\n')) {
+		*s++ = L' ';
+	}
+
+	SendMessageW(GetDlgItem(g_hWnd, IDC_STATUS_WINDOW), SB_SETTEXTW, nPart, (LPARAM)buf);
 }
 
 void guiSetStatus(const char *format, int nPart, ...) {
@@ -422,11 +443,7 @@ void guiSetStatus(const char *format, int nPart, ...) {
 		*s++ = ' ';
 	}
 
-	SendMessage(GetDlgItem(g_hWnd, IDC_STATUS_WINDOW), SB_SETTEXTA, nPart, (LPARAM)buf);
-}
-
-void guiSetStatusW(const wchar_t *text, int nPart) {
-	SendMessageW(GetDlgItem(g_hWnd, IDC_STATUS_WINDOW), SB_SETTEXTW, nPart, (LPARAM)text);
+	SendMessageW(GetDlgItem(g_hWnd, IDC_STATUS_WINDOW), SB_SETTEXTA, nPart, (LPARAM)buf);
 }
 
 void guiSetTitle(HWND hWnd, UINT uID, ...) {
@@ -452,7 +469,7 @@ void guiMenuHelp(HWND hwnd, WPARAM wParam, WPARAM part, const UINT *iTranslator)
 		while(idPtr[0]) {
 			if (idPtr[0] == LOWORD(wParam)) {
 				if (LoadStringA(g_hInst, idPtr[1], msgbuf, std::size(msgbuf))) {
-					SendMessageA(hwndStatus, SB_SETTEXTA, part, (LPARAM)msgbuf);
+					SendMessageW(hwndStatus, SB_SETTEXTA, part, (LPARAM)msgbuf);
 					return;
 				}
 			}
@@ -460,7 +477,7 @@ void guiMenuHelp(HWND hwnd, WPARAM wParam, WPARAM part, const UINT *iTranslator)
 		}
 	}
 
-	SendMessage(hwndStatus, SB_SETTEXTA, part, (LPARAM)"");
+	SendMessageW(hwndStatus, SB_SETTEXTA, part, (LPARAM)"");
 }
 
 void guiOffsetDlgItem(HWND hdlg, UINT id, LONG xDelta, LONG yDelta) {
@@ -518,31 +535,31 @@ void guiPositionInitFromStream(IVDPositionControl *pc) {
 void VDTranslatePositionCommand(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 	switch(HIWORD(wParam)) {
 		case PCN_START:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_START, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_START, 0), NULL);
 			break;
 		case PCN_BACKWARD:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_PREV, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_PREV, 0), NULL);
 			break;
 		case PCN_FORWARD:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_NEXT, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_NEXT, 0), NULL);
 			break;
 		case PCN_END:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_END, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_END, 0), NULL);
 			break;
 		case PCN_KEYPREV:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_KEYPREV, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_KEYPREV, 0), NULL);
 			break;
 		case PCN_KEYNEXT:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_KEYNEXT, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_VIDEO_SEEK_KEYNEXT, 0), NULL);
 			break;
 		case PCN_JUMPTO:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_JUMPTO, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_JUMPTO, 0), NULL);
 			break;
 		case PCN_MARKIN:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_SETSELSTART, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_SETSELSTART, 0), NULL);
 			break;
 		case PCN_MARKOUT:
-			SendMessage(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_SETSELEND, 0), NULL);
+			SendMessageW(hwnd, WM_COMMAND, MAKELONG(ID_EDIT_SETSELEND, 0), NULL);
 			break;
 	}
 }
@@ -663,13 +680,13 @@ void guiPositionBlit(HWND hWndClipping, VDPosition lFrame, int w, int h) {
 		BITMAPINFOHEADER *dcf;
 
 		if (!inputVideo)
-			SendMessage(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)NULL);
+			SendMessageW(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)NULL);
 		else {
 			dcf = (BITMAPINFOHEADER *)inputVideo->getDecompressedFormat();
 
 			IVDStreamSource *pVSS = inputVideo->asStream();
 			if (lFrame < pVSS->getStart() || lFrame >= pVSS->getEnd())
-				SendMessage(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)NULL);
+				SendMessageW(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)NULL);
 			else {
 				Pixel32 *tmpmem;
 				const void *pFrame = inputVideo->getFrame(lFrame);
@@ -686,11 +703,12 @@ void guiPositionBlit(HWND hWndClipping, VDPosition lFrame, int w, int h) {
 
 					VDPixmap px(VDAsPixmap(vbt));
 
-					SendMessage(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)&px);
+					SendMessageW(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)&px);
 
 					delete[] tmpmem;
-				} else
-					SendMessage(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)&inputVideo->getTargetFormat());
+				} else {
+					SendMessageW(hWndClipping, CCM_BLITFRAME2, 0, (LPARAM)&inputVideo->getTargetFormat());
+				}
 			}
 		}
 
@@ -948,7 +966,7 @@ int guiListboxInsertSortedString(HWND hwnd, const char* pszStr)
 	char* activebufalloc = nullptr;
 	int activebuflen = std::size(buf);
 
-	int cnt = SendMessageA(hwnd, LB_GETCOUNT, 0, 0);
+	int cnt = SendMessageW(hwnd, LB_GETCOUNT, 0, 0);
 
 	if (cnt == LB_ERR) {
 		return -1;

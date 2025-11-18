@@ -634,7 +634,7 @@ bool VDVideoDisplayMinidriverOpenGL::Init(HWND hwnd, HMONITOR hmonitor, const VD
 		return false;
 	}
 
-	if (!SendMessage(mhwndOGL, MYWM_OGLINIT, 0, 0)) {
+	if (!SendMessageW(mhwndOGL, MYWM_OGLINIT, 0, 0)) {
 		DestroyWindow(mhwndOGL);
 		mhwndOGL = 0;
 		return false;
@@ -768,7 +768,7 @@ void VDVideoDisplayMinidriverOpenGL::Refresh(UpdateMode updateMode) {
 			VDVERIFY(SetTimer(mhwndOGL, kTimerId_Refresh, 1000, NULL));
 		}
 
-		PostMessage(mhwndOGL, WM_TIMER, kTimerId_Refresh, 0);
+		PostMessageW(mhwndOGL, WM_TIMER, kTimerId_Refresh, 0);
 	}
 }
 

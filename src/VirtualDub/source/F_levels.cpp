@@ -719,23 +719,23 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 				hwndItem = GetDlgItem(hDlg, IDC_INPUT_LEVELS);
 
-				SendMessage(hwndItem, VLCM_SETTABCOUNT, FALSE, 3);
-				SendMessage(hwndItem, VLCM_SETTABCOLOR, MAKELONG(0, FALSE), 0x000000);
-				SendMessage(hwndItem, VLCM_SETTABCOLOR, MAKELONG(1, FALSE), 0x808080);
-				SendMessage(hwndItem, VLCM_SETTABCOLOR, MAKELONG(2, FALSE), 0xFFFFFF);
-				SendMessage(hwndItem, VLCM_MOVETABPOS, MAKELONG(0, FALSE), mfd->iInputLo);
-				SendMessage(hwndItem, VLCM_MOVETABPOS, MAKELONG(1, FALSE), (int)(mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
-				SendMessage(hwndItem, VLCM_MOVETABPOS, MAKELONG(2,  TRUE), mfd->iInputHi);
-				SendMessage(hwndItem, VLCM_SETGRADIENT, 0x000000, 0xFFFFFF);
+				SendMessageW(hwndItem, VLCM_SETTABCOUNT, FALSE, 3);
+				SendMessageW(hwndItem, VLCM_SETTABCOLOR, MAKELONG(0, FALSE), 0x000000);
+				SendMessageW(hwndItem, VLCM_SETTABCOLOR, MAKELONG(1, FALSE), 0x808080);
+				SendMessageW(hwndItem, VLCM_SETTABCOLOR, MAKELONG(2, FALSE), 0xFFFFFF);
+				SendMessageW(hwndItem, VLCM_MOVETABPOS, MAKELONG(0, FALSE), mfd->iInputLo);
+				SendMessageW(hwndItem, VLCM_MOVETABPOS, MAKELONG(1, FALSE), (int)(mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
+				SendMessageW(hwndItem, VLCM_MOVETABPOS, MAKELONG(2,  TRUE), mfd->iInputHi);
+				SendMessageW(hwndItem, VLCM_SETGRADIENT, 0x000000, 0xFFFFFF);
 
 				hwndItem = GetDlgItem(hDlg, IDC_OUTPUT_LEVELS);
 
-				SendMessage(hwndItem, VLCM_SETTABCOUNT, FALSE, 2);
-				SendMessage(hwndItem, VLCM_SETTABCOLOR, MAKELONG(0, FALSE), 0x000000);
-				SendMessage(hwndItem, VLCM_SETTABCOLOR, MAKELONG(1, FALSE), 0xFFFFFF);
-				SendMessage(hwndItem, VLCM_MOVETABPOS, MAKELONG(0, FALSE), mfd->iOutputLo);
-				SendMessage(hwndItem, VLCM_MOVETABPOS, MAKELONG(1,  TRUE), mfd->iOutputHi);
-				SendMessage(hwndItem, VLCM_SETGRADIENT, 0x000000, 0xFFFFFF);
+				SendMessageW(hwndItem, VLCM_SETTABCOUNT, FALSE, 2);
+				SendMessageW(hwndItem, VLCM_SETTABCOLOR, MAKELONG(0, FALSE), 0x000000);
+				SendMessageW(hwndItem, VLCM_SETTABCOLOR, MAKELONG(1, FALSE), 0xFFFFFF);
+				SendMessageW(hwndItem, VLCM_MOVETABPOS, MAKELONG(0, FALSE), mfd->iOutputLo);
+				SendMessageW(hwndItem, VLCM_MOVETABPOS, MAKELONG(1,  TRUE), mfd->iOutputHi);
+				SendMessageW(hwndItem, VLCM_SETGRADIENT, 0x000000, 0xFFFFFF);
 
 				CheckDlgButton(hDlg, IDC_LUMA, mfd->bLuma ? BST_CHECKED : BST_UNCHECKED);
 
@@ -810,7 +810,7 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 							_RPT4(0, "%g %g %4X %4X\n", mfd->rHalfPt, mfd->rGammaCorr, mfd->iInputLo, mfd->iInputHi);
 
-							SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE),
+							SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE),
 									(int)(0.5 + mfd->iInputLo + (mfd->iInputHi - mfd->iInputLo)*mfd->rHalfPt));
 
 							levelsRedoTables(mfd);
@@ -838,8 +838,8 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 					mfd->iInputLo = v;
 
-					SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(0, TRUE), v);
-					SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
+					SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(0, TRUE), v);
+					SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
 					levelsRedoTables(mfd);
 					mfd->ifp->RedoFrame();
 				} else if (HIWORD(wParam) == EN_KILLFOCUS)
@@ -862,8 +862,8 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 					mfd->iInputHi = v;
 
-					SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(2, TRUE), v);
-					SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
+					SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(2, TRUE), v);
+					SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
 					levelsRedoTables(mfd);
 					mfd->ifp->RedoFrame();
 				} else if (HIWORD(wParam) == EN_KILLFOCUS)
@@ -886,7 +886,7 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 					mfd->iOutputLo = v;
 
-					SendDlgItemMessage(hDlg, IDC_OUTPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(0, TRUE), v);
+					SendDlgItemMessageW(hDlg, IDC_OUTPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(0, TRUE), v);
 
 					levelsRedoTables(mfd);
 					mfd->ifp->RedoFrame();
@@ -911,7 +911,7 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 
 					mfd->iOutputHi = v;
 
-					SendDlgItemMessage(hDlg, IDC_OUTPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), v);
+					SendDlgItemMessageW(hDlg, IDC_OUTPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), v);
 
 					levelsRedoTables(mfd);
 					mfd->ifp->RedoFrame();
@@ -990,7 +990,7 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 						mfd->iInputLo = pnmvltc->iNewPos;
 						SetDlgItemInt(hDlg, IDC_INPUTLO, mfd->iInputLo>>8, FALSE);
 						UpdateWindow(GetDlgItem(hDlg, IDC_INPUTLO));
-						SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
+						SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
 						break;
 					case 1:
 						if (mfd->iInputLo == mfd->iInputHi) {
@@ -1029,7 +1029,7 @@ static INT_PTR APIENTRY levelsDlgProc( HWND hDlg, UINT message, WPARAM wParam, L
 						mfd->iInputHi = pnmvltc->iNewPos;
 						SetDlgItemInt(hDlg, IDC_INPUTHI, mfd->iInputHi>>8, FALSE);
 						UpdateWindow(GetDlgItem(hDlg, IDC_INPUTHI));
-						SendDlgItemMessage(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
+						SendDlgItemMessageW(hDlg, IDC_INPUT_LEVELS, VLCM_SETTABPOS, MAKELONG(1, TRUE), (int)floor(0.5 + mfd->iInputLo + (mfd->iInputHi-mfd->iInputLo)*mfd->rHalfPt));
 						break;
 					}
 					levelsRedoTables(mfd);

@@ -334,8 +334,8 @@ static INT_PTR CALLBACK timesmoothDlgProc( HWND hDlg, UINT message, WPARAM wPara
 				SetWindowLongPtr(hDlg, DWLP_USER, (LPARAM)mfd);
 
 				hwndItem = GetDlgItem(hDlg, IDC_STRENGTH);
-				SendMessage(hwndItem, TBM_SETRANGE, TRUE, MAKELONG(0, 10));
-				SendMessage(hwndItem, TBM_SETPOS, TRUE, mfd->strength);
+				SendMessageW(hwndItem, TBM_SETRANGE, TRUE, MAKELONG(0, 10));
+				SendMessageW(hwndItem, TBM_SETPOS, TRUE, mfd->strength);
 
 				mfd->ifp->InitButton((VDXHWND)GetDlgItem(hDlg, IDC_PREVIEW));
 			}
@@ -360,7 +360,7 @@ static INT_PTR CALLBACK timesmoothDlgProc( HWND hDlg, UINT message, WPARAM wPara
 			break;
 
 		case WM_HSCROLL:
-			mfd->strength = SendDlgItemMessage(hDlg, IDC_STRENGTH, TBM_GETPOS, 0, 0);
+			mfd->strength = SendDlgItemMessageW(hDlg, IDC_STRENGTH, TBM_GETPOS, 0, 0);
 			mfd->ifp->RedoFrame();
 			break;
 

@@ -122,7 +122,7 @@ bool VDUIDialogExtEncMain::OnLoaded() {
 	AddProxy(&mTypeCombo, IDC_TYPE);
 
 	if (!mhFontMarlett) {
-		HFONT hfontDlg = (HFONT)SendMessage(mhdlg, WM_GETFONT, 0, 0);
+		HFONT hfontDlg = (HFONT)SendMessageW(mhdlg, WM_GETFONT, 0, 0);
 
 		if (hfontDlg) {
 			LOGFONT lf = {0};
@@ -135,8 +135,9 @@ bool VDUIDialogExtEncMain::OnLoaded() {
 	if (mhFontMarlett) {
 		HWND hwndControl = GetControl(IDC_CMDLINE_ARG);
 
-		if (hwndControl)
-			SendMessage(hwndControl, WM_SETFONT, (WPARAM)mhFontMarlett, MAKELONG(TRUE, 0));
+		if (hwndControl) {
+			SendMessageW(hwndControl, WM_SETFONT, (WPARAM)mhFontMarlett, MAKELONG(TRUE, 0));
+		}
 	}
 
 	mTypeCombo.AddItem(L"Video encoder");
@@ -321,7 +322,7 @@ VDUIDialogExtEncVideo::~VDUIDialogExtEncVideo() {
 void VDUIDialogExtEncVideo::OnDataExchange(bool write) {
 	HWND cb = GetControl(IDC_PIXEL_FORMAT);
 	if (write) {
-		int sel = SendMessage(cb, CB_GETCURSEL, 0, 0);
+		int sel = SendMessageW(cb, CB_GETCURSEL, 0, 0);
 		if (sel==0)
 			mProfile.mPixelFormat = L"yuv420p";
 		if (sel==1)
@@ -346,18 +347,18 @@ void VDUIDialogExtEncVideo::OnDataExchange(bool write) {
 			mProfile.mPixelFormat = L"gray16le";
 
 	} else {
-		SendMessage(cb,WM_SETFONT,(WPARAM)fixed_font,0);
-		SendMessage(cb,CB_RESETCONTENT,0,0);
+		SendMessageW(cb,WM_SETFONT,(WPARAM)fixed_font,0);
+		SendMessageW(cb,CB_RESETCONTENT,0,0);
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv420p     :   8 bit YUV 4:2:0");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv422p     :   8 bit YUV 4:2:2");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv444p     :   8 bit YUV 4:4:4");
-		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv420p16le :   16 bit YUV 4:2:0");
-		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv422p16le :   16 bit YUV 4:2:2");
-		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv444p16le :   16 bit YUV 4:4:4");
+		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv420p16le :  16 bit YUV 4:2:0");
+		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv422p16le :  16 bit YUV 4:2:2");
+		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"yuv444p16le :  16 bit YUV 4:4:4");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"bgr24       :   8 bit RGB");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"bgra        :   8 bit RGBA");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"bgra64le    :  16 bit RGBA");
-		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"gray8       :  8 bit Y");
+		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"gray8       :   8 bit Y");
 		SendMessageA(cb,CB_ADDSTRING, 0, (LPARAM)"gray16le    :  16 bit Y");
 
 		int sel = 0;
@@ -384,7 +385,7 @@ void VDUIDialogExtEncVideo::OnDataExchange(bool write) {
 		if (mProfile.mPixelFormat==L"gray16le")
 			sel = 10;
 
-		SendMessage(cb,CB_SETCURSEL, sel, 0);
+		SendMessageW(cb,CB_SETCURSEL, sel, 0);
 	}
 }
 
@@ -1043,7 +1044,7 @@ bool VDUIDialogConfigureExternalEncoders::OnCommand(uint32 id, uint32 extcode) {
 					if (!overwriteConfirmed && VDGetExternalEncoderSetByName(eset->mName.c_str(), NULL)) {
 						VDStringW message;
 
-						message.sprintf(L"The file contains an external encoder set called \"%ls\" that already exists. Do you want to load the file anyway, replacing existing profiles with the same names?", eset->mName.c_str());
+						message.sprintf(L"The file contains an external encoder set called \"%s\" that already exists. Do you want to load the file anyway, replacing existing profiles with the same names?", eset->mName.c_str());
 
 						if (!Confirm(message.c_str(), g_szWarning))
 							throw MyUserAbortError();
@@ -1101,7 +1102,7 @@ bool VDUIDialogConfigureExternalEncoders::OnCommand(uint32 id, uint32 extcode) {
 					if (!overwriteConfirmed && VDGetExternalEncoderProfileByName(eprof->mName.c_str(), NULL)) {
 						VDStringW message;
 
-						message.sprintf(L"The file contains an external encoder profile called \"%ls\" that already exists. Do you want to load the file anyway, replacing existing profiles with the same names?", eprof->mName.c_str());
+						message.sprintf(L"The file contains an external encoder profile called \"%s\" that already exists. Do you want to load the file anyway, replacing existing profiles with the same names?", eprof->mName.c_str());
 
 						if (!Confirm(message.c_str(), g_szWarning))
 							throw MyUserAbortError();
@@ -1336,7 +1337,7 @@ void VDUIDialogConfigureExternalEncoders::OnLabelChanged(VDUIProxyListView *send
 			if (conflictingSet && conflictingSet != lsi->mpSet) {
 				VDStringW msg;
 
-				msg.sprintf(L"The name \"%ls\" is already in use by another set.", eventData->mpNewLabel);
+				msg.sprintf(L"The name \"%s\" is already in use by another set.", eventData->mpNewLabel);
 				ShowError(msg.c_str(), g_szError);
 				return;
 			}
@@ -1352,7 +1353,7 @@ void VDUIDialogConfigureExternalEncoders::OnLabelChanged(VDUIProxyListView *send
 			if (conflictingProfile && conflictingProfile != lpi->mpProfile) {
 				VDStringW msg;
 
-				msg.sprintf(L"The name \"%ls\" is already in use by another profile.", eventData->mpNewLabel);
+				msg.sprintf(L"The name \"%s\" is already in use by another profile.", eventData->mpNewLabel);
 				ShowError(msg.c_str(), g_szError);
 				return;
 			}

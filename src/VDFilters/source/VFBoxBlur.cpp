@@ -666,12 +666,12 @@ INT_PTR CALLBACK boxConfigDlgProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lPa
 			mfd = (BoxFilterData *)lParam;
 
 			hwndInit = GetDlgItem(hdlg, IDC_SLIDER_WIDTH);
-			SendMessage(hwndInit, TBM_SETRANGE, TRUE, MAKELONG(1,48));
-			SendMessage(hwndInit, TBM_SETPOS, TRUE, mfd->filter_width);
+			SendMessageW(hwndInit, TBM_SETRANGE, TRUE, MAKELONG(1,48));
+			SendMessageW(hwndInit, TBM_SETPOS, TRUE, mfd->filter_width);
 
 			hwndInit = GetDlgItem(hdlg, IDC_SLIDER_POWER);
-			SendMessage(hwndInit, TBM_SETRANGE, TRUE, MAKELONG(1,3));
-			SendMessage(hwndInit, TBM_SETPOS, TRUE, mfd->filter_power);
+			SendMessageW(hwndInit, TBM_SETRANGE, TRUE, MAKELONG(1,3));
+			SendMessageW(hwndInit, TBM_SETPOS, TRUE, mfd->filter_power);
 
 			mfd->ifp->InitButton((VDXHWND)GetDlgItem(hdlg, IDC_PREVIEW));
 
@@ -685,8 +685,8 @@ INT_PTR CALLBACK boxConfigDlgProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lPa
 				static const char *const szPowers[]={ "1 - box", "2 - quadratic", "3 - cubic" };
 				int new_width, new_power;
 
-				new_width = SendDlgItemMessage(hdlg, IDC_SLIDER_WIDTH, TBM_GETPOS, 0, 0);
-				new_power = SendDlgItemMessage(hdlg, IDC_SLIDER_POWER, TBM_GETPOS, 0, 0);
+				new_width = SendDlgItemMessageW(hdlg, IDC_SLIDER_WIDTH, TBM_GETPOS, 0, 0);
+				new_power = SendDlgItemMessageW(hdlg, IDC_SLIDER_POWER, TBM_GETPOS, 0, 0);
 
 				if (new_width != mfd->filter_width || new_power != mfd->filter_power) {
 					mfd->filter_width = new_width;

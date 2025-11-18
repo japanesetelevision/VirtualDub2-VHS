@@ -142,8 +142,8 @@ bool VDVFLogoDialog::OnLoaded() {
 	SetControlTextF(IDC_XPOS, L"%d", mConfig.pos_x);
 	SetControlTextF(IDC_YPOS, L"%d", mConfig.pos_y);
 
-	SendDlgItemMessage(mhdlg, IDC_SPIN_XOFFSET, UDM_SETRANGE, 0, MAKELONG((short)-(UD_MINVAL-1/2), (short)+(UD_MINVAL-1/2)));
-	SendDlgItemMessage(mhdlg, IDC_SPIN_YOFFSET, UDM_SETRANGE, 0, MAKELONG((short)+(UD_MINVAL-1/2), (short)-(UD_MINVAL-1/2)));
+	SendDlgItemMessageW(mhdlg, IDC_SPIN_XOFFSET, UDM_SETRANGE, 0, MAKELONG((short)-(UD_MINVAL-1/2), (short)+(UD_MINVAL-1/2)));
+	SendDlgItemMessageW(mhdlg, IDC_SPIN_YOFFSET, UDM_SETRANGE, 0, MAKELONG((short)+(UD_MINVAL-1/2), (short)-(UD_MINVAL-1/2)));
 
 	TBSetRange(IDC_OPACITY, 0, 100);
 	TBSetValue(IDC_OPACITY, VDRoundToInt(mConfig.opacity * (100 / 65536.0)));
@@ -244,14 +244,10 @@ bool VDVFLogoDialog::OnCommand(uint32 id, uint32 extcode) {
 			return true;
 
 		case IDC_XPOS:
-			if (extcode == EN_KILLFOCUS)
-				UpdateOffsets();
-			return true;
-
 		case IDC_YPOS:
-			if (extcode == EN_KILLFOCUS)
+			if (extcode == EN_KILLFOCUS) {
 				UpdateOffsets();
-
+			}
 			return true;
 
 		case IDC_DIR_TOPLEFT:			mConfig.justify_x=0; mConfig.justify_y=0; mifp2->RedoFrame(); return true;

@@ -184,7 +184,7 @@ IVDLogWindowControl *VDGetILogWindowControl(HWND hwnd) {
 void VDLogWindowControl::AttachAsLogger(bool bThisThreadOnly) {
 	if (!mbAttachedToLogSystem) {
 		VDAttachLogger(this, bThisThreadOnly, !bThisThreadOnly);
-		PostMessage(mhwnd, WM_TIMER, 1, 0);
+		PostMessageW(mhwnd, WM_TIMER, 1, 0);
 	}
 
 	mbAttachedToLogSystem = true;
@@ -822,7 +822,7 @@ namespace {
 		TestHarness() {
 			RegisterLogWindowControl();
 			HWND foo = CreateWindow(LOGWINDOWCONTROLCLASS, "Log window", WS_OVERLAPPEDWINDOW|WS_VISIBLE|WS_VSCROLL, 0, 0, 400, 300, NULL, NULL, (HINSTANCE)GetModuleHandle(NULL), 0);
-			SendMessage(foo, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
+			SendMessageW(foo, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
 
 			MSG msg;
 #if 0

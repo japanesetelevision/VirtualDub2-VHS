@@ -536,8 +536,9 @@ void VDJobQueue::ListLoad(const wchar_t *fileName, bool merge) {
 			mbModified = false;
 		}
 	} catch(const MyError& e) {
-		if (!usingGlobalFile)
-			throw MyError("Failure loading job list: %s.", e.c_str());
+		if (!usingGlobalFile) {
+			throw MyError(L"Failure loading job list: %s.", e.c_str());
+		}
 	}
 }
 
@@ -1075,7 +1076,7 @@ void VDJobQueue::Save(IVDStream *stream, uint64 signature, uint32 revision, bool
 
 		if (state == VDJob::kStateInProgress || state == VDJob::kStateAborting || state == VDJob::kStateCompleted || state == VDJob::kStateError) {
 			output.FormatLine("// $runner_id %llx", vdj->mRunnerId);
-			output.FormatLine("// $runner_name \"%s\"", VDEncodeString(vdj->GetRunnerName()));
+			output.FormatLine("// $runner_name \"%s\"", VDEncodeString(vdj->GetRunnerName()).c_str());
 		}
 
 		output.FormatLine("// $start_time %08lx %08lx", (unsigned long)(vdj->mDateStart >> 32), (unsigned long)vdj->mDateStart);
@@ -1086,8 +1087,9 @@ void VDJobQueue::Save(IVDStream *stream, uint64 signature, uint32 revision, bool
 			output.FormatLine("// $logent %d %s", ent.severity, VDTextWToA(ent.text).c_str());
 		}
 
-		if (state == VDJob::kStateError)
-			output.FormatLine("// $error \"%s\"", VDEncodeString(vdj->GetError()));
+		if (state == VDJob::kStateError) {
+			output.FormatLine("// $error \"%s\"", VDEncodeString(vdj->GetError()).c_str());
+		}
 
 		output.PutLine("// $script");
 		output.PutLine("");

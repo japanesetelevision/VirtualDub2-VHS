@@ -926,7 +926,7 @@ void VDProject::DisplayFrame(bool bDispInput, bool bDispOutput, bool forceInput,
 		wchar_t* dst = _wcsdup(src);
 
 		if (!dst)
-			guiSetStatusW(e.gets(), 255);
+			guiSetStatus(e.gets(), 255);
 		else {
 			for (wchar_t* t = dst; *t; ++t) {
 				if (*t == L'\n') {
@@ -934,7 +934,7 @@ void VDProject::DisplayFrame(bool bDispInput, bool bDispOutput, bool forceInput,
 				}
 			}
 
-			guiSetStatusW(dst, 255);
+			guiSetStatus(dst, 255);
 			free(dst);
 		}
 		SceneShuttleStop();
@@ -1064,7 +1064,7 @@ bool VDProject::UpdateFrame(bool updateInputFrame) {
 			}
 		}
 	} catch(const MyError& e) {
-		guiSetStatus("%s", 255, e.gets());
+		guiSetStatus(L"%s", 255, e.gets());
 
 		SceneShuttleStop();
 		mDesiredOutputFrame = -1;
@@ -1086,7 +1086,7 @@ bool VDProject::RefilterFrame(VDPosition timelinePos) {
 		if (!filters.isRunning())
 			return false;
 	} catch(const MyError& e) {
-		guiSetStatus("%s", 255, e.gets());
+		guiSetStatus(L"%s", 255, e.gets());
 		return false;
 	}
 
@@ -1558,8 +1558,9 @@ void VDProject::Open(const wchar_t *pFilename, IVDInputDriver *pSelectedDriver, 
 			}
 		}
 
-		if (!inputAVI->GetVideoSource(0, ~inputVideo))
-			throw MyError("File \"%ls\" does not have a video stream.", filename.c_str());
+		if (!inputAVI->GetVideoSource(0, ~inputVideo)) {
+			throw MyError(L"File \"%s\" does not have a video stream.", filename.c_str());
+		}
 
 
 		VDRenderSetVideoSourceInputFormat(inputVideo, g_dubOpts.video.mInputFormat);
@@ -1584,7 +1585,7 @@ void VDProject::Open(const wchar_t *pFilename, IVDInputDriver *pSelectedDriver, 
 			guiSetStatus("", 255);
 
 			if (nFiles > 1)
-				guiSetStatus("Autoloaded %d segments (last was \"%ls\")", 255, nFiles, pnode->NextFromTail()->name);
+				guiSetStatus(L"Autoloaded %d segments (last was \"%s\")", 255, nFiles, pnode->NextFromTail()->name);
 
 			if (nFiles==1 && fAutoscan==2) {
 				int flags = inputAVI->GetFileFlags();
@@ -1787,7 +1788,7 @@ void VDProject::InnerReopen() {
 
 	mpCB->UICurrentPositionUpdated();
 
-	guiSetStatus("Reloaded \"%ls\" (%I64d frames).", 255, filename.c_str(), newFrameCount);
+	guiSetStatus(L"Reloaded \"%s\" (%I64d frames).", 255, filename.c_str(), newFrameCount);
 }
 
 void VDProject::OpenWAV(const wchar_t *szFile, IVDInputDriver *pSelectedDriver, bool automated, bool extOpts, const void *optdata, int optlen) {
@@ -1830,8 +1831,9 @@ void VDProject::OpenWAV(const wchar_t *szFile, IVDInputDriver *pSelectedDriver, 
 	ifile->Init(szFile);
 
 	vdrefptr<AudioSource> pNewAudio;
-	if (!ifile->GetAudioSource(0, ~pNewAudio))
-		throw MyError("The file \"%ls\" does not contain an audio track.", szFile);
+	if (!ifile->GetAudioSource(0, ~pNewAudio)) {
+		throw MyError(L"The file \"%s\" does not contain an audio track.", szFile);
+	}
 
 	pNewAudio->setDecodeErrorMode(g_audioErrorMode);
 
@@ -2782,7 +2784,7 @@ void VDProject::RunOperation(IVDDubberOutputSystem *pOutputSystem, VideoOperatio
 
 	{
 		const wchar_t *pOpType = pOutputSystem->IsRealTime() ? L"preview" : L"dub";
-		VDLog(kVDLogMarker, VDswprintf(L"Beginning %ls operation.", 1, &pOpType));
+		VDLog(kVDLogMarker, VDswprintf(L"Beginning %s operation.", 1, &pOpType));
 	}
 
 	DubOptions tempOpts(op.opt ? *op.opt : g_dubOpts);
@@ -3291,8 +3293,9 @@ void VDProject::UpdateDubParameters(bool forceUpdate) {
 		} catch(const MyError& e) {
 			// The input stream may throw an error here trying to obtain the nearest key.
 			// If so, bail.
-			if (forceUpdate)
-				throw MyError("Cannot initialize rendering parameters: %s", e.c_str());
+			if (forceUpdate) {
+				throw MyError(L"Cannot initialize rendering parameters: %s", e.c_str());
+			}
 		}
 	}
 

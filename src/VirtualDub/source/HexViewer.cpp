@@ -707,7 +707,7 @@ LRESULT HexViewer::Handle_WM_KEYDOWN(WPARAM wParam, LPARAM lParam) {
 		MoveToByte(i64Position);
 		break;
 	default:
-		return SendMessage(GetParent(hwnd), WM_KEYDOWN, wParam, lParam);
+		return SendMessageW(GetParent(hwnd), WM_KEYDOWN, wParam, lParam);
 	}
 
 	return 0;
@@ -750,7 +750,7 @@ LRESULT HexViewer::Handle_WM_CHAR(WPARAM wParam, LPARAM lParam) {
 
 	// Advance right one char
 
-	SendMessage(hwnd, WM_KEYDOWN, VK_RIGHT, 0);
+	SendMessageW(hwnd, WM_KEYDOWN, VK_RIGHT, 0);
 
 	return 0;
 }
@@ -1227,11 +1227,11 @@ void HexEditor::Open(const wchar_t *pszFile, bool bRW) {
 		return;
 	}
 
-	char buf[512];
+	wchar_t buf[512];
 
-	_snprintf(buf, 512, "VirtualDub2 Hex Editor - [%ls]%s", pszFile, bRW ? "" : " (read only)");
-	buf[511] = 0;
-	SetWindowTextA(hwnd, buf);
+	_snwprintf_s(buf, _TRUNCATE, L"VirtualDub2 Hex Editor - [%s]%s", pszFile, bRW ? L"" : L" (read only)");
+	buf[std::size(buf) - 1] = 0;
+	SetWindowTextW(hwnd, buf);
 
 	i64RowCacheAddr	= -1;
 	i64FileCacheAddr	= -1;
@@ -1648,7 +1648,7 @@ LRESULT HexEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) {
 
 	case ID_EDIT_FINDNEXT:
 		if (hwndFind) {
-			SendMessage(hwndFind, WM_COMMAND, IDC_FIND, 0);
+			SendMessageW(hwndFind, WM_COMMAND, IDC_FIND, 0);
 			break;
 		} else if (pszFindString) {
 			Find(hwnd);
@@ -1793,19 +1793,19 @@ INT_PTR CALLBACK HexEditor::AskForValuesDlgProc(HWND hdlg, UINT msg, WPARAM wPar
 		SetWindowTextA(hdlg, pData->title);
 		sprintf(buf, "%I64X", pData->v1);
 		SetDlgItemTextA(hdlg, IDC_EDIT_ADDRESS1, buf);
-		SendDlgItemMessage(hdlg, IDC_EDIT_ADDRESS1, EM_LIMITTEXT, 16, 0);
+		SendDlgItemMessageW(hdlg, IDC_EDIT_ADDRESS1, EM_LIMITTEXT, 16, 0);
 		SetDlgItemTextA(hdlg, IDC_STATIC_ADDRESS1, pData->name1);
 		if (pData->name2) {
 			sprintf(buf, "%I64X", pData->v2);
 			SetDlgItemTextA(hdlg, IDC_EDIT_ADDRESS2, buf);
-			SendDlgItemMessage(hdlg, IDC_EDIT_ADDRESS1, EM_LIMITTEXT, 16, 0);
+			SendDlgItemMessageW(hdlg, IDC_EDIT_ADDRESS1, EM_LIMITTEXT, 16, 0);
 			SetDlgItemTextA(hdlg, IDC_STATIC_ADDRESS2, pData->name2);
 		} else {
 			ShowWindow(GetDlgItem(hdlg, IDC_EDIT_ADDRESS2), SW_HIDE);
 			ShowWindow(GetDlgItem(hdlg, IDC_STATIC_ADDRESS2), SW_HIDE);
 		}
 
-		SendDlgItemMessage(hdlg, IDC_EDIT_ADDRESS1, EM_SETSEL, 0, -1);
+		SendDlgItemMessageW(hdlg, IDC_EDIT_ADDRESS1, EM_SETSEL, 0, -1);
 		SetFocus(GetDlgItem(hdlg, IDC_EDIT_ADDRESS1));
 
 		return FALSE;
@@ -1997,7 +1997,7 @@ void HexEditor::Extract() {
 
 void HexEditor::Find(HWND hwndParent) {
 	if (!nFindLength || !pszFindString) {
-		SendMessage(hwnd, WM_COMMAND, ID_EDIT_FIND, 0);
+		SendMessageW(hwnd, WM_COMMAND, ID_EDIT_FIND, 0);
 		return;
 	}
 
@@ -2373,7 +2373,7 @@ INT_PTR CALLBACK HexEditor::FindDlgProc(HWND hwnd, UINT msg, WPARAM wParam, LPAR
 								}
 
 								if (s == s2) {
-									SendMessage(hwndEdit, EM_SETSEL, s-text, s-text);
+									SendMessageW(hwndEdit, EM_SETSEL, s-text, s-text);
 									SetFocus(hwndEdit);
 									MessageBeep(MB_ICONEXCLAMATION);
 
@@ -2421,7 +2421,7 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 
 	while(!rsi.abortPending) {
 		if ((sizeleft < 8 && pParentNode) || nodes-nodeBase >= 1000) {
-			sprintf(buf, "Chunks %u-%u (%08I64X-%08I64X)\n", nodeBase, nodes-1, startPos, pos-1);
+			sprintf(buf, "Chunks %d-%d (%08I64X-%08I64X)\n", nodeBase, nodes-1, startPos, pos-1);
 			size_t len = strlen(buf);
 			char *s = (char *)mChunkAllocator.Allocate(len+1);
 			memcpy(s, buf, len+1);
@@ -2469,7 +2469,7 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 		// quick validation tests
 
 		if (chunk.ckid == 'TSIL' || chunk.ckid == 'FFIR') {		// RIFF or LIST
-			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%-4.4s:%8ld]: ", pos, (const char *)&chunk.ckid, (const char *)&chunk.listid, chunk.size);
+			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%-4.4s:%8lu]: ", pos, (const char *)&chunk.ckid, (const char *)&chunk.listid, chunk.size);
 
 			if (sizeleft < 12 || chunk.size < 4 || chunk.size > sizeleft-8 || !isValidFOURCC(chunk.listid)) {
 				strcpy(dst, "invalid LIST/RIFF chunk");
@@ -2479,7 +2479,7 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 				bExpand = true;
 			}
 		} else {
-			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%8ld]: ", pos, (const char *)&chunk.ckid, chunk.size);
+			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%8lu]: ", pos, (const char *)&chunk.ckid, chunk.size);
 
 			if (!isValidFOURCC(chunk.ckid) || chunk.size > sizeleft-8) {
 				strcpy(dst, "invalid chunk");
@@ -2518,13 +2518,13 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 
 namespace {
 	void CreateTreeNode(HWND hwndTV, HTREEITEM htiParent, TreeNode *ptn) {
-		TVINSERTSTRUCT tvis;
+		TVINSERTSTRUCTW tvis;
 
 		tvis.hParent		= htiParent;
 		tvis.hInsertAfter	= TVI_FIRST;
 		tvis.item.mask		= TVIF_TEXT | TVIF_PARAM | TVIF_STATE | TVIF_CHILDREN;
 		tvis.item.lParam	= (LPARAM)ptn;
-		tvis.item.pszText	= LPSTR_TEXTCALLBACK;
+		tvis.item.pszText	= LPSTR_TEXTCALLBACKW;
 		tvis.item.state		= 0;
 		tvis.item.stateMask	= TVIS_EXPANDED;
 		tvis.item.cChildren	= I_CHILDRENCALLBACK;
@@ -2549,7 +2549,7 @@ void HexEditor::RIFFTree(HWND hwndTV) {
 	} catch(MyUserAbortError) {
 	}
 
-	SendMessage(hwndTV, WM_SETFONT, (WPARAM)hfont, TRUE);
+	SendMessageW(hwndTV, WM_SETFONT, (WPARAM)hfont, TRUE);
 }
 
 INT_PTR CALLBACK HexEditor::TreeDlgProc(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -2604,7 +2604,7 @@ INT_PTR CALLBACK HexEditor::TreeDlgProc(HWND hdlg, UINT msg, WPARAM wParam, LPAR
 						const TreeNode *ptn = (const TreeNode *)tvi.lParam;
 
 						pcd->mpView->MoveToByte(ptn->mPos);
-						PostMessage(hdlg, WM_APP, 0, 0);
+						PostMessageW(hdlg, WM_APP, 0, 0);
 					}
 				}
 
