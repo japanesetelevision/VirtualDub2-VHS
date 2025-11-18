@@ -273,7 +273,7 @@ void VDPatchSetUnhandledExceptionFilter() {
 
 	// don't attempt to patch system DLLs on Windows 98
 	{
-		HMODULE hmodKernel32 = GetModuleHandleA("kernel32");
+		HMODULE hmodKernel32 = GetModuleHandleW(L"kernel32");
 		FARPROC fpSUEF = GetProcAddress(hmodKernel32, "SetUnhandledExceptionFilter");
 
 		DWORD oldProtect;
@@ -291,7 +291,7 @@ void VDUnpatchSetUnhandledExceptionFilter() {
 
 	g_VDSUEFPatched = false;
 
-	HMODULE hmodKernel32 = GetModuleHandleA("kernel32");
+	HMODULE hmodKernel32 = GetModuleHandleW(L"kernel32");
 	FARPROC fpSUEF = GetProcAddress(hmodKernel32, "SetUnhandledExceptionFilter");
 
 	DWORD oldProtect;
@@ -318,13 +318,15 @@ static const char *CrashGetModuleBaseName(HMODULE hmod, char *pszBaseName) {
 		DWORD dw;
 		char *pszFile, *period = NULL;
 
-		if (!GetModuleFileNameA(hmod, szPath1, std::size(szPath1)))
+		if (!GetModuleFileNameA(hmod, szPath1, std::size(szPath1))) {
 			return NULL;
+		}
 
-		dw = GetFullPathNameA(szPath1, sizeof szPath2, szPath2, &pszFile);
+		dw = GetFullPathNameA(szPath1, std::size(szPath2), szPath2, &pszFile);
 
-		if (!dw || dw>sizeof szPath2)
+		if (!dw || dw > std::size(szPath2)) {
 			return NULL;
+		}
 
 		strcpy(pszBaseName, pszFile);
 
