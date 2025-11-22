@@ -190,9 +190,9 @@ void VDVideoDisplayManager::RemoteCall(void (*function)(void *), void *data) {
 			break;
 
 		MSG msg;
-		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_SENDMESSAGE)) {
+		while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_SENDMESSAGE)) {
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 	}
 }
@@ -272,7 +272,7 @@ void VDVideoDisplayManager::ThreadRunFullRemote() {
 
 		if (mhwnd) {
 			MSG msg;
-			PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+			PeekMessageW(&msg, NULL, 0, 0, PM_NOREMOVE);
 			mThreadID = VDGetCurrentThreadID();
 			mStarted.signal();
 
@@ -282,12 +282,12 @@ void VDVideoDisplayManager::ThreadRunFullRemote() {
 
 				if (ret == WAIT_OBJECT_0) {
 					bool success = false;
-					while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+					while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 						if (msg.message == WM_QUIT)
 							goto xit;
 						success = true;
 						TranslateMessage(&msg);
-						DispatchMessage(&msg);
+						DispatchMessageW(&msg);
 					}
 
 					DispatchRemoteCalls();
@@ -329,7 +329,7 @@ xit:
 
 void VDVideoDisplayManager::ThreadRunTimerOnly() {
 	MSG msg;
-	PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
+	PeekMessageW(&msg, NULL, 0, 0, PM_NOREMOVE);
 	mStarted.signal();
 
 	bool precise = false;
@@ -352,12 +352,12 @@ void VDVideoDisplayManager::ThreadRunTimerOnly() {
 
 		if (ret == WAIT_OBJECT_0) {
 			bool success = false;
-			while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+			while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 				if (msg.message == WM_QUIT)
 					return;
 				success = true;
 				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				DispatchMessageW(&msg);
 			}
 
 			if (success)
@@ -560,15 +560,15 @@ LRESULT CALLBACK VDVideoDisplayManager::StaticWndProc(HWND hwnd, UINT msg, WPARA
 	if (msg == WM_NCCREATE) {
 		const CREATESTRUCT& cs = *(const CREATESTRUCT *)lParam;
 
-		SetWindowLongPtr(hwnd, 0, (LONG_PTR)cs.lpCreateParams);
+		SetWindowLongPtrW(hwnd, 0, (LONG_PTR)cs.lpCreateParams);
 	} else {
-		VDVideoDisplayManager *pThis = (VDVideoDisplayManager *)GetWindowLongPtr(hwnd, 0);
+		VDVideoDisplayManager* pThis = (VDVideoDisplayManager*)GetWindowLongPtrW(hwnd, 0);
 
 		if (pThis)
 			return pThis->WndProc(hwnd, msg, wParam, lParam);
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
 LRESULT CALLBACK VDVideoDisplayManager::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -658,6 +658,6 @@ LRESULT CALLBACK VDVideoDisplayManager::WndProc(HWND hwnd, UINT msg, WPARAM wPar
 			break;
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 

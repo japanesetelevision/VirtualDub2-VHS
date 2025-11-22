@@ -306,7 +306,7 @@ void Frameserver::Go(IVDubServerLink *ivdsl, char *name) {
 				MSG msg;
 
 				while(!mbExit) {
-					BOOL result = GetMessage(&msg, NULL, 0, 0);
+					BOOL result = GetMessageW(&msg, NULL, 0, 0);
 
 					if (result == (BOOL)-1)
 						break;
@@ -317,7 +317,7 @@ void Frameserver::Go(IVDubServerLink *ivdsl, char *name) {
 					}
 
 					TranslateMessage(&msg);
-					DispatchMessage(&msg);
+					DispatchMessageW(&msg);
 				}
 			}
 
@@ -429,14 +429,14 @@ LRESULT Frameserver::WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 ///////////////////////
 
 INT_PTR CALLBACK Frameserver::StatusDlgProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-	return ((Frameserver *)GetWindowLongPtr(hWnd, DWLP_USER))->StatusDlgProc2(hWnd, message, wParam, lParam);
+	return ((Frameserver*)GetWindowLongPtrW(hWnd, DWLP_USER))->StatusDlgProc2(hWnd, message, wParam, lParam);
 }
 
 INT_PTR CALLBACK Frameserver::StatusDlgProc2( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message) {
 	case WM_INITDIALOG:
-		SetWindowLongPtr(hWnd, DWLP_USER, lParam);
+		SetWindowLongPtrW(hWnd, DWLP_USER, lParam);
 		SetDlgItemTextA(hWnd, IDC_STATIC_FSNAME, ((Frameserver *)lParam)->lpszFsname);
 		SetTimer(hWnd,1,1000,NULL);
 

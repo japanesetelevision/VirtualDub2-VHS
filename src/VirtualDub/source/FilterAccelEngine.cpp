@@ -129,9 +129,9 @@ void VDFilterAccelEngineDispatchQueue::Run(VDScheduler *sch) {
 					break;
 
 				MSG msg;
-				while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+				while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 					TranslateMessage(&msg);
-					DispatchMessage(&msg);
+					DispatchMessageW(&msg);
 				}
 			}
 
@@ -230,9 +230,9 @@ void VDFilterAccelEngineDispatchQueue::Wait(Message *msg, VDFilterAccelEngineDis
 		DWORD waitResult = ::MsgWaitForMultipleObjects(n, h, FALSE, INFINITE, QS_SENDMESSAGE);
 		if (waitResult == WAIT_OBJECT_0 + n) {
 			MSG msg;
-			while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_SENDMESSAGE)) {
+			while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE | PM_QS_SENDMESSAGE)) {
 				TranslateMessage(&msg);
-				DispatchMessage(&msg);
+				DispatchMessageW(&msg);
 			}
 
 			continue;
@@ -1361,7 +1361,7 @@ void VDFilterAccelEngine::ThreadRun() {
 VDZLPARAM VDZCALLBACK VDFilterAccelEngine::StaticWndProc(VDZHWND hwnd, VDZUINT msg, VDZWPARAM wParam, VDZLPARAM lParam) {
 	switch(msg) {
 		case WM_NCCREATE:
-			SetWindowLongPtr(hwnd, 0, (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams);
+			SetWindowLongPtrW(hwnd, 0, (LONG_PTR)((LPCREATESTRUCT)lParam)->lpCreateParams);
 			break;
 
 		case WM_PAINT:
@@ -1380,7 +1380,7 @@ VDZLPARAM VDZCALLBACK VDFilterAccelEngine::StaticWndProc(VDZHWND hwnd, VDZUINT m
 #if 0
 		case WM_TIMER:
 			{
-				VDFilterAccelEngine *pThis = (VDFilterAccelEngine *)GetWindowLongPtr(hwnd, 0);
+				VDFilterAccelEngine* pThis = (VDFilterAccelEngine*)GetWindowLongPtrW(hwnd, 0);
 
 				if (pThis)
 					pThis->UpdateProfilingDisplay();
@@ -1389,5 +1389,5 @@ VDZLPARAM VDZCALLBACK VDFilterAccelEngine::StaticWndProc(VDZHWND hwnd, VDZUINT m
 #endif
 	}
 
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+	return DefWindowProcW(hwnd, msg, wParam, lParam);
 }

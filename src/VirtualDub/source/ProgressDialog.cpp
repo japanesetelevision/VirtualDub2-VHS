@@ -88,7 +88,7 @@ void ProgressDialog::check() {
 
 	dwLastTime = dwTime;
 
-	while(PeekMessage(&msg, mhwndParent ? NULL : hwndDialog, 0, 0, PM_REMOVE)) {
+	while(PeekMessageW(&msg, mhwndParent ? NULL : hwndDialog, 0, 0, PM_REMOVE)) {
 		if (msg.message == WM_QUIT && fAbortEnabled) {
 			PostQuitMessage(msg.wParam);
 			throw MyUserAbortError();
@@ -96,7 +96,7 @@ void ProgressDialog::check() {
 
 		if (!IsWindow(hwndDialog) || !IsDialogMessage(hwndDialog, &msg)) {
 			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			DispatchMessageW(&msg);
 		}
 	}
 
@@ -114,12 +114,12 @@ void ProgressDialog::close() {
 }
 
 INT_PTR CALLBACK ProgressDialog::ProgressDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-	ProgressDialog *thisPtr = (ProgressDialog *)GetWindowLongPtr(hDlg, DWLP_USER);
+	ProgressDialog* thisPtr = (ProgressDialog*)GetWindowLongPtrW(hDlg, DWLP_USER);
 	int newval2;
 
 	switch(msg) {
 		case WM_INITDIALOG:
-			SetWindowLongPtr(hDlg, DWLP_USER, lParam);
+			SetWindowLongPtrW(hDlg, DWLP_USER, lParam);
 
 			thisPtr = (ProgressDialog *)lParam;
 			thisPtr->hwndProgressBar = GetDlgItem(hDlg, IDC_PROGRESS);
@@ -145,7 +145,7 @@ INT_PTR CALLBACK ProgressDialog::ProgressDlgProc(HWND hDlg, UINT msg, WPARAM wPa
 				bool vis = true;
 
 				if (HWND hwndParent = GetParent(hDlg)) {
-					while (GetWindowLong(hwndParent, GWL_STYLE) & WS_CHILD)
+					while (GetWindowLongW(hwndParent, GWL_STYLE) & WS_CHILD)
 						hwndParent = GetParent(hwndParent);
 
 					if (IsIconic(hwndParent))
