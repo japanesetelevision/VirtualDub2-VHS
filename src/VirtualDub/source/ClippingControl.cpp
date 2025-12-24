@@ -422,13 +422,13 @@ bool VDClippingControlOverlay::OnSetCursor(UINT htcode, UINT mousemsg) {
 	if (mDragPoleX>=0) x = mDragPoleX;
 	if (mDragPoleY>=0) y = mDragPoleY;
 
-	static const LPCTSTR sCursor[3][3]={
+	static const LPCWSTR sCursor[3][3]={
 		{ IDC_ARROW,  IDC_SIZENS, IDC_SIZENS },
 		{ IDC_SIZEWE, IDC_SIZENWSE, IDC_SIZENESW },
 		{ IDC_SIZEWE, IDC_SIZENESW, IDC_SIZENWSE },
 	};
 
-	SetCursor(LoadCursor(NULL, sCursor[x+1][y+1]));
+	SetCursor(LoadCursorW(NULL, sCursor[x+1][y+1]));
 	return true;
 }
 
@@ -574,7 +574,7 @@ ATOM RegisterClippingControl() {
 	wc.cbWndExtra	= sizeof(VDClippingControl *);
 	wc.hInstance	= g_hInst;
 	wc.hIcon		= NULL;
-	wc.hCursor		= LoadCursor(NULL, IDC_ARROW);
+	wc.hCursor		= LoadCursorW(NULL, IDC_ARROW);
 	wc.hbrBackground= (HBRUSH)(COLOR_3DFACE+1);		//GetStockObject(LTGRAY_BRUSH);
 	wc.lpszMenuName	= NULL;
 	wc.lpszClassName= CLIPPINGCONTROLCLASS;
@@ -790,10 +790,10 @@ LRESULT CALLBACK VDClippingControl::StaticWndProc(HWND hwnd, UINT msg, WPARAM wP
 	VDClippingControl* pThis = (VDClippingControl*)GetWindowLongPtrW(hwnd, 0);
 
 	if (msg == WM_NCCREATE) {
-		pThis = new VDClippingControl(hwnd);
-
-		if (!pThis)
+		pThis = new(std::nothrow) VDClippingControl(hwnd);
+		if (!pThis) {
 			return FALSE;
+		}
 
 		SetWindowLongPtrW(hwnd, 0, (LONG_PTR)pThis);
 	}
@@ -962,7 +962,7 @@ LRESULT VDClippingControl::WndProc(UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	case WM_SETCURSOR:
 		if ((HWND)wParam != mhwnd) {
-			SetCursor(LoadCursor(NULL, IDC_ARROW));
+			SetCursor(LoadCursorW(NULL, IDC_ARROW));
 			return TRUE;
 		}
 		break;

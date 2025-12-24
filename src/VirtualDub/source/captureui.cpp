@@ -677,9 +677,9 @@ bool VDCaptureProjectUI::Attach(VDGUIHandle hwnd, IVDCaptureProject *pProject) {
 	mUIPeer.Attach((HWND)mhwnd);
 
 	// load menus & accelerators
-	if (   !(mhMenuAuxCapture	= LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CAPTURE_AUXMENU)))
-		|| !(mhMenuCapture		= LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_CAPTURE_MENU)))
-		|| !(mhAccelCapture		= LoadAccelerators(g_hInst, MAKEINTRESOURCE(IDR_CAPTURE_KEYS)))
+	if (   !(mhMenuAuxCapture = LoadMenuW(g_hInst, MAKEINTRESOURCEW(IDR_CAPTURE_AUXMENU)))
+		|| !(mhMenuCapture    = LoadMenuW(g_hInst, MAKEINTRESOURCEW(IDR_CAPTURE_MENU)))
+		|| !(mhAccelCapture   = LoadAcceleratorsW(g_hInst, MAKEINTRESOURCEW(IDR_CAPTURE_KEYS)))
 		)
 	{
 		Detach();
@@ -718,7 +718,7 @@ bool VDCaptureProjectUI::Attach(VDGUIHandle hwnd, IVDCaptureProject *pProject) {
 	SetWindowLongPtrW(mhwndStatus, GWLP_WNDPROC, (LONG_PTR)StaticStatusWndProc);
 
 	// create the side panel
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_CAPTURE_PANEL), (HWND)mhwnd, StaticPanelDlgProc, (LPARAM)this);
+	CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_CAPTURE_PANEL), (HWND)mhwnd, StaticPanelDlgProc, (LPARAM)this);
 	if (!mhwndPanel) {
 		Detach();
 		return false;
@@ -2688,7 +2688,7 @@ LRESULT VDCaptureProjectUI::CommonWndProc(UINT msg, WPARAM wParam, LPARAM lParam
 
 		case WM_SETCURSOR:
 			if (IsFullScreen()) {
-				SetCursor(LoadCursor(NULL, IDC_ARROW));
+				SetCursor(LoadCursorW(NULL, IDC_ARROW));
 				return TRUE;
 			}
 			break;
@@ -4165,11 +4165,11 @@ void VDCaptureProjectUI::RebuildPanel() {
 	if (mhPanelFont2) DeleteObject(mhPanelFont2);
 	if (mhPanelFont3) DeleteObject(mhPanelFont3);
 	LOGFONT lf;
-	GetObject(hfont, sizeof(lf), &lf);
+	GetObjectW(hfont, sizeof(lf), &lf);
 	lf.lfWeight = 800;
-	mhPanelFont2 = CreateFontIndirect(&lf);
+	mhPanelFont2 = CreateFontIndirectW(&lf);
 	lf.lfHeight = lf.lfHeight*3;
-	mhPanelFont3 = CreateFontIndirect(&lf);
+	mhPanelFont3 = CreateFontIndirectW(&lf);
 
 	for(int type=0; type<kVDCaptureInfoType_Count; ++type) {
 		VDCapturePreferences::InfoItems::const_iterator it(infoItems.begin()), itEnd(infoItems.end());

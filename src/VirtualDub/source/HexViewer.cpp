@@ -952,8 +952,9 @@ LRESULT APIENTRY HexViewer::HexViewerWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	switch(msg) {
 
 	case WM_NCCREATE:
-		if (!(pcd = new HexViewer(hwnd)))
+		if (!(pcd = new(std::nothrow) HexViewer(hwnd))) {
 			return FALSE;
+		}
 
 		SetWindowLongPtrW(hwnd, 0, (LONG_PTR)pcd);
 		return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -1652,14 +1653,14 @@ LRESULT HexEditor::Handle_WM_COMMAND(WPARAM wParam, LPARAM lParam) {
 		if (hwndFind)
 			SetForegroundWindow(hwndFind);
 		else
-			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_HEXVIEWER_FIND), hwnd, FindDlgProc, (LPARAM)this);
+			CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_HEXVIEWER_FIND), hwnd, FindDlgProc, (LPARAM)this);
 		break;
 
 	case ID_EDIT_RIFFTREE:
 		if (hwndTree)
 			DestroyWindow(hwndTree);
 		else
-			CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_HEXVIEWER_RIFFLIST), hwnd, TreeDlgProc, (LPARAM)this);
+			CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_HEXVIEWER_RIFFLIST), hwnd, TreeDlgProc, (LPARAM)this);
 		break;
 
 	case ID_EDIT_AVIASSIST:
@@ -1937,10 +1938,10 @@ void HexEditor::Extract() {
 			try {
 				sint64 fpos = 0;
 
-				pBuf = new char[65536];
-
-				if (!pBuf)
+				pBuf = new(std::nothrow) char[65536];
+				if (!pBuf) {
 					throw MyMemoryError();
+				}
 
 				mFile2.open(szName, nsVDFile::kWrite | nsVDFile::kCreateAlways | nsVDFile::kSequential);
 				mFile2.seek(v2);
@@ -1993,11 +1994,9 @@ void HexEditor::Find(HWND hwndParent) {
 		return;
 	}
 
-	int *next = new int[nFindLength+1];
-	char *searchbuffer = new char[65536];
-	char *revstring = new char[nFindLength];
-	char *findstring = pszFindString;
-	int i,j;
+	int *next = new(std::nothrow) int[nFindLength+1];
+	char *searchbuffer = new(std::nothrow) char[65536];
+	char *revstring = new(std::nothrow) char[nFindLength];
 
 	if (!next || !searchbuffer || !revstring) {
 		delete[] next;
@@ -2005,6 +2004,9 @@ void HexEditor::Find(HWND hwndParent) {
 		delete[] revstring;
 		return;
 	}
+
+	char *findstring = pszFindString;
+	int i,j;
 
 	if (bFindReverse) {
 		for(i=0; i<nFindLength; ++i)
@@ -2212,8 +2214,9 @@ LRESULT APIENTRY HexEditor::HexEditorWndProc(HWND hwnd, UINT msg, WPARAM wParam,
 	switch(msg) {
 
 	case WM_NCCREATE:
-		if (!(pcd = new HexEditor(hwnd)))
+		if (!(pcd = new(std::nothrow) HexEditor(hwnd))) {
 			return FALSE;
+		}
 
 		SetWindowLongPtrW(hwnd, 0, (LONG_PTR)pcd);
 		return DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -2653,9 +2656,9 @@ ATOM RegisterHexEditor() {
 	wc1.cbWndExtra		= sizeof(HexEditor *);
 	wc1.hInstance		= g_hInst;
 	wc1.hIcon			= NULL;
-    wc1.hCursor			= LoadCursor(NULL, IDC_ARROW);
+	wc1.hCursor			= LoadCursorW(NULL, IDC_ARROW);
 	wc1.hbrBackground	= NULL; //(HBRUSH)(COLOR_WINDOW+1);
-	wc1.lpszMenuName	= MAKEINTRESOURCE(IDR_HEXVIEWER_MENU);
+	wc1.lpszMenuName	= MAKEINTRESOURCEW(IDR_HEXVIEWER_MENU);
 	wc1.lpszClassName	= HEXEDITORCLASS;
 
 	wc2.style			= 0;
@@ -2664,7 +2667,7 @@ ATOM RegisterHexEditor() {
 	wc2.cbWndExtra		= sizeof(HexViewer *);
 	wc2.hInstance		= g_hInst;
 	wc2.hIcon			= NULL;
-    wc2.hCursor			= LoadCursor(NULL, IDC_ARROW);
+	wc2.hCursor			= LoadCursorW(NULL, IDC_ARROW);
 	wc2.hbrBackground	= NULL; //(HBRUSH)(COLOR_WINDOW+1);
 	wc2.lpszMenuName	= NULL;
 	wc2.lpszClassName	= szHexViewerClassName;

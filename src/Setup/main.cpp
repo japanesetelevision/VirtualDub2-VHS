@@ -90,7 +90,7 @@ BOOL Init(HINSTANCE hInstance, int nCmdShow)
 	wc.cbWndExtra    = DLGWINDOWEXTRA;   // No per-window extra data.
 	wc.hInstance     = hInstance;        // Application that owns the class.
 	wc.hIcon         = LoadIconW(hInstance, MAKEINTRESOURCEW(IDI_VIRTUALDUB));
-	wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+	wc.hCursor       = LoadCursorW(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1);
 	wc.lpszMenuName  = NULL;             // Name of menu resource in .RC file.
 	wc.lpszClassName = szAppName;        // Name used in call to CreateWindowW.
@@ -101,7 +101,7 @@ BOOL Init(HINSTANCE hInstance, int nCmdShow)
 
 	g_hInst = hInstance; // Store instance handle in our global variable
 
-	g_hwnd = CreateDialogW(hInstance, MAKEINTRESOURCEW(IDD_MAINWINDOW), NULL, (DLGPROC)NULL);
+	g_hwnd = CreateDialogParamW(hInstance, MAKEINTRESOURCEW(IDD_MAINWINDOW), NULL, (DLGPROC)NULL, 0);
 
 	if (!g_hwnd) {
 		return (FALSE);

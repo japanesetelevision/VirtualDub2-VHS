@@ -62,7 +62,7 @@ bool VDUIRegisterHotKeyExControl() {
 	wc.cbWndExtra	= sizeof(IVDUnknown *);
 	wc.hInstance	= VDGetLocalModuleHandleW32();
 	wc.hIcon		= NULL;
-	wc.hCursor		= LoadCursor(NULL, IDC_IBEAM);
+	wc.hCursor		= LoadCursorW(NULL, IDC_IBEAM);
 	wc.hbrBackground= (HBRUSH)(COLOR_3DFACE + 1);
 	wc.lpszMenuName	= NULL;
 	wc.lpszClassName= VDUIHOTKEYEXCLASS;
@@ -118,10 +118,10 @@ LRESULT CALLBACK VDUIHotKeyExControlW32::StaticWndProc(HWND hwnd, UINT msg, WPAR
 	VDUIHotKeyExControlW32* pThis = (VDUIHotKeyExControlW32*)GetWindowLongPtrW(hwnd, 0);
 
 	if (msg == WM_NCCREATE) {
-		pThis = new VDUIHotKeyExControlW32(hwnd);
-
-		if (!pThis)
+		pThis = new(std::nothrow) VDUIHotKeyExControlW32(hwnd);
+		if (!pThis) {
 			return FALSE;
+		}
 
 		pThis->AddRef();
 		SetWindowLongPtrW(hwnd, 0, (LONG_PTR)pThis);

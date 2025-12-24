@@ -317,7 +317,7 @@ extern void VDOpenProfileWindow(int mode) {
 
 extern void VDCloseProfileWindow() {
 	if(profwin.isThreadActive()){
-		PostThreadMessage(profwin.getThreadID(),WM_QUIT,0,0);
+		PostThreadMessageW(profwin.getThreadID(),WM_QUIT,0,0);
 		profwin.ThreadWait();
 	}
 }
@@ -608,7 +608,7 @@ namespace {
 		}
 	}
 
-	void TextToRichTextControl(LPCTSTR resName, HWND hdlg, HWND hwndText) {
+	void TextToRichTextControl(LPCWSTR resName, HWND hdlg, HWND hwndText) {
 		HRSRC hResource = FindResourceW(NULL, resName, L"STUFF");
 
 		if (!hResource)
@@ -729,7 +729,7 @@ namespace {
 INT_PTR CALLBACK VDShowChangeLogDlgProcW32(HWND hdlg, UINT msg, WPARAM wParam, LPARAM lParam) {
 	switch(msg) {
 	case WM_INITDIALOG:
-		TextToRichTextControl((LPCTSTR)lParam, hdlg, GetDlgItem(hdlg, IDC_TEXT));
+		TextToRichTextControl((LPCWSTR)lParam, hdlg, GetDlgItem(hdlg, IDC_TEXT));
 		return FALSE;
 	case WM_COMMAND:
 		switch(LOWORD(wParam)) {
@@ -745,13 +745,13 @@ INT_PTR CALLBACK VDShowChangeLogDlgProcW32(HWND hdlg, UINT msg, WPARAM wParam, L
 
 void VDShowChangeLog(VDGUIHandle hParent) {
 	HMODULE hmod = VDLoadSystemLibraryW32("riched32.dll");
-	DialogBoxParamW(g_hInst, MAKEINTRESOURCEW(IDD_CHANGE_LOG), (HWND)hParent, VDShowChangeLogDlgProcW32, (LPARAM)MAKEINTRESOURCE(IDR_CHANGES));
+	DialogBoxParamW(g_hInst, MAKEINTRESOURCEW(IDD_CHANGE_LOG), (HWND)hParent, VDShowChangeLogDlgProcW32, (LPARAM)MAKEINTRESOURCEW(IDR_CHANGES));
 	FreeLibrary(hmod);
 }
 
 void VDShowReleaseNotes(VDGUIHandle hParent) {
 	HMODULE hmod = VDLoadSystemLibraryW32("riched32.dll");
-	DialogBoxParamW(g_hInst, MAKEINTRESOURCEW(IDD_CHANGE_LOG), (HWND)hParent, VDShowChangeLogDlgProcW32, (LPARAM)MAKEINTRESOURCE(IDR_RELEASE_NOTES));
+	DialogBoxParamW(g_hInst, MAKEINTRESOURCEW(IDD_CHANGE_LOG), (HWND)hParent, VDShowChangeLogDlgProcW32, (LPARAM)MAKEINTRESOURCEW(IDR_RELEASE_NOTES));
 	FreeLibrary(hmod);
 }
 

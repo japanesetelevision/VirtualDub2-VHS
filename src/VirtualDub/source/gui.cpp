@@ -96,7 +96,7 @@ extern const unsigned char fht_tab[]={ 0xfc,0xc3,0xd8,0xde,0xdf,0xcb,0xc6,0xee,0
 
 void guiOpenDebug() {
 	if (!g_hwndDebugWindow)
-		g_hwndDebugWindow = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DEBUGVAL), NULL, DebugDlgProc);
+		g_hwndDebugWindow = CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_DEBUGVAL), NULL, DebugDlgProc, 0);
 #pragma vdpragma_TODO("improve this")
 #ifndef _M_AMD64
 	else if (GetKeyState(VK_CONTROL)<0) {
@@ -392,12 +392,12 @@ void VDUISetListViewColumnsW32(HWND hwnd, const float *relwidths, int count) {
 void VDSetDialogDefaultIcons(HWND hdlg) {
 	HINSTANCE hInst = VDGetLocalModuleHandleW32();
 
-	HANDLE hLargeIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_SHARED);
+	HANDLE hLargeIcon = LoadImageW(hInst, MAKEINTRESOURCEW(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), LR_SHARED);
 	if (hLargeIcon) {
 		SendMessageW(hdlg, WM_SETICON, ICON_BIG, (LPARAM)hLargeIcon);
 	}
 
-	HANDLE hSmallIcon = LoadImage(hInst, MAKEINTRESOURCE(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
+	HANDLE hSmallIcon = LoadImageW(hInst, MAKEINTRESOURCEW(IDI_VIRTUALDUB), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_SHARED);
 	if (hSmallIcon) {
 		SendMessageW(hdlg, WM_SETICON, ICON_SMALL, (LPARAM)hSmallIcon);
 	}

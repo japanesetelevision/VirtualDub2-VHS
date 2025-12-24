@@ -474,7 +474,7 @@ FilterPreview::FilterPreview(FilterSystem *pFiltSys, VDFilterChainDesc *pFilterC
 	, mpClipEditCallback(NULL)
 {
 	mode_cursor = 0;
-	cross_cursor = LoadCursor(0,IDC_CROSS);
+	cross_cursor = LoadCursorW(NULL, IDC_CROSS);
 	mWorkArea.left = 0;
 	mWorkArea.top = 0;
 	mWorkArea.right = 0;
@@ -1741,7 +1741,7 @@ void FilterPreview::Display(VDXHWND hwndParent, bool fDisplay) {
 		UndoSystem();
 	} else if (mpFilterChainDesc) {
 		mhwndParent = (HWND)hwndParent;
-		mhdlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER_PREVIEW), (HWND)hwndParent, StaticDlgProc, (LPARAM)this);
+		mhdlg = CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_FILTER_PREVIEW), (HWND)hwndParent, StaticDlgProc, (LPARAM)this);
 		g_projectui->DisplayPreview(true);
 	}
 
@@ -2223,7 +2223,7 @@ PixmapView::~PixmapView() {
 
 void PixmapView::Display(VDXHWND hwndParent, const wchar_t* title) {
 	mhwndParent = (HWND)hwndParent;
-	mhdlg = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_FILTER_PREVIEW), (HWND)hwndParent, StaticDlgProc, (LPARAM)this);
+	mhdlg = CreateDialogParamW(g_hInst, MAKEINTRESOURCEW(IDD_FILTER_PREVIEW), (HWND)hwndParent, StaticDlgProc, (LPARAM)this);
 	SetWindowTextW(mhdlg,title);
 	ShowWindow(mhdlg,SW_SHOW);
 }
