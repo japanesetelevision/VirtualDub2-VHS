@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2016-2018 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -410,11 +410,6 @@ static const VDStringW VDGetFileName(bool bSaveAs, long nKey, VDGUIHandle ctxPar
 
 	OPENFILENAMEW ofn = {};
 
-	// Slight annoyance: If we want to use custom templates and still keep the places
-	// bar, the lStructSize parameter must be greater than OPENFILENAME_SIZE_VERSION_400.
-	// But if sizeof(OPENFILENAME) is used under Windows 95/98, the open call fails.
-	// Argh.
-
 	ofn.lStructSize			= sizeof(OPENFILENAMEW);
 	ofn.hwndOwner			= (HWND)ctxParent;
 	ofn.lpstrCustomFilter	= NULL;
@@ -469,6 +464,7 @@ static const VDStringW VDGetFileName(bool bSaveAs, long nKey, VDGUIHandle ctxPar
 				break;
 			case VDFileDialogOption::kSelectedFilter_always:
 				selectedFilterAlways = true;
+				[[fallthrough]];
 			case VDFileDialogOption::kSelectedFilter:
 				VDASSERT(nSelectedFilterIndex < 0);
 				nSelectedFilterIndex = opt.mDstIdx;

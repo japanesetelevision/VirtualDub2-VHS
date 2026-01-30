@@ -3,7 +3,7 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2016-2019 Anton Shekhovtsov
-// Copyright (C) 2024-2025 v0lt
+// Copyright (C) 2024-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -495,6 +495,13 @@ namespace {
 #ifdef _M_AMD64
 			if (!_wcsicmp(info.szDriver, L"ff_vfw.dll") || !_wcsicmp(info.szDriver, L"lvcod64.dll")) {
 				// "ffdshow Video Codec" x64 and "Logitech Video (I420)" x64 crashes
+				// after changing the compiler for VirtualDub2 from VS 2008 to VS 2019/2022
+				// TODO: patches welcome
+				continue;
+			}
+#else
+			if (!_wcsicmp(info.szDriver, L"pvljpg20.dll")) {
+				// "PICVideo Lossles JPEG Codec" win32 v2.10.0.29 crashes
 				// after changing the compiler for VirtualDub2 from VS 2008 to VS 2019/2022
 				// TODO: patches welcome
 				continue;
