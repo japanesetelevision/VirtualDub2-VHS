@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2015-2018 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -51,9 +51,6 @@
 #include <malloc.h> // for _malloca()
 
 #include <windows.h>
-#ifndef _M_AMD64
-#include <tlhelp32.h>
-#endif
 
 #include "resource.h"
 #include "crash.h"
@@ -356,12 +353,6 @@ typedef BOOL (__stdcall *PENUMPROCESSMODULES)(HANDLE, HMODULE *, DWORD, LPDWORD)
 typedef DWORD (__stdcall *PGETMODULEBASENAMEA)(HANDLE, HMODULE, LPSTR, DWORD);
 typedef BOOL (__stdcall *PGETMODULEINFORMATION)(HANDLE, HMODULE, Win32ModuleInfo *, DWORD);
 
-#ifndef _M_AMD64
-typedef HANDLE (__stdcall *PCREATETOOLHELP32SNAPSHOT)(DWORD, DWORD);
-typedef BOOL (WINAPI *PMODULE32FIRST)(HANDLE, LPMODULEENTRY32);
-typedef BOOL (WINAPI *PMODULE32NEXT)(HANDLE, LPMODULEENTRY32);
-#endif
-
 static ModuleInfo *CrashGetModules(void *&ptr) {
 	void *pMem = VirtualAlloc(NULL, 65536, MEM_COMMIT, PAGE_READWRITE);
 
@@ -370,21 +361,16 @@ static ModuleInfo *CrashGetModules(void *&ptr) {
 		return NULL;
 	}
 
-	// This sucks.  If we're running under Windows 9x, we must use
-	// TOOLHELP.DLL to get the module list.  Under Windows NT, we must
-	// use PSAPI.DLL.  With Windows 2000, we can use both (but prefer
-	// PSAPI.DLL).
+	// Under Windows NT, we must use PSAPI.
+	// Starting with Windows 7, PSAPI functions can be imported from kernel32.dll.
 
-	HMODULE hmodPSAPI = LoadLibraryW(L"psapi.dll");
+	HMODULE hmodKERNEL32 = LoadLibraryW(L"kernel32.dll");
 
-	if (hmodPSAPI) {
-		// Using PSAPI.DLL.  Call EnumProcessModules(), then GetModuleFileNameEx()
-		// and GetModuleInformation().
+	if (hmodKERNEL32) {
+		PENUMPROCESSMODULES pEnumProcessModules = (PENUMPROCESSMODULES)GetProcAddress(hmodKERNEL32, "EnumProcessModules");
+		PGETMODULEBASENAMEA pGetModuleBaseNameA = (PGETMODULEBASENAMEA)GetProcAddress(hmodKERNEL32, "GetModuleBaseNameA");
 
-		PENUMPROCESSMODULES pEnumProcessModules = (PENUMPROCESSMODULES)GetProcAddress(hmodPSAPI, "EnumProcessModules");
-		PGETMODULEBASENAMEA pGetModuleBaseNameA = (PGETMODULEBASENAMEA)GetProcAddress(hmodPSAPI, "GetModuleBaseNameA");
-
-		PGETMODULEINFORMATION pGetModuleInformation = (PGETMODULEINFORMATION)GetProcAddress(hmodPSAPI, "GetModuleInformation");
+		PGETMODULEINFORMATION pGetModuleInformation = (PGETMODULEINFORMATION)GetProcAddress(hmodKERNEL32, "GetModuleInformation");
 		HMODULE *pModules, *pModules0 = (HMODULE *)((char *)pMem + 0xF000);
 		DWORD cbNeeded;
 
@@ -430,75 +416,13 @@ static ModuleInfo *CrashGetModules(void *&ptr) {
 
 			pMod->name = NULL;
 
-			FreeLibrary(hmodPSAPI);
+			FreeLibrary(hmodKERNEL32);
 			ptr = pMem;
 			return pMod0;
 		}
 
-		FreeLibrary(hmodPSAPI);
-	}
-#ifndef _M_AMD64
-	else {
-		// No PSAPI.  Use the ToolHelp functions in KERNEL.
-
-		HMODULE hmodKERNEL32 = LoadLibraryW(L"kernel32.dll");
-
-		PCREATETOOLHELP32SNAPSHOT pCreateToolhelp32Snapshot = (PCREATETOOLHELP32SNAPSHOT)GetProcAddress(hmodKERNEL32, "CreateToolhelp32Snapshot");
-		PMODULE32FIRST pModule32First = (PMODULE32FIRST)GetProcAddress(hmodKERNEL32, "Module32First");
-		PMODULE32NEXT pModule32Next = (PMODULE32NEXT)GetProcAddress(hmodKERNEL32, "Module32Next");
-		HANDLE hSnap;
-
-		if (pCreateToolhelp32Snapshot && pModule32First && pModule32Next) {
-			if ((HANDLE)-1 != (hSnap = pCreateToolhelp32Snapshot(TH32CS_SNAPMODULE, 0))) {
-				ModuleInfo *pModInfo = (ModuleInfo *)((char *)pMem + 65536);
-				char *pszHeap = (char *)pMem;
-				MODULEENTRY32 me;
-
-				--pModInfo;
-				pModInfo->name = NULL;
-
-				me.dwSize = sizeof(MODULEENTRY32);
-
-				if (pModule32First(hSnap, &me))
-					do {
-						VDStringA modulename = VDTextWToA(me.szModule);
-						if (pszHeap + modulename.length() >= (char*)(pModInfo - 1)) {
-							break;
-						}
-
-						strcpy(pszHeap, modulename.c_str());
-
-						--pModInfo;
-						pModInfo->name = pszHeap;
-
-						char *period = NULL;
-
-						while(*pszHeap++);
-							if (pszHeap[-1]=='.')
-								period = pszHeap-1;
-
-						if (period) {
-							*period = 0;
-							pszHeap = period+1;
-						}
-
-						pModInfo->base = (unsigned long)me.modBaseAddr;
-						pModInfo->size = me.modBaseSize;
-
-					} while(pModule32Next(hSnap, &me));
-
-				CloseHandle(hSnap);
-
-				FreeLibrary(hmodKERNEL32);
-
-				ptr = pMem;
-				return pModInfo;
-			}
-		}
-
 		FreeLibrary(hmodKERNEL32);
 	}
-#endif
 
 	VirtualFree(pMem, 0, MEM_RELEASE);
 
@@ -755,7 +679,7 @@ static bool LookupModuleByAddress(ModuleInfo& mi, char *szTemp, const ModuleInfo
 				pmeminfo = &meminfo;
 		}
 
-		// Well, something failed, or we didn't have either PSAPI.DLL or ToolHelp
+		// Well, something failed, or we didn't have either PSAPI or ToolHelp
 		// to play with.  So we'll use a nastier method instead.
 
 		if (pmeminfo) {
