@@ -358,6 +358,29 @@ const wchar_t *VDVideoDecompressorVCM::GetName() {
 	return mName.c_str();
 }
 
+static const wchar_t* vfw_codec_blocklist[] = {
+#ifdef _M_AMD64
+	L"ff_vfw.dll",   // ffdshow vfw codec
+	L"lvcod64.dll",  // Logitech Video (I420) codec
+	L"mlc.dll",      // MLC lossless codec
+	L"pxc0.dll",     // Proxy Codec64
+#else
+	L"pvljpg20.dll", // PICVideo Lossles JPEG Codec
+#endif
+};
+
+// some VfW codec crashes after changing the compiler for VirtualDub2 from VS 2008 to VS 2019/2022
+// TODO: patches welcome
+bool IsBlockedVfwCodec(const wchar_t* codecdll)
+{
+	for (const auto& codec : vfw_codec_blocklist) {
+		if (_wcsicmp(codecdll, codec) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -492,21 +515,10 @@ namespace {
 		ICINFO info={0};
 
 		for(DWORD id=0; ICInfo(fccType, id, &info); ++id) {
-#ifdef _M_AMD64
-			if (!_wcsicmp(info.szDriver, L"ff_vfw.dll") || !_wcsicmp(info.szDriver, L"lvcod64.dll")) {
-				// "ffdshow Video Codec" x64 and "Logitech Video (I420)" x64 crashes
-				// after changing the compiler for VirtualDub2 from VS 2008 to VS 2019/2022
-				// TODO: patches welcome
+			if (IsBlockedVfwCodec(info.szDriver)) {
 				continue;
 			}
-#else
-			if (!_wcsicmp(info.szDriver, L"pvljpg20.dll")) {
-				// "PICVideo Lossles JPEG Codec" win32 v2.10.0.29 crashes
-				// after changing the compiler for VirtualDub2 from VS 2008 to VS 2019/2022
-				// TODO: patches welcome
-				continue;
-			}
-#endif
+
 			info.dwSize = sizeof(ICINFO);	// I don't think this is necessary, but just in case....
 
 			HIC hic = VDSafeICOpenW32(fccType, info.fccHandler, ICMODE_DECOMPRESS);
