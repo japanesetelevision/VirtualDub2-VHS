@@ -444,9 +444,20 @@ static void VDRemoveVfwCodecs(const VDStringW& path)
 			}
 		}
 
-		for (const auto& fccHandler : fccHandlers | std::views::reverse) {
-			// TODO: For some reason ICRemove doesn't work!
-			::ICRemove(ICTYPE_VIDEO, fccHandler, 0);
+		if (fccHandlers.size()) {
+			for (const auto& fccHandler : fccHandlers | std::views::reverse) {
+				::ICRemove(ICTYPE_VIDEO, fccHandler, 0);
+			}
+			// For some reason ICRemove doesn't work!
+			// Therefore, we will remove it manually from the registry.
+			VDRegistryKey key("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\DRIVERS32");
+			if (key.isReady()) {
+				for (const auto& fccHandler : fccHandlers | std::views::reverse) {
+					VDStringA valueName("vidc.");
+					valueName += print_fourcc(fccHandler);
+					key.removeValue(valueName.c_str());
+				}
+			}
 		}
 	}
 }
