@@ -276,23 +276,22 @@ void VDUIGrid::Axis::SetBehavior(int cell, int minsize, int maxsize, int affinit
 		ent.affinity = affinity;
 }
 
-void VDUIGrid::Axis::BeginLayout() {
-	tEntries::iterator it(mEntries.begin()), itEnd(mEntries.end());
-
+void VDUIGrid::Axis::BeginLayout()
+{
 	int affinitysum = 0;
 	int maxsizesum = 0;
-	for(; it!=itEnd; ++it) {
-		Entry& ent = *it;
 
+	for(auto& ent : mEntries) {
 		ent.mincursize = ent.minsize;
 		ent.affinitysum = affinitysum;
 		ent.maxsizesum = maxsizesum;
 		affinitysum += ent.affinity;
 
-		if (ent.maxsize == INT_MAX)
+		if (ent.maxsize == INT_MAX) {
 			++maxsizesum;
-		else
+		} else {
 			maxsizesum += ent.maxsize << 12;
+		}
 	}
 }
 

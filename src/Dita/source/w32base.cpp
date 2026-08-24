@@ -345,11 +345,7 @@ LRESULT VDUIBaseWindowW32::WndProc(UINT msg, WPARAM wParam, LPARAM lParam) {
 					r.right  -= mInsets.right;
 					r.bottom -= mInsets.bottom;
 
-					tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-					for(; it!=itEnd; ++it) {
-						IVDUIWindow *pWin = *it;
-
+					for(const auto& pWin : mChildren) {
 						pWin->PostLayout(r);
 					}
 				}
@@ -447,12 +443,9 @@ void VDUIBaseWindowW32::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) 
 
 	// Layout children.
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
 	vduisize minsize(0, 0);
 
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PreLayout(rcConstraints);
 
 		const VDUILayoutSpecs& prispecs = pWin->GetLayoutSpecs();
@@ -477,12 +470,9 @@ void VDUIBaseWindowW32::PostLayoutBase(const vduirect& target) {
 	rc.right -= mInsets.right;
 	rc.bottom -= mInsets.bottom;
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
 	vduisize minsize(0, 0);
 
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PostLayout(rc);
 	}
 }

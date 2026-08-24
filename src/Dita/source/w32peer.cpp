@@ -1,7 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2004 Avery Lee
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -39,13 +39,11 @@ void *VDUIPeerW32::AsInterface(uint32 id) {
 	return VDUIWindow::AsInterface(id);
 }
 
-void VDUIPeerW32::RelayoutChildren() {
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
+void VDUIPeerW32::RelayoutChildren()
+{
 	const vduirect r(GetClientArea());
 
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PostLayout(r);
 	}
 }

@@ -1,7 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2004 Avery Lee
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -41,10 +41,7 @@ void VDUIGroupW32::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) {
 
 	vduisize childsize(0, 0);
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PreLayout(ls);
 
 		childsize.include(pWin->GetLayoutSpecs().minsize);
@@ -62,10 +59,7 @@ void VDUIGroupW32::PostLayoutBase(const vduirect& target) {
 
 	vduirect rDest(target.left + r.right, target.top + r.bottom, target.right - r.right, target.bottom - r.top);
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PostLayout(rDest);
 	}
 }
