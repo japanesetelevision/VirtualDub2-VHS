@@ -2,12 +2,10 @@
 // Video decoding library
 //
 // Copyright (C) 2013 Avery Lee
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
-
-#pragma warning(disable: 4786)
 
 #include <crtdbg.h>
 #include <stdio.h>
@@ -23,8 +21,6 @@
 
 #include <vd2/Meia/MPEGFile.h>
 #include "MPEGCache.h"
-
-#define printf sizeof
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -757,7 +753,7 @@ public:
 		mpOnGOPHeader = &VDMPEGVideoStream::_ParseInitialGOPHeader;
 		mParseScanDesiredFrame = -1;
 
-		printf("restarting!!!\n");
+//		printf("restarting!!!\n");
 	}
 
 	void ParseBeginSeekScan(bool master) {

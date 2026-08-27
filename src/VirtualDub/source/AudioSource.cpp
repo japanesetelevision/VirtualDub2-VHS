@@ -2,19 +2,17 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2016-2018 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <vfw.h>
 #include <Ks.h>
 #include <Ksmedia.h>
 #include <vd2/system/file.h>
-#include <vd2/system/Error.h>
 #include <vd2/Dita/resources.h>
 
 #include "gui.h"
@@ -599,7 +597,7 @@ zero_fill:
 					sint16 *dst16 = (sint16 *)dst;
 					dst += 4*n;
 
-					for(int i=0; i<n; ++i) {
+					for(uint32 i=0; i<n; ++i) {
 						const ptrdiff_t pos = *pOffsets++;
 						const uint8 *srcF = src0 + pos;
 
@@ -645,7 +643,7 @@ zero_fill:
 					const ptrdiff_t rightOffset = isPAL ? 12000*6 : 12000*5;	// left channel is first 5/6 DIF sequences
 					const sint32 *pOffsets = GetGatherTab(isPAL, true);
 
-					for(int i=0; i<n; ++i) {
+					for(uint32 i=0; i<n; ++i) {
 						const ptrdiff_t pos = *pOffsets++;
 						const uint8 *srcL = src0 + pos;
 						const uint8 *srcR = srcL + rightOffset;

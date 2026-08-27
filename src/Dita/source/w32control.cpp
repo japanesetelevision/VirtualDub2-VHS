@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2017 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -298,11 +298,7 @@ LRESULT VDUICustomControlW32::WndProc(UINT msg, WPARAM wParam, LPARAM lParam) {
 		if (!(GetWindowLongW(mhwnd, GWL_STYLE) & WS_CHILD)) {
 			vduirect r(GetClientArea());
 
-			tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-			for(; it!=itEnd; ++it) {
-				IVDUIWindow *pWin = *it;
-
+			for(const auto& pWin : mChildren) {
 				pWin->PostLayout(r);
 			}
 		}

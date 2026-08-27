@@ -9,12 +9,9 @@
 
 #include "stdafx.h"
 
-#include <windows.h>
-
 #include "gui.h"
 #include "crash.h"
 
-#include <vd2/system/error.h>
 #include <vd2/system/strutil.h>
 #include <vd2/system/fraction.h>
 #include <vd2/system/math.h>
@@ -551,7 +548,7 @@ long AudioStreamSource::_Read(void *buffer, long max_samples, long *lplBytes) {
 		uint32 ltActualBytes, ltActualSamples;
 		LONG lBytesLeft = max_samples * GetFormat()->mBlockSize;
 		LONG lTotalBytes = lBytesLeft;
-		const int mBlockSize = ((VDWaveFormat *)aSrc->getWaveFormat())->mBlockSize;
+		const unsigned mBlockSize = ((VDWaveFormat *)aSrc->getWaveFormat())->mBlockSize;
 
 		while(lBytesLeft > 0) {
 			// hmm... data still in the output buffer?
@@ -2046,10 +2043,10 @@ static void amplify8(void* buffer, const long lBytes, const int iFactor)
 
 		uint8_t* dst = (uint8_t*)buffer;
 		do {
-			int y = ((int)*dst++ * iFactor + lBias) >> 8;
+			int y = ((int)*dst * iFactor + lBias) >> 8;
 			y = std::clamp(y, 0, 255);
 
-			dst[-1] = (uint8_t)y;
+			*dst++ = (uint8_t)y;
 		} while (--count);
 	}
 }
@@ -2060,10 +2057,10 @@ static void amplify16(void* buffer, const long lBytes, const int iFactor)
 	if (count) {
 		int16_t* dst = (int16_t*)buffer;
 		do {
-			int y = ((int)*dst++ * iFactor + 0x80) >> 8;
+			int y = ((int)*dst * iFactor + 0x80) >> 8;
 			y = std::clamp(y, -0x8000, 0x7FFF);
 
-			dst[-1] = (int16_t)y;
+			*dst++ = (int16_t)y;
 		} while (--count);
 	}
 }
@@ -2076,10 +2073,10 @@ static void amplify32f(void* buffer, const long lBytes, const int iFactor)
 
 		float* dst = (float*)buffer;
 		do {
-			float y = *dst++ * factor;
+			float y = *dst * factor;
 			y = std::clamp(y, -1.f, 1.f);
 
-			dst[-1] = y;
+			*dst++ = y;
 		} while (--count);
 	}
 }

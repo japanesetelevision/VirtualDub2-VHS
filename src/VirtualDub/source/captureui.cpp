@@ -11,7 +11,6 @@
 #include <commctrl.h>
 #include <vfw.h>
 #include <shellapi.h>
-#include <vd2/system/error.h>
 #include <vd2/system/filesys.h>
 #include <vd2/system/w32assist.h>
 #include <vd2/system/registry.h>
@@ -43,7 +42,6 @@
 #include "AVIStripeSystem.h"
 #include "uiframe.h"
 #include "misc.h"
-#include <vd2/Kasumi/pixmaputils.h>
 
 #if NTDDI_VERSION<NTDDI_LONGHORN
 #undef NTDDI_VERSION
@@ -3412,7 +3410,7 @@ bool VDCaptureProjectUI::OnCommand(UINT id) {
 				mpProject->GetAudioFormat(currentFormat);
 				mpProject->GetAvailableAudioFormats(aformats);
 
-				std::list<vdstructex<VDWaveFormat> >::const_iterator it(aformats.begin()), itEnd(aformats.end());
+				auto it(aformats.cbegin()), itEnd(aformats.cend());
 				int sel = -1;
 
 				for(int idx=0; it!=itEnd; ++it, ++idx) {
@@ -3427,7 +3425,7 @@ bool VDCaptureProjectUI::OnCommand(UINT id) {
 				sel = VDShowCaptureRawAudioFormatDialog(mhwnd, aformats, sel);
 
 				if (sel >= 0) {
-					std::list<vdstructex<VDWaveFormat> >::const_iterator it(aformats.begin());
+					auto it(aformats.cbegin());
 
 					std::advance(it, sel);
 
@@ -4172,7 +4170,7 @@ void VDCaptureProjectUI::RebuildPanel() {
 	mhPanelFont3 = CreateFontIndirectW(&lf);
 
 	for(int type=0; type<kVDCaptureInfoType_Count; ++type) {
-		VDCapturePreferences::InfoItems::const_iterator it(infoItems.begin()), itEnd(infoItems.end());
+		auto it(infoItems.cbegin()), itEnd(infoItems.cend());
 
 		int xpos = x1;
 		int xwidth = x2 - x1;
@@ -4610,8 +4608,6 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 		1080,
 	};
 
-#define RV(x) ((((x)>>24)&0xff) | (((x)>>8)&0xff00) | (((x)<<8)&0xff0000) | (((x)<<24)&0xff000000))
-
 	static const struct {
 		FOURCC fcc;
 		int bpp;
@@ -4620,29 +4616,28 @@ static INT_PTR CALLBACK CaptureCustomVidSizeDlgProc(HWND hdlg, UINT msg, WPARAM 
 		{ BI_RGB,		16, "RGB565" },
 		{ BI_RGB,		24, "RGB24" },
 		{ BI_RGB,		32, "ARGB32" },
-		{ RV('r210'),	30, "r210\tRGB (10-bit)" },
-		{ RV('R10k'),	30, "R10k\tRGB (10-bit)" },
-		{ RV('CYUV'),	16, "CYUV\tInverted YUV 4:2:2" },
-		{ RV('UYVY'),	16, "UYVY\tYUV 4:2:2 interleaved" },
-		{ RV('YUYV'),	16, "YUYV\tYUV 4:2:2 interleaved" },
-		{ RV('YUY2'),	16, "YUY2\tYUV 4:2:2 interleaved" },
-		{ RV('YV12'),	12, "YV12\tYUV 4:2:0 planar" },
-		{ RV('I420'),	12, "I420\tYUV 4:2:0 planar" },
-		{ RV('IYUV'),	12, "IYUV\tYUV 4:2:0 planar" },
-		{ RV('Y41P'),	12, "Y41P\tYUV 4:1:1 planar" },
-		{ RV('YVU9'),	9,  "YVU9\tYUV 4:1:0 planar" },
-		{ RV('MJPG'),	16, "MJPG\tMotion JPEG" },
-		{ RV('dmb1'),	16, "dmb1\tMatrox MJPEG" },
-		{ RV('HDYC'),	16, "HDYC\tYUV 4:2:2 interleaved (Rec. 709)" },
-		{ RV('v308'),	24, "v308\tYUV 4:4:4 interleaved" },
-		{ RV('v210'),	20, "v210\tYUV 4:2:2 interleaved (10-bit)" },
-		{ RV('P210'),	20, "P210\tYUV 4:2:2 interleaved (10-bit)" },
-		{ RV('P010'),	15, "P010\tYUV 4:2:0 interleaved (10-bit)" },
-		{ RV('v410'),	30, "v410\tYUV 4:4:4 interleaved (10-bit)" },
-		{ RV('Y410'),	30, "Y410\tYUV 4:4:4 interleaved (10-bit)" },
-		{ RV('Y416'),	64, "Y416\tYUV 4:4:4 interleaved (16-bit)" },
+		{ FCC('r210'),	30, "r210\tRGB (10-bit)" },
+		{ FCC('R10k'),	30, "R10k\tRGB (10-bit)" },
+		{ FCC('CYUV'),	16, "CYUV\tInverted YUV 4:2:2" },
+		{ FCC('UYVY'),	16, "UYVY\tYUV 4:2:2 interleaved" },
+		{ FCC('YUYV'),	16, "YUYV\tYUV 4:2:2 interleaved" },
+		{ FCC('YUY2'),	16, "YUY2\tYUV 4:2:2 interleaved" },
+		{ FCC('YV12'),	12, "YV12\tYUV 4:2:0 planar" },
+		{ FCC('I420'),	12, "I420\tYUV 4:2:0 planar" },
+		{ FCC('IYUV'),	12, "IYUV\tYUV 4:2:0 planar" },
+		{ FCC('Y41P'),	12, "Y41P\tYUV 4:1:1 planar" },
+		{ FCC('YVU9'),	9,  "YVU9\tYUV 4:1:0 planar" },
+		{ FCC('MJPG'),	16, "MJPG\tMotion JPEG" },
+		{ FCC('dmb1'),	16, "dmb1\tMatrox MJPEG" },
+		{ FCC('HDYC'),	16, "HDYC\tYUV 4:2:2 interleaved (Rec. 709)" },
+		{ FCC('v308'),	24, "v308\tYUV 4:4:4 interleaved" },
+		{ FCC('v210'),	20, "v210\tYUV 4:2:2 interleaved (10-bit)" },
+		{ FCC('P210'),	20, "P210\tYUV 4:2:2 interleaved (10-bit)" },
+		{ FCC('P010'),	15, "P010\tYUV 4:2:0 interleaved (10-bit)" },
+		{ FCC('v410'),	30, "v410\tYUV 4:4:4 interleaved (10-bit)" },
+		{ FCC('Y410'),	30, "Y410\tYUV 4:4:4 interleaved (10-bit)" },
+		{ FCC('Y416'),	64, "Y416\tYUV 4:4:4 interleaved (16-bit)" },
 	};
-#undef RV
 
 	static FOURCC s_fcc;
 	static int s_bpp;

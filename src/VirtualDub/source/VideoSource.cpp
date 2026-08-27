@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2016-2019 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -18,7 +18,6 @@
 
 #include <vd2/system/bitmath.h>
 #include <vd2/system/debug.h>
-#include <vd2/system/error.h>
 #include <vd2/system/text.h>
 #include <vd2/system/log.h>
 #include <vd2/system/protscope.h>
@@ -26,9 +25,7 @@
 #include <vd2/system/w32assist.h>
 #include <vd2/system/cpuaccel.h>
 #include <vd2/Dita/resources.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmapops.h>
-#include <vd2/Kasumi/pixmaputils.h>
+
 #include <vd2/Riza/bitmap.h>
 #include <../dfsc/dfsc.h>
 #include "misc.h"
@@ -37,15 +34,8 @@
 #include "resource.h"
 #include "VideoSourceAVI.h"
 
-#if defined(_M_AMD64)
-	#define VDPROT_PTR	"%p"
-#else
-	#define VDPROT_PTR	"%08x"
-#endif
-
 ///////////////////////////
 
-extern const char *LookupVideoCodec(uint32);
 extern bool VDPreferencesIsDirectYCbCrInputEnabled();
 extern bool VDPreferencesIsUseVideoFccHandlerEnabled();
 
@@ -1435,16 +1425,14 @@ bool VideoSourceAVI::_construct(int streamIndex) {
 	mpDecompressor = VDFindVideoDecompressorEx(fccHandlerSearch, bmih, format_len, use_internal);
 
 	if (!mpDecompressor) {
-		const char *s = LookupVideoCodec(bmih->biCompression);
 		VDStringA fcc = print_fourcc(bmih->biCompression);
 
-		throw MyError("Couldn't locate decompressor for format '%s' (%s)\n"
+		throw MyError("Couldn't locate decompressor for format '%s'\n"
 						"\n"
 						"VirtualDub requires a Video for Windows (VFW) compatible codec to decompress "
 						"video. DirectShow codecs, such as those used by Windows Media Player, are not "
 						"suitable."
-					,fcc.c_str()
-					,s ? s : "unknown");
+					,fcc.c_str());
 	}
 
 	if (setTargetFormat(0)) {
@@ -2199,8 +2187,8 @@ const void *VideoSourceAVI::streamGetFrame(const void *inputBuffer, uint32 data_
 
 		if (data_len) {
 			try {
-				vdprotected2("using output buffer at "VDPROT_PTR"-"VDPROT_PTR, void *, mpFrameBuffer.get(), void *, (char *)mpFrameBuffer.get() + mFrameBufferSize - 1) {
-					vdprotected2("using input buffer at "VDPROT_PTR"-"VDPROT_PTR, const void *, inputBuffer, const void *, (const char *)inputBuffer + data_len - 1) {
+				vdprotected2("using output buffer at %p-%p", void *, mpFrameBuffer.get(), void *, (char *)mpFrameBuffer.get() + mFrameBufferSize - 1) {
+					vdprotected2("using input buffer at %p-%p", const void *, inputBuffer, const void *, (const char *)inputBuffer + data_len - 1) {
 						vdprotected1("decompressing video frame %lu", unsigned long, (unsigned long)frame_num) {
 							mpDecompressor->DecompressFrame(mpFrameBuffer.get(), inputBuffer, data_len, _isKey(frame_num), is_preroll);
 						}

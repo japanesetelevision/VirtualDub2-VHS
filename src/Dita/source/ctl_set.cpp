@@ -1,6 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2004 Avery Lee
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -51,8 +52,7 @@ void VDUISet::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) {
 
 	const int spacing = mbVertical ? pad.h : pad.w;
 
-	for(tChildren::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
-		IVDUIWindow *pControl = (*it);
+	for(const auto& pControl : mChildren) {
 		nsVDUI::Alignment alignX, alignY;
 //		nsVDUI::eCompressType compressType = pControl->GetCompressType();
 
@@ -111,8 +111,7 @@ void VDUISet::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) {
 		else
 			constraints.minsize.w = fillSize / fillLeft;
 
-		for(tChildren::iterator it2 = mChildren.begin(); it2 != mChildren.end(); ++it2) {
-			IVDUIWindow *pControl = (*it2);
+		for(const auto& pControl : mChildren) {
 			nsVDUI::Alignment alignX, alignY;
 
 			pControl->GetAlignment(alignX, alignY);
@@ -151,8 +150,7 @@ void VDUISet::PostLayoutBase(const vduirect& target) {
 	int spill		= mbVertical ? target.height() - mComponentWidth : target.width() - mComponentWidth;
 	int fillleft	= mnFillCount;
 
-	for(tChildren::iterator it = mChildren.begin(); it != mChildren.end(); ++it) {
-		IVDUIWindow *pControl = (*it);
+	for(const auto& pControl : mChildren) {
 		nsVDUI::Alignment alignX, alignY;
 //		nsVDUI::eCompressType compressType = pControl->GetCompressType();
 

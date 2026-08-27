@@ -1,7 +1,7 @@
 // Asuka - VirtualDub Build/Post-Mortem Utility
 //
 // Copyright (C) 2005 Avery Lee
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -826,11 +826,12 @@ void tool_fxc(const vdfastvector<const wchar_t*>& args, const vdfastvector<const
 
 				// slow... fix if perf bottleneck
 				int psIndex2 = 0;
-				for(std::list<std::vector<uint32> >::const_iterator it(mPixelShaders.begin()), itEnd(mPixelShaders.end()); it!=itEnd; ++it, ++psIndex2) {
-					if (*it == ps) {
+				for(const auto& pixelShader : mPixelShaders) {
+					if (pixelShader == ps) {
 						psIndex = psIndex2;
 						break;
 					}
+					++psIndex2;
 				}
 
 				if (psIndex < 0) {
@@ -856,11 +857,12 @@ void tool_fxc(const vdfastvector<const wchar_t*>& args, const vdfastvector<const
 
 				// slow... fix if perf bottleneck
 				int vsIndex2 = 0;
-				for(std::list<std::vector<uint32> >::const_iterator it(mVertexShaders.begin()), itEnd(mVertexShaders.end()); it!=itEnd; ++it, ++vsIndex2) {
-					if (*it == vs) {
+				for(const auto& vertexShader : mVertexShaders) {
+					if (vertexShader == vs) {
 						vsIndex = vsIndex2;
 						break;
 					}
+					++vsIndex2;
 				}
 
 				if (vsIndex < 0) {

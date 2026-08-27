@@ -1,7 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2003 Avery Lee
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -10,7 +10,6 @@
 
 #include <vd2/system/thread.h>
 #include <vd2/system/refcount.h>
-#include <vd2/system/error.h>
 #include <vd2/system/registry.h>
 #include <vd2/system/fraction.h>
 #include <vd2/VDLib/Dialog.h>
@@ -129,17 +128,16 @@ bool VDDialogAddAudioFilterW32::OnLoaded() {
 	INT tabs[]={ 175 };
 	SendMessageW(hwndList, LB_SETTABSTOPS, 1, (LPARAM)tabs);
 
-	for(std::vector<VDPluginDescription *>::const_iterator it(mAudioFilters.begin()), itEnd(mAudioFilters.end()); it!=itEnd; ++it) {
-		const VDPluginDescription& b = **it;
-
-		if (b.mName[0] != '*') {
+	for(const auto& af : mAudioFilters) {
+		if (af->mName[0] != '*') {
 			wchar_t buf[1024];
 
-			swprintf_s(buf, L"%s\t%s", b.mName.c_str(), b.mAuthor.c_str());
+			swprintf_s(buf, L"%s\t%s", af->mName.c_str(), af->mAuthor.c_str());
 			int idx = SendMessageW(hwndList, LB_ADDSTRING, 0, (LPARAM)buf);
 
-			if (idx != LB_ERR)
-				SendMessageW(hwndList, LB_SETITEMDATA, idx, (LPARAM)&b);
+			if (idx != LB_ERR) {
+				SendMessageW(hwndList, LB_SETITEMDATA, idx, (LPARAM)af);
+			}
 		}
 	}
 
@@ -491,9 +489,7 @@ void VDDialogAudioFiltersW32::LoadGraph(IVDFilterGraphControl *pSrcGraph, const 
 	// convert filters
 
 	{
-		for(std::list<VDAudioFilterGraph::FilterEntry>::const_iterator it(graph.mFilters.begin()), itEnd(graph.mFilters.end()); it!=itEnd; ++it) {
-			const VDAudioFilterGraph::FilterEntry& f = *it;
-
+		for(const auto& f : graph.mFilters) {
 			nodes.push_back(VDFilterGraphNode());
 			VDFilterGraphNode& node = nodes.back();
 
@@ -515,9 +511,7 @@ void VDDialogAudioFiltersW32::LoadGraph(IVDFilterGraphControl *pSrcGraph, const 
 	// convert connections
 
 	{
-		for(std::vector<VDAudioFilterGraph::FilterConnection>::const_iterator it(graph.mConnections.begin()), itEnd(graph.mConnections.end()); it!=itEnd; ++it) {
-			const VDAudioFilterGraph::FilterConnection& conn = *it;
-
+		for(const auto& conn : graph.mConnections) {
 			VDFilterGraphConnection c;
 
 			c.srcfilt = conn.filt;

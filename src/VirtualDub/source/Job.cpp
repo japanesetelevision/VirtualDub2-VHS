@@ -9,7 +9,6 @@
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
@@ -20,10 +19,8 @@
 
 #include <vd2/system/list.h>
 #include <vd2/system/debug.h>
-#include <vd2/system/error.h>
 #include <vd2/system/filesys.h>
 #include <vd2/system/registry.h>
-#include <vd2/system/VDString.h>
 #include <vd2/system/log.h>
 #include <vd2/system/text.h>
 #include <vd2/system/file.h>
@@ -516,7 +513,7 @@ void JobCreateScript(JobScriptOutput& output, bool project_relative, const DubOp
 	// Add audio filters
 
 	{
-		VDAudioFilterGraph::FilterList::const_iterator it(g_audioFilterGraph.mFilters.begin()), itEnd(g_audioFilterGraph.mFilters.end());
+		auto it(g_audioFilterGraph.mFilters.cbegin()), itEnd(g_audioFilterGraph.mFilters.cend());
 		int connidx = 0;
 		int srcfilt = 0;
 
@@ -533,7 +530,7 @@ void JobCreateScript(JobScriptOutput& output, bool project_relative, const DubOp
 				output.addf("VirtualDub.audio.filters.Connect(%d, %d, %d, %d);", conn.filt, conn.pin, srcfilt, i);
 			}
 
-			VDPluginConfig::const_iterator itc(fe.mConfig.begin()), itcEnd(fe.mConfig.end());
+			auto itc(fe.mConfig.cbegin()), itcEnd(fe.mConfig.cend());
 
 			for(; itc!=itcEnd; ++itc) {
 				const unsigned idx = (*itc).first;
@@ -624,7 +621,7 @@ void JobCreateScript(JobScriptOutput& output, bool project_relative, const DubOp
 		const tTextInfo& textInfo = g_project->GetTextInfo();
 
 		output.addf("VirtualDub.project.ClearTextInfo();");
-		for(tTextInfo::const_iterator it(textInfo.begin()), itEnd(textInfo.end()); it!=itEnd; ++it) {
+		for(auto it(textInfo.cbegin()), itEnd(textInfo.cend()); it!=itEnd; ++it) {
 			char buf[5]={0};
 
 			memcpy(buf, &(*it).first, 4);

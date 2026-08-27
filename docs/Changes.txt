@@ -1,6 +1,6 @@
 VirtualDub2.x change log
 
-2.5.2.x dev
+2.5.3.1197 - 2026-08-25
 -----------------------
 Fixed display of the duration of the selected range in the status.
 Potential memory leaks have been fixed.
@@ -8,7 +8,19 @@ Potential memory leaks have been fixed.
 64-bit "MLC lossless codec" (mlc.dll), "Proxy Codec64" (pxc0.dll) are not supported because it crashes.
 Fixed video capture with compression in the "FFmpeg FFV1" and "x264 8 bit" codecs.
 Fixed loading of processing settings (script files).
+Added VSFilterBE 2.47.1 plugin, which provides TextSub and VobSub video filters.
+Added the ability to temporarily register native VfW codecs from the "vfwcodecs" folder.
+Added the Xvid VfW encoder.
 Cosmetic changes.
+
+Updated avlib-1.vdplugin to version 1.1.3.490.
+    The FFmpeg 8.1.2 x64 build from BtbN is used.
+    The FFmpeg 8.1.2 win32 build from Defisym is used.
+    Fixed enumeration of video encoders when some video encoders were not available in the used FFmpeg build.
+    Video encoders that cannot be used due to missing hardware or an unsupported driver will not be available for selection and configuration.
+    Added QSV VP9 encoder.
+    Added VBR mode for most video encoders.
+    Cosmetic changes.
 
 
 2.5.1.1095 - 2025-12-12

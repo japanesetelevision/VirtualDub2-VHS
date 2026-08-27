@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2016-2020 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -11,7 +11,6 @@
 
 #define f_PREFS_CPP
 
-#include <windows.h>
 #include <commctrl.h>
 #include <mmsystem.h>
 
@@ -660,11 +659,12 @@ public:
 						}
 					}
 
-					PlaybackDeviceKeys::const_iterator it(std::find(mPlaybackDeviceKeys.begin(), mPlaybackDeviceKeys.end(), mPrefs.mAudioPlaybackDeviceKey));
-					if (it != mPlaybackDeviceKeys.end())
-						win->SetValue(it - mPlaybackDeviceKeys.begin());
-					else
+					auto it(std::find(mPlaybackDeviceKeys.cbegin(), mPlaybackDeviceKeys.cend(), mPrefs.mAudioPlaybackDeviceKey));
+					if (it != mPlaybackDeviceKeys.cend()) {
+						win->SetValue(it - mPlaybackDeviceKeys.cbegin());
+					} else {
 						win->SetValue(0);
+					}
 				}
 			}
 
@@ -799,16 +799,9 @@ public:
 		case kEventDetach:
 		case kEventSync:
 			{
-				unsigned v = 0;
-
-				swscanf(GetCaption(100).c_str(), L"%u", &v);
-
-				if (v < 0)
-					v = 0;
-				else if (v > 25)
-					v = 25;
-
-				mPrefs.mMRUSize = v;
+				int v = 0;
+				swscanf(GetCaption(100).c_str(), L"%d", &v);
+				mPrefs.mMRUSize = std::clamp(v, 0, 25);
 			}
 			return true;
 		case kEventSelect:

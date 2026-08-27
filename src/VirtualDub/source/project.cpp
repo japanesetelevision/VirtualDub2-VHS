@@ -2,13 +2,13 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2015-2020 Anton Shekhovtsov
-// Copyright (C) 2024-2025 v0lt
+// Copyright (C) 2024-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include <stdafx.h>
-#include <windows.h>
+
 #include <vd2/system/filesys.h>
 #include <vd2/system/file.h>
 #include <vd2/system/thread.h>
@@ -19,9 +19,6 @@
 #include <vd2/system/w32assist.h>
 #include <vd2/Dita/services.h>
 #include <vd2/Dita/resources.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmapops.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include <vd2/Riza/bitmap.h>
 #include "project.h"
 #include "VideoSource.h"
@@ -1192,12 +1189,16 @@ void VDProject::OpenProject(const wchar_t *pFilename, bool readOnly) {
 			mProjectName = job->GetName();
 			VDStringW base = VDFileSplitPathLeft(mProjectFilename);
 			VDStringW back = VDTextU8ToW(job->GetProjectDir());
-			if (back!=base) mProjectBack = back;
+			if (back != base) {
+				mProjectBack = back;
+			}
 			RunScriptMemory(job->GetScript(), job->GetScriptLine(), true);
 			mProjectBack = L"";
 		}
 	} catch (MyTextError& e) {
-		if (!VDToolsHandleFileOpenError(pFilename, L"vdproject", e, e.line)) throw;
+		if (!VDToolsHandleFileOpenError(pFilename, L"vdproject", e, e.line)) {
+			throw;
+		}
 	}
 }
 
@@ -3466,18 +3467,17 @@ bool FilterModSystem::FindVideoFilter(const char* name, FilterReturnInfo& a)
 
 	FilterEnumerateFilters(filterList);
 
-	for(std::list<FilterBlurb>::const_iterator it(filterList.begin()), itEnd(filterList.end()); it!=itEnd; ++it) {
-		const FilterBlurb& fb = *it;
-
+	for (const auto& fb : filterList) {
 		if (strfuzzycompare(fb.name.c_str(), name)) {
 			a.setName(fb.name.c_str());
 			a.setMaker(fb.author.c_str());
 			a.setDesc(fb.description.c_str());
 			VDExternalModule* xm = fb.key->GetModule();
-			if(xm)
+			if (xm) {
 				a.setModulePath(xm->GetFilename().c_str());
-			else
+			} else {
 				a.setBuiltinDef(&fb.key->GetDef());
+			}
 			return true;
 		}
 	}

@@ -9,7 +9,6 @@
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <mmsystem.h>
 #include <vfw.h>
 
@@ -18,14 +17,10 @@
 #include "ScriptInterpreter.h"
 #include "ScriptValue.h"
 #include "ScriptError.h"
-#include <vd2/system/error.h>
 #include <vd2/system/vdalloc.h>
 #include <vd2/system/file.h>
 #include <vd2/system/log.h>
-#include <vd2/system/VDString.h>
 #include <vd2/system/filesys.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmapops.h>
 #include <vd2/Dita/services.h>
 #include <vd2/plugin/vdplugin.h>
 #include <vd2/plugin/vdaudiofilt.h>
@@ -214,7 +209,7 @@ void RunScriptMemory(const char *mem, int start_line, bool stopAtReloadMarker, b
 		if (x1 && x1<x0) x0 = x1;
 		if (x2 && x2<x0) x0 = x2;
 		VDStringA text(s,x0-s);
-		int limit = 100;
+		const uint32 limit = 100;
 		if (text.length()>limit) {
 			text.replace(limit,text.length()-limit,"...",3);
 		}
@@ -646,9 +641,7 @@ static void func_VDVFilters_Add(IVDScriptInterpreter *isi, VDScriptValue *argv, 
 
 	const char *name = *argv[0].asString();
 
-	for(std::list<FilterBlurb>::const_iterator it(filterList.begin()), itEnd(filterList.end()); it!=itEnd; ++it) {
-		const FilterBlurb& fb = *it;
-
+	for(const auto& fb : filterList) {
 		if (strfuzzycompare(fb.name.c_str(), name)) {
 			vdrefptr<VDFilterChainEntry> ent(new_nothrow VDFilterChainEntry);
 			if (!ent) VDSCRIPT_EXT_ERROR(OUT_OF_MEMORY);
@@ -946,15 +939,14 @@ static void func_VDVideo_GetCompression(IVDScriptInterpreter *, VDScriptValue *a
 	arglist[0] = VDScriptValue(0);
 }
 
-EncoderHIC* load_plugin_codec(const VDStringW& fileName, DWORD type, DWORD handler) {
-	std::list<class VDExternalModule *>::const_iterator it(g_pluginModules.begin()),
-			itEnd(g_pluginModules.end());
-
-	for(; it!=itEnd; ++it) {
-		VDExternalModule *pModule = *it;
+EncoderHIC* load_plugin_codec(const VDStringW& fileName, DWORD type, DWORD handler)
+{
+	for (const auto& pModule : g_pluginModules) {
 		const VDStringW& path = pModule->GetFilename();
 		const wchar_t* name = VDFileSplitPath(path.c_str());
-		if (_wcsicmp(name,fileName.c_str())!=0) continue;
+		if (_wcsicmp(name, fileName.c_str()) != 0) {
+			continue;
+		}
 		return EncoderHIC::load(path, type, handler, ICMODE_COMPRESS);
 	}
 
@@ -1533,8 +1525,8 @@ static void func_VDAFilters_Connect(IVDScriptInterpreter *isi, VDScriptValue *ar
 		throw MyError("VDAFilters.Connect(): Invalid target filter number %d (should be %d-%d)", dstfilt, srcfilt+1, nfilts-1);
 
 	// #&*$(
-	VDAudioFilterGraph::FilterList::const_iterator itsrc = g_audioFilterGraph.mFilters.begin();
-	VDAudioFilterGraph::FilterList::const_iterator itdst = g_audioFilterGraph.mFilters.begin();
+	auto itsrc = g_audioFilterGraph.mFilters.cbegin();
+	auto itdst = g_audioFilterGraph.mFilters.cbegin();
 	int dstconnidx = 0;
 
 	while(dstfilt-->0) {

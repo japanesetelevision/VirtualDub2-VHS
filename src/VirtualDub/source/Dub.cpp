@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2003 Avery Lee
 // Copyright (C) 2016-2020 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -14,11 +14,9 @@
 
 #include <process.h>
 #include <time.h>
-#include <vector>
 #include <deque>
 #include <utility>
 
-#include <windows.h>
 #include <vfw.h>
 
 #include "resource.h"
@@ -35,9 +33,6 @@
 #include <vd2/system/protscope.h>
 #include <vd2/system/w32assist.h>
 #include <vd2/Dita/resources.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmapops.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include <vd2/Riza/bitmap.h>
 #include <vd2/VDDisplay/display.h>
 #include <vd2/Riza/videocodec.h>
@@ -51,7 +46,6 @@
 #include "misc.h"
 #include "timeline.h"
 
-#include <vd2/system/error.h>
 #include "AsyncBlitter.h"
 #include "AVIOutputPreview.h"
 #include "AVIOutput.h"
@@ -1933,7 +1927,7 @@ void Dubber::Stop() {
 	mAudioPipe.Abort();
 	mProcessThread.Abort();
 
-	int nObjectsToWaitOn = 0;
+	DWORD nObjectsToWaitOn = 0;
 	HANDLE hObjects[3];
 
 	if (VDSignal *pBlitterSigComplete = mProcessThread.GetBlitterSignal())
@@ -2032,10 +2026,9 @@ void Dubber::Stop() {
 	if (fADecompressionOk)	{ aSrc->streamEnd(); }
 
 	{
-		std::vector<AudioStream *>::const_iterator it(mAudioStreams.begin()), itEnd(mAudioStreams.end());
-
-		for(; it!=itEnd; ++it)
-			delete *it;
+		for (const auto pAudioStream : mAudioStreams) {
+			delete pAudioStream;
+		}
 
 		mAudioStreams.clear();
 	}

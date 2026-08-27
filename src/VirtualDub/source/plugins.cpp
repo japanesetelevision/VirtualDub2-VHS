@@ -2,16 +2,13 @@
 //
 // Copyright (C) 2013 Avery Lee
 // Copyright (C) 2015-2020 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
-#include <list>
-#include <vd2/system/VDString.h>
 #include <vd2/system/debug.h>
-#include <vd2/system/error.h>
 #include <vd2/system/filesys.h>
 #include <vd2/system/log.h>
 #include <vd2/system/refcount.h>
@@ -426,7 +423,7 @@ void VDExternalModule::ReconnectOldPlugins() {
 					return;
 				}
 
-				if (GetProcAddress((HINSTANCE)mModuleInfo.hInstModule, "DriverProc")) {
+				if (GetProcAddress((HINSTANCE)mModuleInfo.hInstModule, "VDDriverProc")) {
 					mModuleInfo.hInstModule = NULL;
 					return;
 				}
@@ -519,17 +516,14 @@ void VDDeinitPluginSystem() {
 bool VDAddPluginModule(const wchar_t *pFilename) {
 	VDStringW path(VDGetFullPath(pFilename));
 
-	if (path.empty())
+	if (path.empty()) {
 		path = pFilename;
+	}
 
-	std::list<class VDExternalModule *>::const_iterator it(g_pluginModules.begin()),
-			itEnd(g_pluginModules.end());
-
-	for(; it!=itEnd; ++it) {
-		VDExternalModule *pModule = *it;
-
-		if (pModule->GetFilename() == pFilename)
+	for(const auto& pModule : g_pluginModules) {
+		if (pModule->GetFilename() == pFilename) {
 			return true;
+		}
 	}
 
 	g_pluginModules.push_back(new VDExternalModule(path));
@@ -557,15 +551,12 @@ void VDAddInternalPlugins(const VDPluginInfo *const *ppInfo) {
 	VDConnectPluginDescriptions(ppInfo, NULL);
 }
 
-VDExternalModule *VDGetExternalModuleByFilterModule(const VDXFilterModule *fm) {
-	std::list<class VDExternalModule *>::const_iterator it(g_pluginModules.begin()),
-			itEnd(g_pluginModules.end());
-
-	for(; it!=itEnd; ++it) {
-		VDExternalModule *pModule = *it;
-
-		if (fm == &pModule->GetFilterModuleInfo())
+VDExternalModule *VDGetExternalModuleByFilterModule(const VDXFilterModule *fm)
+{
+	for(const auto& pModule : g_pluginModules) {
+		if (fm == &pModule->GetFilterModuleInfo()) {
 			return pModule;
+		}
 	}
 
 	return NULL;

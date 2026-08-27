@@ -1,14 +1,13 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 2017-2018 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <vd2/plugin/vdplugin.h>
 #include <vd2/system/cpuaccel.h>
 #include <vd2/system/debug.h>
@@ -385,19 +384,18 @@ void VDShutdownOutputDrivers() {
 }
 
 void VDGetOutputDrivers(tVDOutputDrivers& l) {
-	for(tVDOutputDrivers::const_iterator it(g_VDOutputDrivers.begin()), itEnd(g_VDOutputDrivers.end()); it!=itEnd; ++it) {
-		l.push_back(*it);
+	for (const auto& pDriver : g_VDOutputDrivers) {
+		l.push_back(pDriver);
 	}
 }
 
 IVDOutputDriver *VDGetOutputDriverByName(const wchar_t *name) {
-	for(tVDOutputDrivers::const_iterator it(g_VDOutputDrivers.begin()), itEnd(g_VDOutputDrivers.end()); it!=itEnd; ++it) {
-		IVDOutputDriver *pDriver = *it;
+	for (const auto& pDriver : g_VDOutputDrivers) {
+		const wchar_t* dvname = pDriver->GetSignatureName();
 
-		const wchar_t *dvname = pDriver->GetSignatureName();
-
-		if (dvname && !_wcsicmp(name, dvname))
+		if (dvname && !_wcsicmp(name, dvname)) {
 			return pDriver;
+		}
 	}
 
 	return NULL;
@@ -568,19 +566,18 @@ void VDShutdownAudioEnc() {
 }
 
 void VDGetAudioEncList(tVDAudioEncList& l) {
-	for(tVDAudioEncList::const_iterator it(g_VDAudioEnc.begin()), itEnd(g_VDAudioEnc.end()); it!=itEnd; ++it) {
-		l.push_back(*it);
+	for (const auto& pAudioEnc : g_VDAudioEnc) {
+		l.push_back(pAudioEnc);
 	}
 }
 
 IVDAudioEnc *VDGetAudioEncByName(const wchar_t* name) {
-	for(tVDAudioEncList::const_iterator it(g_VDAudioEnc.begin()), itEnd(g_VDAudioEnc.end()); it!=itEnd; ++it) {
-		IVDAudioEnc *pDriver = *it;
+	for (const auto& pAudioEnc : g_VDAudioEnc) {
+		const wchar_t* dvname = pAudioEnc->GetSignatureName();
 
-		const wchar_t* dvname = pDriver->GetSignatureName();
-
-		if (dvname && !_wcsicmp(name, dvname))
-			return pDriver;
+		if (dvname && !_wcsicmp(name, dvname)) {
+			return pAudioEnc;
+		}
 	}
 
 	return NULL;

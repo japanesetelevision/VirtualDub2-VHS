@@ -2,7 +2,7 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2018 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -50,12 +50,9 @@ bool VDUISplitterW32::Create(IVDUIParameters *pParams) {
 	return VDUICustomControlW32::Create(pParams);
 }
 
-void VDUISplitterW32::PreLayoutBase(const VDUILayoutSpecs& constraints) {
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-	for(; it != itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+void VDUISplitterW32::PreLayoutBase(const VDUILayoutSpecs& constraints)
+{
+	for(const auto& pWin : mChildren) {
 		pWin->PreLayout(constraints);
 
 		mLayoutSpecs.minsize.include(pWin->GetLayoutSpecs().minsize);
@@ -287,12 +284,9 @@ bool VDUISplitSetW32::Create(IVDUIParameters *pParams) {
 	return VDUIWindow::Create(pParams);
 }
 
-void VDUISplitSetW32::PreLayoutBase(const VDUILayoutSpecs& constraints) {
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-	for(; it != itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+void VDUISplitSetW32::PreLayoutBase(const VDUILayoutSpecs& constraints)
+{
+	for(const auto& pWin : mChildren) {
 		pWin->PreLayout(constraints);
 
 		mLayoutSpecs.minsize.include(pWin->GetLayoutSpecs().minsize);

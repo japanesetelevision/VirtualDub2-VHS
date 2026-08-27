@@ -2,13 +2,12 @@
 //
 // Copyright (C) 1998-2003 Avery Lee
 // Copyright (C) 2015-2020 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include <stdafx.h>
-#include <windows.h>
 #include <commctrl.h>
 #include <vfw.h>
 #include <vd2/system/vdtypes.h>
@@ -19,7 +18,6 @@
 #include <vd2/system/strutil.h>
 #include <vd2/system/w32assist.h>
 #include <vd2/system/time.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include <vd2/Dita/basetypes.h>
 #include <vd2/Dita/services.h>
 #include <vd2/Dita/controls.h>
@@ -598,7 +596,7 @@ VDProjectUI::VDProjectUI()
 	, mAudioDisplayPosNext(-1)
 	, mbAudioDisplayReadActive(false)
 	, mhMenuNormal(NULL)
-	, mhMenuSourceList(NULL)
+	, mhMenuAudioSourceList(NULL)
 	, mhMenuDub(NULL)
 	, mhMenuDisplay(NULL)
 	, mhMenuExport(NULL)
@@ -668,18 +666,18 @@ bool VDProjectUI::Attach(VDGUIHandle hwnd) {
 		return false;
 	}
 
-	mhMenuSourceList = CreatePopupMenu();
-	if (!mhMenuSourceList) {
+	mhMenuAudioSourceList = CreatePopupMenu();
+	if (!mhMenuAudioSourceList) {
 		Detach();
 		return false;
 	}
 
-	MENUITEMINFO mii = { sizeof(MENUITEMINFO) };
+	MENUITEMINFOW mii = { sizeof(MENUITEMINFOW) };
 	mii.fMask = MIIM_SUBMENU;
-	mii.hSubMenu = mhMenuSourceList;
-	if (!SetMenuItemInfo(mhMenuNormal, ID_AUDIO_SOURCE_AVI, FALSE, &mii)) {
-		DestroyMenu(mhMenuSourceList);
-		mhMenuSourceList = NULL;
+	mii.hSubMenu = mhMenuAudioSourceList;
+	if (!SetMenuItemInfoW(mhMenuNormal, ID_AUDIO_SOURCE_AVI, FALSE, &mii)) {
+		DestroyMenu(mhMenuAudioSourceList);
+		mhMenuAudioSourceList = NULL;
 		Detach();
 		return false;
 	}
@@ -1072,7 +1070,7 @@ void VDProjectUI::Detach() {
 		mhMenuTools = NULL;
 	}
 
-	mhMenuSourceList = NULL;	// already destroyed via main menu
+	mhMenuAudioSourceList = NULL;	// already destroyed via main menu
 
 	if (mhMenuDub) {
 		DestroyMenu(mhMenuDub);
@@ -1294,14 +1292,16 @@ void VDProjectUI::ExportViaDriverTool(const char* name) {
 	inputAVI->GetFileTool(&tool);
 	if (tool) {
 		ProjectState state;
-		{for(int id=0;;id++) {
+		for (int id = 0;; id++) {
 			char name2[128];
-			if (!tool->GetExportCommandName(id,name2,128)) break;
-			if (strcmp(name,name2)==0) {
-				tool->ExecuteExport(id,(VDXHWND)mhwnd,&state);
+			if (!tool->GetExportCommandName(id, name2, 128)) {
 				break;
 			}
-		}}
+			if (strcmp(name, name2) == 0) {
+				tool->ExecuteExport(id, (VDXHWND)mhwnd, &state);
+				break;
+			}
+		}
 		tool->Release();
 	}
 }
@@ -2838,8 +2838,8 @@ bool VDProjectUI::MenuHit(UINT id) {
 		case ID_DUBINPROGRESS_ABORT:			AbortOperation();			break;
 
 		default:
-			if (id >= ID_AUDIO_SOURCE_AVI_0 && id <= ID_AUDIO_SOURCE_AVI_0+99) {
-				SetAudioSourceNormal(id - ID_AUDIO_SOURCE_AVI_0);
+			if (id >= ID_AUDIO_SOURCE_0 && id <= ID_AUDIO_SOURCE_0+99) {
+				SetAudioSourceNormal(id - ID_AUDIO_SOURCE_0);
 			} else if (id >= ID_MRU_FILE0 && id <= ID_MRU_FILE0+99) {
 				const int index = id - ID_MRU_FILE0;
 				VDStringW name(mMRUList[index]);
@@ -2968,7 +2968,7 @@ void VDProjectUI::UpdateMainMenu(HMENU hMenu) {
 	VDCheckRadioMenuItemByCommandW32(hMenu, ID_AUDIO_SOURCE_NONE, audioSourceMode == kVDAudioSourceMode_None);
 	VDCheckRadioMenuItemByCommandW32(hMenu, ID_AUDIO_SOURCE_WAV, audioSourceMode == kVDAudioSourceMode_External);
 
-	CheckMenuRadioItem(hMenu, ID_AUDIO_SOURCE_AVI_0, ID_AUDIO_SOURCE_AVI_0+99, ID_AUDIO_SOURCE_AVI_0 + (audioSourceMode - kVDAudioSourceMode_Source), MF_BYCOMMAND);
+	CheckMenuRadioItem(hMenu, ID_AUDIO_SOURCE_0, ID_AUDIO_SOURCE_0+99, ID_AUDIO_SOURCE_0 + (audioSourceMode - kVDAudioSourceMode_Source), MF_BYCOMMAND);
 
 	CheckMenuRadioItem(hMenu, ID_VIDEO_MODE_DIRECT, ID_VIDEO_MODE_FULL, ID_VIDEO_MODE_DIRECT+g_dubOpts.video.mode, MF_BYCOMMAND);
 	CheckMenuRadioItem(hMenu, ID_AUDIO_MODE_DIRECT, ID_AUDIO_MODE_FULL, ID_AUDIO_MODE_DIRECT+g_dubOpts.audio.mode, MF_BYCOMMAND);
@@ -3021,7 +3021,7 @@ void VDProjectUI::UpdateMainMenu(HMENU hMenu) {
 	VDEnableMenuItemW32(hMenu, ID_FILE_AVIINFO				, bSourceFileExists);
 	VDEnableMenuItemW32(hMenu, ID_FILE_SETTEXTINFO			, bSourceFileExists);
 	VDEnableMenuItemW32(hMenu, ID_FILE_EXPORTEXTERNALENCODER, bSourceFileExists);
-	VDEnableMenuItemW32(hMenu, ID_FILE_EXPORT, bSourceFileExists);
+	VDEnableMenuItemW32(hMenu, ID_FILE_EXPORT				, bSourceFileExists);
 
 	HMENU hmenuFile = GetSubMenu(hMenu, 0);
 	if (bSourceFileExists) {
@@ -3047,21 +3047,23 @@ void VDProjectUI::UpdateMainMenu(HMENU hMenu) {
 		IFilterModFileTool* tool;
 		inputAVI->GetFileTool(&tool);
 		if (tool) {
-			{for(int i=0; i<3; i++){
+			for (int i = 0; i < 3; i++) {
 				char name[256];
 				bool enabled = true;
-				if (!tool->GetExportMenuInfo(i,name,sizeof(name),&enabled)) continue;
+				if (!tool->GetExportMenuInfo(i, name, sizeof(name), &enabled)) {
+					continue;
+				}
 
-				MENUITEMINFOA mii = {0};
-				mii.cbSize = sizeof(mii);
-				mii.fMask = MIIM_TYPE | MIIM_STATE | MIIM_ID;
-				mii.fType = MFT_STRING;
-				mii.fState = enabled ? 0 : MFS_DISABLED;
-				mii.wID	= ID_EXPORT_DRIVERTOOL0;
-				mii.dwTypeData	= name;
+				MENUITEMINFOA mii = { 0 };
+				mii.cbSize     = sizeof(mii);
+				mii.fMask      = MIIM_TYPE | MIIM_STATE | MIIM_ID;
+				mii.fType      = MFT_STRING;
+				mii.fState     = enabled ? 0 : MFS_DISABLED;
+				mii.wID        = ID_EXPORT_DRIVERTOOL0;
+				mii.dwTypeData = name;
 				InsertMenuItemA(hmenuExport, pos, TRUE, &mii);
 				pos++;
-			}}
+			}
 
 			tool->Release();
 		}
@@ -3077,18 +3079,19 @@ void VDProjectUI::UpdateMainMenu(HMENU hMenu) {
 	}
 
 	{
-		if (mhMenuTools)
+		if (mhMenuTools) {
 			DestroyMenu(mhMenuTools);
+		}
 		mhMenuTools = LoadMenuW(g_hInst, MAKEINTRESOURCEW(IDR_TOOLS_MENU));
 		HMENU hmenuTools = GetSubMenu(mhMenuTools, 0);
-		{for(int i=0; i<GetMenuItemCount(hmenuTools); i++){
+		for(int i=0; i<GetMenuItemCount(hmenuTools); i++){
 			if (GetMenuItemID(hmenuTools,i)==ID_TOOLS_PLUGIN) {
 				int pos = i;
 				RemoveMenu(hmenuTools, pos, MF_BYPOSITION);
 				VDToolInsertMenu(hmenuTools, pos);
 				break;
 			}
-		}}
+		}
 
 		VDUIUpdateMenuAcceleratorsW32(mhMenuTools, mAccelTableDef);
 
@@ -3220,19 +3223,20 @@ void VDProjectUI::UpdateMainMenu(HMENU hMenu) {
 }
 
 void VDProjectUI::UpdateAudioSourceMenu() {
-	for(int i = GetMenuItemCount(mhMenuSourceList)-1; i>=0; --i)
-		DeleteMenu(mhMenuSourceList, i, MF_BYPOSITION);
+	for (int i = GetMenuItemCount(mhMenuAudioSourceList) - 1; i >= 0; --i) {
+		DeleteMenu(mhMenuAudioSourceList, i, MF_BYPOSITION);
+	}
 
 	int count = GetAudioSourceCount();
 
-	if (!count)
-		VDAppendMenuW32(mhMenuSourceList, MF_GRAYED, 0, L"None");
-	else {
+	if (!count) {
+		VDAppendMenuW32(mhMenuAudioSourceList, MF_GRAYED, 0, L"None");
+	} else {
 		VDStringW s;
 
-		for(int i=0; i<count; ++i) {
-			s.sprintf(L"Stream %d", i+1);
-			VDAppendMenuW32(mhMenuSourceList, MF_ENABLED, ID_AUDIO_SOURCE_AVI_0 + i, s.c_str());
+		for (int i = 0; i < count; ++i) {
+			s.sprintf(L"Stream %d", i + 1);
+			VDAppendMenuW32(mhMenuAudioSourceList, MF_ENABLED, ID_AUDIO_SOURCE_0 + i, s.c_str());
 		}
 	}
 }
@@ -5048,8 +5052,9 @@ void VDProjectUI::UIShuttleModeUpdated() {
 
 void VDProjectUI::UISourceFileUpdated(int open_flags) {
 	if (inputAVI) {
-		if (g_szInputAVIFile[0] && !g_bAutoTest && !(open_flags & f_open_skip_mru))
+		if (g_szInputAVIFile[0] && !g_bAutoTest && !(open_flags & f_open_skip_mru)) {
 			mMRUList.add(g_szInputAVIFile);
+		}
 
 		UpdateMRUList();
 
@@ -5131,7 +5136,7 @@ void CollapseMRUName(VDStringW& name)
 
 void VDProjectUI::UpdateMRUList() {
 	HMENU hmenuFile = GetSubMenu(GetMenu((HWND)mhwnd), 0);
-	MENUITEMINFOW mii = {sizeof(MENUITEMINFO)};
+	MENUITEMINFOW mii = {sizeof(MENUITEMINFOW)};
 	int index=0;
 
 	for(;;) {
@@ -5154,8 +5159,8 @@ void VDProjectUI::UpdateMRUList() {
 
 		CollapseMRUName(name);
 
-		mii.fMask		= MIIM_TYPE | MIIM_STATE | MIIM_ID;
-		mii.fType		= MFT_STRING;
+		mii.fMask	= MIIM_TYPE | MIIM_STATE | MIIM_ID;
+		mii.fType	= MFT_STRING;
 		mii.fState	= MFS_ENABLED;
 		mii.wID		= ID_MRU_FILE0 + index;
 
@@ -5194,11 +5199,11 @@ void VDProjectUI::UpdateMRUList() {
 
 void VDProjectUI::UpdateCaptureMRUList() {
 	HMENU hmenuCap = GetSubMenu(GetMenu((HWND)mhwnd), 1);
-	MENUITEMINFOW mii = {sizeof(MENUITEMINFO)};
+	MENUITEMINFOW mii = {sizeof(MENUITEMINFOW)};
 	int index=0;
 
 	for(;;) {
-		mii.fMask			= MIIM_TYPE;
+		mii.fMask	= MIIM_TYPE;
 
 		if (!GetMenuItemInfoW(hmenuCap, mCaptureMRUListPosition, TRUE, &mii))
 			break;
@@ -5217,8 +5222,8 @@ void VDProjectUI::UpdateCaptureMRUList() {
 
 		CollapseMRUName(name);
 
-		mii.fMask		= MIIM_TYPE | MIIM_STATE | MIIM_ID;
-		mii.fType		= MFT_STRING;
+		mii.fMask	= MIIM_TYPE | MIIM_STATE | MIIM_ID;
+		mii.fType	= MFT_STRING;
 		mii.fState	= MFS_ENABLED;
 		mii.wID		= ID_CAPTURE_MRU_FILE0 + index;
 

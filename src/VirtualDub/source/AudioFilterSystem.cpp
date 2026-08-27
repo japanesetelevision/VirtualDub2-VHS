@@ -1,20 +1,17 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 2013 Avery Lee
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
-#include <vector>
-#include <list>
 #include <utility>
 
 #include <vd2/system/cpuaccel.h>
 #include <vd2/system/vdalloc.h>
 #include <vd2/system/VDScheduler.h>
-#include <vd2/system/Error.h>
 #include <vd2/system/protscope.h>
 #include <vd2/system/VDRingBuffer.h>
 #include <vd2/system/fraction.h>
@@ -324,19 +321,19 @@ VDAudioFilterInstance::VDAudioFilterInstance(VDPluginDescription *pDesc)
 	mpPluginInfo = VDLockPlugin(pDesc);
 	mpDefinition = reinterpret_cast<const VDAudioFilterDefinition *>(mpPluginInfo->mpTypeSpecificInfo);
 
-	const int inputPins = mpDefinition->mInputPins;
-	const int outputPins = mpDefinition->mOutputPins;
-	const int totalPins = inputPins + outputPins;
+	const unsigned inputPins = mpDefinition->mInputPins;
+	const unsigned outputPins = mpDefinition->mOutputPins;
+	const unsigned totalPins = inputPins + outputPins;
 
 	mFilterData.resize(mpDefinition->mFilterDataSize);
 	mPinPtrs.resize(totalPins);
 	mPins.resize(totalPins);
 	mOutputBuffers.resize(outputPins);
-	mDebugName	= VDTextWToA(pDesc->mName);
+	mDebugName = VDTextWToA(pDesc->mName);
 
-	for(unsigned i=0; i<totalPins; ++i) {
+	for (unsigned i = 0; i < totalPins; ++i) {
 		mPinPtrs[i] = &mPins[i];
-		mPins[i].SetFilter(this, i>=inputPins ? i-inputPins : i);
+		mPins[i].SetFilter(this, i >= inputPins ? i - inputPins : i);
 	}
 
 	mpFilterData		= mFilterData.data();
@@ -520,16 +517,12 @@ void VDAudioFilterInstance::SerializeConfig(VDPluginConfig& config) {
 
 void VDAudioFilterInstance::DeserializeConfig(const VDPluginConfig& config) {
 	vdprotected1("restoring config for audio filter \"%s\"", const char *, mDebugName.c_str()) {
-		VDPluginConfig::const_iterator it(config.begin()), itEnd(config.end());
-
 		mError.clear();
-		for(; it!=itEnd; ++it) {
-			const unsigned idx = (*it).first;
-			const VDPluginConfigVariant& var = (*it).second;
-
+		for(const auto& [idx, var] : config) {
 			SetConfigVal(idx, var);
-			if (mError.gets())
+			if (mError.gets()) {
 				throw mError;
+			}
 		}
 	}
 }
@@ -623,9 +616,9 @@ uint32 VDAudioFilterInstance::ReadData(unsigned nPin, void *dst, uint32 samples,
 			static const uint32 sBlkSize[]={0,1,2,4};
 
 			uint32 total = 0;
-			const uint32 ch			= format.mChannels;
-			const uint32 sblksize	= format.mBlockSize;
-			const uint32 dblksize	= sBlkSize[nFormat] * ch;
+			const uint32 ch    = format.mChannels;
+			const int sblksize = format.mBlockSize;
+			const int dblksize = sBlkSize[nFormat] * ch;
 
 			const tpVDConvertPCMVtbl vtbl = VDGetPCMConversionVtable();
 			VDRingBuffer<uint8>& buffer = mOutputBuffers[nPin];
@@ -696,8 +689,7 @@ bool VDAudioFilterInstance::Service() {
 		mOutputGranules	= 0;
 	}
 
-	int i;
-	for(i=0; i<mpDefinition->mInputPins; ++i) {
+	for(uint32 i = 0; i < mpDefinition->mInputPins; ++i) {
 		VDAudioFilterPinImpl& inpin			= InputPin(i);
 		VDAudioFilterPinImpl& inpinconn		= *inpin.Connection();
 
@@ -731,7 +723,7 @@ bool VDAudioFilterInstance::Service() {
 	}
 
 	// lock output pins
-	for(i=0; i<mpDefinition->mOutputPins; ++i) {
+	for(uint32 i = 0; i < mpDefinition->mOutputPins; ++i) {
 		VDAudioFilterPinImpl& outpin = OutputPin(i);
 		int avail;
 
@@ -784,7 +776,7 @@ bool VDAudioFilterInstance::Service() {
 
 	bool bAnyActivity = 0!=(res & kVFARun_InternalWork);
 
-	for(int k=0; k<mpDefinition->mInputPins; ++k) {
+	for(uint32 k = 0; k < mpDefinition->mInputPins; ++k) {
 		VDAudioFilterPinImpl& inpin = InputPin(k);
 
 		inpin.mbEnded = mbEnded;
@@ -795,14 +787,15 @@ bool VDAudioFilterInstance::Service() {
 		}
 	}
 
-	for(int j=0; j<mpDefinition->mOutputPins; ++j) {
+	for(uint32 j = 0; j < mpDefinition->mOutputPins; ++j) {
 		VDAudioFilterPinImpl& outpin = OutputPin(j);
 		VDRingBuffer<uint8>& buffer = mOutputBuffers[j];
 
 		outpin.mbEnded = mbEnded;
 
-		if (!j)
+		if (!j) {
 			mSamplesSinceLastSeekPoint += outpin.mSamplesWritten;
+		}
 
 		buffer.UnlockWrite(outpin.mSamplesWritten * outpin.mpFormat->mBlockSize);
 
@@ -1059,9 +1052,7 @@ void VDAudioFilterSystem::LoadFromGraph(const VDAudioFilterGraph& graph, std::ve
 
 	int connidx = 0;
 
-	for(std::list<VDAudioFilterGraph::FilterEntry>::const_iterator it(graph.mFilters.begin()), itEnd(graph.mFilters.end()); it!=itEnd; ++it) {
-		const VDAudioFilterGraph::FilterEntry& f = *it;
-
+	for(const auto& f : graph.mFilters) {
 		VDPluginDescription *pDesc = VDGetPluginDescription(f.mFilterName.c_str(), kVDXPluginType_Audio);
 		if (!pDesc) {
 			throw MyError(L"Cannot find audio filter \"%s\" specified in filter graph.", f.mFilterName.c_str());
@@ -1140,14 +1131,15 @@ void VDAudioFilterSystem::SortFilter(tFilterList& newList, VDAudioFilterInstance
 }
 
 void VDAudioFilterSystem::Sort() {
-	tFilterList::const_iterator it(mFilters.begin()), itEnd(mFilters.end());
-	for(; it!=itEnd; ++it)
-		(*it)->SortKey() = 0;
+	for (const auto& pFltInst : mFilters) {
+		pFltInst->SortKey() = 0;
+	}
 
 	tFilterList newList;
 
-	for(it=mFilters.begin(); it!=itEnd; ++it)
-		SortFilter(newList, *it);
+	for (const auto& pFltInst : mFilters) {
+		SortFilter(newList, pFltInst);
+	}
 
 	mFilters.swap(newList);
 }
@@ -1172,10 +1164,8 @@ void VDAudioFilterSystem::Prepare() {
 	vdprotected("preparing audio filter chain") {
 		Sort();
 
-		for(tFilterList::const_iterator it(mFilters.begin()), itEnd(mFilters.end()); it!=itEnd; ++it) {
-			VDAudioFilterInstance *pInst = *it;
-
-			Prepare(pInst, true);
+		for(const auto& pFltInst : mFilters) {
+			Prepare(pFltInst, true);
 		}
 	}
 }
@@ -1257,11 +1247,9 @@ void VDAudioFilterSystem::Start() {
 
 	vdsynchronized(mcsStateChange) {
 		vdprotected("starting audio filter chain") {
-			for(tFilterList::const_iterator it(mFilters.begin()), itEnd(mFilters.end()); it!=itEnd; ++it) {
-				VDAudioFilterInstance *pInst = *it;
-
-				pInst->Start();
-				mStartedFilters.push_back(pInst);
+			for(const auto& pFltInst : mFilters) {
+				pFltInst->Start();
+				mStartedFilters.push_back(pFltInst);
 			}
 		}
 	}
@@ -1281,11 +1269,10 @@ void VDAudioFilterSystem::Seek(sint64 us) {
 	vdsynchronized(mcsStateChange) {
 		Suspend();
 
-		for(tFilterList::const_iterator it(mStartedFilters.begin()), itEnd(mStartedFilters.end()); it!=itEnd; ++it) {
-			VDAudioFilterInstance *pInst = *it;
-
-			if (pInst->InputPinCount() && !pInst->OutputPinCount())
-				pInst->Seek(us);
+		for(const auto& pFltInst : mStartedFilters) {
+			if (pFltInst->InputPinCount() && !pFltInst->OutputPinCount()) {
+				pFltInst->Seek(us);
+			}
 		}
 
 		Resume();
@@ -1297,20 +1284,17 @@ IVDAudioFilterInstance *VDAudioFilterSystem::GetClock() {
 }
 
 void VDAudioFilterSystem::Suspend() {
-	for(tFilterList::const_iterator it(mFilters.begin()), itEnd(mFilters.end()); it!=itEnd; ++it) {
-		VDAudioFilterInstance *pInst = *it;
-
-		pInst->RemoveFromScheduler();
+	for(const auto& pFltInst : mFilters) {
+		pFltInst->RemoveFromScheduler();
 	}
 }
 
 void VDAudioFilterSystem::Resume() {
-	for(tFilterList::const_iterator it(mFilters.begin()), itEnd(mFilters.end()); it!=itEnd; ++it) {
-		VDAudioFilterInstance *pInst = *it;
-
-		if (pInst->IsSerializedIOOnly())
-			mpIOScheduler->Add(pInst);
-		else
-			mpFastScheduler->Add(pInst);
+	for(const auto& pFltInst : mFilters) {
+		if (pFltInst->IsSerializedIOOnly()) {
+			mpIOScheduler->Add(pFltInst);
+		} else {
+			mpFastScheduler->Add(pFltInst);
+		}
 	}
 }

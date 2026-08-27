@@ -14,7 +14,6 @@
 #include <ctype.h>
 #include <new>
 
-#include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
@@ -24,7 +23,6 @@
 #include "gui.h"
 #include "misc.h"
 #include <vd2/system/file.h>
-#include <vd2/system/error.h>
 #include <vd2/system/list.h>
 #include <vd2/system/strutil.h>
 #include <vd2/system/vdalloc.h>
@@ -2030,7 +2028,7 @@ void HexEditor::Find(HWND hwndParent) {
 	// Begin paging in sectors from disk.
 
 	int limit=0;
-	int size = 512;
+	long size = 512;
 	sint64 basepos = mpView->GetPosition();
 	sint64 pos = basepos;
 	sint64 posbase;
@@ -2050,23 +2048,21 @@ void HexEditor::Find(HWND hwndParent) {
 
 			while(pos >= 0) {
 				{
-					DWORD dwActual;
-
 					i = (int)pos & 511;
 
 					pos &= ~511i64;
 
 					mFile.seek(pos);
-					dwActual = mFile.readData(searchbuffer, size);
+					const long actual = mFile.readData(searchbuffer, size);
 
 					// we're overloading the bLastPartial variable as a 'first' flag....
 
-					if (!bLastPartial && !dwActual)
+					if (!bLastPartial && !actual)
 						goto xit;
 
 					bLastPartial = true;
 
-					limit = (int)dwActual;
+					limit = (int)actual;
 
 					if (pos + limit > basepos)
 						limit = (int)(basepos - pos);
@@ -2124,8 +2120,6 @@ void HexEditor::Find(HWND hwndParent) {
 
 			for(;;) {
 				{
-					DWORD dwActual;
-
 					if (bLastPartial)
 						break;
 
@@ -2134,9 +2128,9 @@ void HexEditor::Find(HWND hwndParent) {
 					pos &= ~511i64;
 
 					mFile.seek(pos);
-					dwActual = mFile.readData(searchbuffer, size);
+					const long actual = mFile.readData(searchbuffer, size);
 
-					limit = (int)dwActual;
+					limit = actual;
 
 					while((bool)itML && itML->address < pos)
 						++itML;
@@ -2146,7 +2140,7 @@ void HexEditor::Find(HWND hwndParent) {
 						++itML;
 					}
 
-					if (dwActual < size)
+					if (actual < size)
 						bLastPartial = true;
 
 					posbase = pos;

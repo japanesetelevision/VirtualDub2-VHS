@@ -1,7 +1,7 @@
 // Asuka - VirtualDub Build/Post-Mortem Utility
 //
 // Copyright (C) 2005-2007 Avery Lee
-// Copyright (C) 2024-2025 v0lt
+// Copyright (C) 2024-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -166,16 +166,12 @@ bool write_version(const char *tag) {
 		FILE* f = nullptr;
 		errno_t err = fopen_s(&f, "version2.bin", "w");
 		if (!err) {
-			tVersionMap::const_iterator it(g_versionMap.begin()), itEnd(g_versionMap.end());
-
-			for(; it!=itEnd; ++it) {
-				const tVersionMap::value_type val(*it);
-				int pad = 20-val.first.length();
-
-				if (pad < 1)
+			for (const auto& [host, builds] : g_versionMap) {
+				int pad = 20 - host.length();
+				if (pad < 1) {
 					pad = 1;
-
-				fprintf(f, "host: \"%s\"%*cbuilds: %u\n", val.first.c_str(), pad, ' ', val.second);
+				}
+				fprintf(f, "host: \"%s\"%*cbuilds: %u\n", host.c_str(), pad, ' ', builds);
 			}
 
 			fclose(f);

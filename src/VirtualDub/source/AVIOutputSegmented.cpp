@@ -8,9 +8,7 @@
 //
 
 #include "stdafx.h"
-#include <list>
 #include <vd2/system/file.h>
-#include <vd2/system/error.h>
 #include <vd2/system/math.h>
 #include <vd2/Riza/audiocodec.h>
 #include "DubOutput.h"
@@ -322,17 +320,17 @@ bool VDAVIOutputSegmentedVideoStream::GetNextPendingRun(uint32& samples, uint32&
 }
 
 bool VDAVIOutputSegmentedVideoStream::GetPendingInfo(VDTime endTime, uint32& samples, uint32& bytes) {
-	std::list<Run>::const_iterator it(mPendingRuns.begin()), itEnd(mPendingRuns.end());
 	bytes = 0;
 	samples = 0;
 
-	for(; it!=itEnd; ++it) {
-		const Run& run = *it;
-		if (!run.mbClosed)
+	for (const auto& run : mPendingRuns) {
+		if (!run.mbClosed) {
 			return false;
+		}
 
-		if (run.mEndTime > endTime && endTime >= 0)
+		if (run.mEndTime > endTime && endTime >= 0) {
 			break;
+		}
 
 		samples += (uint32)run.mBlocks.size();
 		bytes += run.mSize;

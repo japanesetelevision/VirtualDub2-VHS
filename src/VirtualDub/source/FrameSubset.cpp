@@ -2,6 +2,7 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2020 Anton Shekhovtsov
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -9,7 +10,6 @@
 #include "stdafx.h"
 
 #include "FrameSubset.h"
-#include <vd2/system/error.h>
 #include <vd2/system/fraction.h>
 
 FrameSubset::FrameSubset() {
@@ -494,9 +494,7 @@ void FrameSubset::rescale(const VDFraction& oldRate, sint64 oldLength, const VDF
 	mTimeline.swap(tmp);
 	invalidateCache();
 
-	for(tTimeline::const_iterator it(tmp.begin()), itEnd(tmp.end()); it!=itEnd; ++it) {
-		const FrameSubsetNode& fsn = *it;
-
+	for(const auto& fsn : tmp) {
 		sint64 start = fsn.start;
 		sint64 len = fsn.len;
 

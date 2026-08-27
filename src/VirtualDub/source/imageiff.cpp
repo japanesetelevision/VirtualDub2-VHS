@@ -8,9 +8,6 @@
 
 #include "stdafx.h"
 #include <vd2/system/binary.h>
-#include <vd2/system/error.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include "imageiff.h"
 
 class VDImageDecoderIFF : public IVDImageDecoderIFF {
@@ -181,9 +178,9 @@ void VDImageDecoderIFF::ParseRGBA(const uint8 *src, uint32 srclen) {
 
 		uint32 planesize = w*h;
 		if (srclen == planesize*4) {
-			for(int y=0; y<h; ++y) {
+			for(uint32 y=0; y<h; ++y) {
 				uint8 *dst = dstrow;
-				for(int x=0; x<w; ++x) {
+				for(uint32 x=0; x<w; ++x) {
 					dst[0] = src[1];
 					dst[1] = src[2];
 					dst[2] = src[3];

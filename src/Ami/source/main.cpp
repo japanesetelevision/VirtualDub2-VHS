@@ -1,12 +1,10 @@
 // Ami - Language resource compiler for VirtualDub
 //
 // Copyright (C) 2013 Avery Lee
-// Copyright (C) 2024-2025 v0lt
+// Copyright (C) 2024-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
-
-#pragma warning(disable: 4786)		// shut up
 
 #include <stdio.h>
 #include <io.h>
@@ -99,11 +97,9 @@ int *parse_lvalue_expression()
 		fatal("Expected expression, found %s", lextokenname(t).c_str());
 	}
 
-	tScopeList::iterator it = g_scopes.begin(), itEnd = g_scopes.end();
 	const std::wstring& ident = lexident();
 
-	for(; it!=itEnd; ++it) {
-		tVarList& varlist = *it;
+	for(auto& varlist : g_scopes) {
 		tVarList::iterator itV = varlist.find(ident);
 
 		if (itV != varlist.end()) {
@@ -575,13 +571,14 @@ void parse_runtime_expression(tREBytecode& bytecode) {
 				{
 					int id = parse_prefix_expression();
 
-					std::vector<int>::const_iterator it(std::find(winrefs.begin(), winrefs.end(), id));
+					auto it(std::find(winrefs.cbegin(), winrefs.cend(), id));
 					bytecode.push_back(kBCE_GetValue);
-					bytecode.push_back(it - winrefs.begin());
-					if (it == winrefs.end()) {
+					bytecode.push_back(it - winrefs.cbegin());
+					if (it == winrefs.cend()) {
 						winrefs.push_back(id);
-						if (winrefs.size() > 255)
+						if (winrefs.size() > 255) {
 							fatal("too many window references in runtime expression");
+						}
 					}
 				}
 				expect_value = false;
@@ -1239,20 +1236,14 @@ int writeout(FILE *f) {
 
 	write_begin_scope(kFourcc_StringSets);
 	{
-		tStringResource::iterator it = g_stringResource.begin(), itEnd = g_stringResource.end();
-
 		write_short(g_stringResource.size());
 
-		for(; it!=itEnd; ++it) {
-			tStringSet& strset = (*it).second;
-			tStringSet::iterator itStr = strset.begin(), itStrEnd = strset.end();
-
-			write_short((*it).first);
+		for(const auto& [idset, strset] : g_stringResource) {
+			write_short(idset);
 			write_short(strset.size());
 
-			for(; itStr != itStrEnd; ++itStr) {
-				std::wstring& wstr = (*itStr).second;
-				write_short((*itStr).first);
+			for(const auto& [idwstr, wstr] : strset) {
+				write_short(idwstr);
 
 				std::basic_string<unsigned char> scsu_encoded = ConvertToSCSU(wstr);
 
@@ -1276,16 +1267,14 @@ int writeout(FILE *f) {
 
 	write_begin_scope(kFourcc_Dialogs);
 	{
-		tDialogList::iterator it = g_dialogs.begin(), itEnd = g_dialogs.end();
-
 		write_short(g_dialogs.size());
-		for(; it!=itEnd; ++it) {
-			tDialogScript& scr = (*it).second;
+		for(const auto& [dialog_id, scr] : g_dialogs) {
 			int siz = scr.size();
-			write_short((*it).first);
+			write_short(dialog_id);
 
-			if (siz >= 65535)
-				fatal("Dialog %d is too big (%d > 65535 bytes)", (*it).first, siz);
+			if (siz >= 65535) {
+				fatal("Dialog %d is too big (%d > 65535 bytes)", dialog_id, siz);
+			}
 
 			write_short(siz);
 
@@ -1298,16 +1287,13 @@ int writeout(FILE *f) {
 
 	write_begin_scope(kFourcc_Templates);
 	{
-		tTemplateList::iterator it = g_templates.begin(), itEnd = g_templates.end();
-
 		write_short(g_templates.size());
-		for(; it!=itEnd; ++it) {
-			tDialogScript& scr = (*it).second;
+		for(const auto& [template_id, scr] : g_templates) {
 			int siz = scr.size();
-			write_short((*it).first);
+			write_short(template_id);
 
 			if (siz >= 65535)
-				fatal("Template %d is too big (%d > 65535 bytes)", (*it).first, siz);
+				fatal("Template %d is too big (%d > 65535 bytes)", template_id, siz);
 
 			write_short(siz);
 

@@ -13,13 +13,11 @@
 #include <ctype.h>
 #include <process.h>
 
-#include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
 #include <vfw.h>
 #include <shellapi.h>
 
-#include <vd2/system/error.h>
 #include <vd2/system/filesys.h>
 #include <vd2/system/int128.h>
 #include <vd2/system/registry.h>
@@ -34,9 +32,6 @@
 #include "AVIOutputStriped.h"
 #include "AVIStripeSystem.h"
 #include <vd2/Dita/services.h>
-#include <vd2/Kasumi/pixmap.h>
-#include <vd2/Kasumi/pixmapops.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include <../Kasumi/h/uberblit_rgb64.h>
 #include <../Kasumi/h/uberblit_16f.h>
 #include <vd2/Riza/bitmap.h>
@@ -1615,7 +1610,7 @@ void VDCaptureProject::ValidateAudioFormat() {
 	GetAudioFormat(currentFormat);
 	GetAvailableAudioFormats(aformats);
 
-	std::list<vdstructex<VDWaveFormat> >::const_iterator it(aformats.begin()), itEnd(aformats.end());
+	auto it(aformats.cbegin()), itEnd(aformats.cend());
 
 	for(int idx=0; it!=itEnd; ++it, ++idx) {
 		const vdstructex<VDWaveFormat>& wfex = *it;
@@ -1774,7 +1769,7 @@ void VDCaptureProject::IncrementFileIDUntilClear() {
 }
 
 void VDCaptureProject::ScanForDrivers() {
-	tSystems::const_iterator itSys(mSystems.begin()), itSysEnd(mSystems.end());
+	auto itSys(mSystems.cbegin()), itSysEnd(mSystems.cend());
 	int systemID = 0;
 
 	for(; itSys != itSysEnd; ++itSys, ++systemID) {
@@ -1783,12 +1778,14 @@ void VDCaptureProject::ScanForDrivers() {
 		pSystem->EnumerateDrivers();
 
 		const int nDevices = pSystem->GetDeviceCount();
-		for(int dev=0; dev<nDevices; ++dev)
+		for (int dev = 0; dev < nDevices; ++dev) {
 			mDrivers.push_back(DriverEntry(pSystem->GetDeviceName(dev), systemID, dev));
+		}
 	}
 
-	if (mpCB)
+	if (mpCB) {
 		mpCB->UICaptureDriversUpdated();
+	}
 }
 
 int VDCaptureProject::GetDriverCount() {
@@ -1797,15 +1794,16 @@ int VDCaptureProject::GetDriverCount() {
 
 const wchar_t *VDCaptureProject::GetDriverName(int i) {
 	if (i >= 0) {
-		tDrivers::const_iterator it(mDrivers.begin()), itEnd(mDrivers.end());
+		auto it(mDrivers.cbegin()), itEnd(mDrivers.cend());
 
 		while(i>0 && it!=itEnd) {
 			--i;
 			++it;
 		}
 
-		if (it != itEnd)
+		if (it != itEnd) {
 			return (*it).mName.c_str();
+		}
 	}
 
 	return NULL;
@@ -1834,13 +1832,12 @@ bool VDCaptureProject::SelectDriver(int nDriver) {
 		return false;
 	}
 
-	tDrivers::const_iterator it(mDrivers.begin());
+	auto it(mDrivers.cbegin());
 	std::advance(it, nDriver);
 
 	const DriverEntry& ent = *it;
 
-	tSystems::const_iterator itSys(mSystems.begin());
-
+	auto itSys(mSystems.cbegin());
 	std::advance(itSys, ent.mSystemId);
 
 	IVDCaptureSystem *pSys = *itSys;

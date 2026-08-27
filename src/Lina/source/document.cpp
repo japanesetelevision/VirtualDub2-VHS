@@ -1,11 +1,11 @@
 // Lina - HTML compiler for VirtualDub help system
 //
 // Copyright (C) 2013 Avery Lee
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
-#pragma warning(disable: 4786)
 #include <set>
 #include "document.h"
 
@@ -42,15 +42,14 @@ TreeNode *TreeNode::ShallowClone() {
 	return newNode;
 }
 
-const TreeAttribute *TreeNode::Attrib(const std::string& s) const {
-	Attributes::const_iterator it(mAttribs.begin()), itEnd(mAttribs.end());
-
-	for(; it!=itEnd; ++it) {
-		if ((*it).mName == s)
-			return &*it;
+const TreeAttribute *TreeNode::Attrib(const std::string& s) const
+{
+	for(const auto& attrib : mAttribs) {
+		if (attrib.mName == s) {
+			return &attrib;
+		}
 	}
-
-	return NULL;
+	return nullptr;
 }
 
 const TreeNode *TreeNode::ResolvePath(const std::string& path, std::string& name) const {
@@ -71,14 +70,12 @@ const TreeNode *TreeNode::ResolvePath(const std::string& path, std::string& name
 	}
 }
 
-const TreeNode *TreeNode::Child(const std::string& s) const {
+const TreeNode *TreeNode::Child(const std::string& s) const
+{
 	std::string name;
 	const TreeNode *parent = ResolvePath(s, name);
 
-	Children::const_iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-	for(; it!=itEnd; ++it) {
-		TreeNode *child = *it;
+	for(const auto& child : mChildren) {
 		if (!child->mbIsText) {
 			if (child->mName == "lina:data") {
 				const TreeNode *t = child->Child(name);
@@ -86,10 +83,10 @@ const TreeNode *TreeNode::Child(const std::string& s) const {
 					return t;
 			}
 			if (child->mName == name)
-				return *it;
+				return child;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool TreeNode::SupportsCDATA() const {

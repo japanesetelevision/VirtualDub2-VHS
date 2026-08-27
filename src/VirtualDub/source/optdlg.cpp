@@ -9,15 +9,12 @@
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <commctrl.h>
 #include <vd2/system/registry.h>
 #include <vd2/system/math.h>
 #include <vd2/system/w32assist.h>
-#include <vd2/Kasumi/pixmaputils.h>
 #include <vd2/VDLib/Dialog.h>
 
-#include <list>
 #include <utility>
 
 #include "optdlg.h"
@@ -41,8 +38,6 @@ extern HINSTANCE g_hInst;
 extern vdrefptr<IVDVideoSource> inputVideo;
 extern VDProject *g_project;
 int VDRenderSetVideoSourceInputFormat(IVDVideoSource *vsrc, VDPixmapFormatEx format);
-
-#define VD_FOURCC(fcc) (((fcc&0xff000000)>>24)+((fcc&0xff0000)>>8)+((fcc&0xff00)<<8)+((fcc&0xff)<<24))
 
 uint32& VDPreferencesGetRenderOutputBufferSize();
 uint32& VDPreferencesGetRenderWaveBufferSize();
@@ -2552,29 +2547,29 @@ protected:
 };
 
 const struct VDDialogFileTextInfoW32::FieldEntry VDDialogFileTextInfoW32::kFields[]={
-	{ VD_FOURCC('ISBJ'), "Subject" },
-	{ VD_FOURCC('IART'), "Artist (Author)" },
-	{ VD_FOURCC('ICOP'), "Copyright" },
-	{ VD_FOURCC('IARL'), "Archival Location" },
-	{ VD_FOURCC('ICMS'), "Commissioned" },
-	{ VD_FOURCC('ICMT'), "Comments" },
-	{ VD_FOURCC('ICRD'), "Creation Date" },
-	{ VD_FOURCC('ICRP'), "Cropped" },
-	{ VD_FOURCC('IDIM'), "Dimensions" },
-	{ VD_FOURCC('IDPI'), "Dots Per Inch" },
-	{ VD_FOURCC('IENG'), "Engineer" },
-	{ VD_FOURCC('IGNR'), "Genre" },
-	{ VD_FOURCC('IKEY'), "Keywords" },
-	{ VD_FOURCC('ILGT'), "Lightness" },
-	{ VD_FOURCC('IMED'), "Medium" },
-	{ VD_FOURCC('INAM'), "Name" },
-	{ VD_FOURCC('IPLT'), "Palette Setting" },
-	{ VD_FOURCC('IPRD'), "Product" },
-	{ VD_FOURCC('ISFT'), "Software" },
-	{ VD_FOURCC('ISHP'), "Sharpness" },
-	{ VD_FOURCC('ISRC'), "Source" },
-	{ VD_FOURCC('ISRF'), "Source Form" },
-	{ VD_FOURCC('ITCH'), "Technician" },
+	{ FCC('ISBJ'), "Subject" },
+	{ FCC('IART'), "Artist (Author)" },
+	{ FCC('ICOP'), "Copyright" },
+	{ FCC('IARL'), "Archival Location" },
+	{ FCC('ICMS'), "Commissioned" },
+	{ FCC('ICMT'), "Comments" },
+	{ FCC('ICRD'), "Creation Date" },
+	{ FCC('ICRP'), "Cropped" },
+	{ FCC('IDIM'), "Dimensions" },
+	{ FCC('IDPI'), "Dots Per Inch" },
+	{ FCC('IENG'), "Engineer" },
+	{ FCC('IGNR'), "Genre" },
+	{ FCC('IKEY'), "Keywords" },
+	{ FCC('ILGT'), "Lightness" },
+	{ FCC('IMED'), "Medium" },
+	{ FCC('INAM'), "Name" },
+	{ FCC('IPLT'), "Palette Setting" },
+	{ FCC('IPRD'), "Product" },
+	{ FCC('ISFT'), "Software" },
+	{ FCC('ISHP'), "Sharpness" },
+	{ FCC('ISRC'), "Source" },
+	{ FCC('ISRF'), "Source Form" },
+	{ FCC('ITCH'), "Technician" },
 };
 
 VDDialogFileTextInfoW32::VDDialogFileTextInfoW32(tRawTextInfo& info)
@@ -2588,18 +2583,20 @@ void VDDialogFileTextInfoW32::Activate(VDGUIHandle hParent) {
 	ActivateDialog(hParent);
 }
 
-void VDDialogFileTextInfoW32::Read() {
-	tRawTextInfo::const_iterator itSrc(mTextInfoOrig.begin()), itSrcEnd(mTextInfoOrig.end());
-	for(; itSrc != itSrcEnd; ++itSrc)
-		mTextInfo[(*itSrc).first] = VDTextAToW((*itSrc).second);
+void VDDialogFileTextInfoW32::Read()
+{
+	for (const auto& [ckid, text] : mTextInfoOrig) {
+		mTextInfo[ckid] = VDTextAToW(text);
+	}
 }
 
-void VDDialogFileTextInfoW32::Write() {
+void VDDialogFileTextInfoW32::Write()
+{
 	mTextInfoOrig.clear();
 
-	tTextInfo::const_iterator itSrc(mTextInfo.begin()), itSrcEnd(mTextInfo.end());
-	for(; itSrc != itSrcEnd; ++itSrc)
-		mTextInfoOrig.push_back(tRawTextInfo::value_type((*itSrc).first, VDTextWToA((*itSrc).second)));
+	for (const auto& [ckid, text] : mTextInfo) {
+		mTextInfoOrig.push_back(tRawTextInfo::value_type(ckid, VDTextWToA(text)));
+	}
 }
 
 void VDDialogFileTextInfoW32::ReinitDialog() {

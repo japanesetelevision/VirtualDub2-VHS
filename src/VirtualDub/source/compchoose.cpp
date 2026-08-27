@@ -10,7 +10,6 @@
 #include "stdafx.h"
 #include <ctype.h>
 
-#include <windows.h>
 #include <commctrl.h>
 #include <vfw.h>
 
@@ -24,7 +23,6 @@
 #include <vd2/VDLib/UIProxies.h>
 #include <vd2/Riza/videocodec.h>
 #include <vd2/Riza/bitmap.h>
-#include <vd2/Kasumi/pixmaputils.h>
 
 #include "resource.h"
 
@@ -560,13 +558,10 @@ void VDUIDialogChooseVideoCompressorW32::EnumerateCodecs() {
 	}
 }
 
-void VDUIDialogChooseVideoCompressorW32::EnumeratePluginCodecs() {
-	std::list<class VDExternalModule *>::const_iterator it(g_pluginModules.begin()),
-			itEnd(g_pluginModules.end());
-
+void VDUIDialogChooseVideoCompressorW32::EnumeratePluginCodecs()
+{
 	vdprotected("enumerating video codec plugins") {
-		for(; it!=itEnd; ++it) {
-			VDExternalModule *pModule = *it;
+		for(const auto pModule : g_pluginModules) {
 			const VDStringW& path = pModule->GetFilename();
 
 			int next_fcc = 0;
@@ -816,10 +811,9 @@ void VDUIDialogChooseVideoCompressorW32::SelectCompressor(CodecInfo *pii) {
 
 	PrintFCC(pii->fccHandler);
 
-	if(pii->path.empty())
-		SetControlText(IDC_STATIC_DRIVER, VDFileSplitPath(pii->szDriver));
-	else
-		SetControlText(IDC_STATIC_DRIVER, VDFileSplitPath(pii->path.c_str()));
+	const VDStringW driverPath(pii->path.empty() ? VDStringW(pii->szDriver) : pii->path);
+	const VDStringW relpath = VDFileGetRelativePath(VDGetProgramPath().c_str(), driverPath.c_str(), false);
+	SetControlText(IDC_STATIC_DRIVER, relpath.empty() ? driverPath.c_str() : relpath.c_str());
 
 	// Attempt to open the compressor.
 

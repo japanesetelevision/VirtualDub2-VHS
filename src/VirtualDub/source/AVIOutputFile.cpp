@@ -2,19 +2,15 @@
 //
 // Copyright (C) 1998-2004 Avery Lee
 // Copyright (C) 2016-2017 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
-#include <vector>
-#include <list>
 #include <map>
-#include <windows.h>
 #include <vfw.h>
 #include <vd2/system/binary.h>
-#include <vd2/system/error.h>
 #include <vd2/system/vdalloc.h>
 #include <vd2/system/fileasync.h>
 #include "AVIOutput.h"
@@ -680,9 +676,7 @@ bool AVIOutputFile::init(const wchar_t *szFile) {
 		if (mTextInfoCodePage || mTextInfoCountryCode || mTextInfoLanguage || mTextInfoDialect)
 			mTextInfoListSize += 16;
 
-		tTextInfo::const_iterator it(mTextInfo.begin()), itEnd(mTextInfo.end());
-		for(; it!=itEnd; ++it) {
-			const VDStringA& text = (*it).second;
+		for(const auto& [ckid, text] : mTextInfo) {
 			mTextInfoListSize += (text.size() + 9 + 1) & ~1;
 		}
 
@@ -952,22 +946,22 @@ void AVIOutputFile::partialWriteIndexedChunkBegin(int nStream, uint32 flags, uin
 
 	mIndexSize = 8;
 
-	for(tStreams::const_iterator it(mStreams.begin()), itEnd(mStreams.end()); it!=itEnd; ++it) {
-		const StreamInfo& s = *it;
+	for (const auto& s : mStreams) {
 		uint32 chunkCount = stream.mChunkCount;
 
-		if (&s == &stream)
+		if (&s == &stream) {
 			++chunkCount;
+		}
 
 		if (mbExtendedAVI && s.mLargestPosDelta) {
 			const uint32 idxblocksize = std::min<uint32>(mSubIndexLimit, (uint32)(0xFFFFFFFF / s.mLargestPosDelta) + 1);
 			uint32 idxblocks = (s.mChunkCount + idxblocksize - 1) / idxblocksize;
 
-			mIndexSize += idxblocks * (sizeof(AVISTDINDEX) + 8*idxblocksize);
-			mIndexSize += 8*stream.mChunkCount;
+			mIndexSize += idxblocks * (sizeof(AVISTDINDEX) + 8 * idxblocksize);
+			mIndexSize += 8 * stream.mChunkCount;
 		}
 
-		mIndexSize += 16*stream.mChunkCount;
+		mIndexSize += 16 * stream.mChunkCount;
 	}
 
 	// Give ourselves ~4K of headroom...
@@ -1167,7 +1161,7 @@ void AVIOutputFile::WriteIndexAVI1() {
 	dw[1] = 16 * mIndexEntries;
 	FastWrite(dw, 8);
 
-	tIndex::const_iterator it(mIndex.begin());
+	auto it(mIndex.cbegin());
 	const uint32 base = (uint32)(mBlocks.front().movi_pos + 8);
 
 	uint32 count = mIndexEntries;
@@ -1196,7 +1190,7 @@ void AVIOutputFile::WriteIndexAVI1() {
 }
 
 void AVIOutputFile::WriteIndexAVI2(AVISUPERINDEX *asi, _avisuperindex_entry *asie, int nStream) {
-	tStreams::const_iterator itStream(mStreams.begin());
+	auto itStream(mStreams.cbegin());
 	std::advance(itStream, nStream);
 	const StreamInfo& stream = *itStream;
 
@@ -1212,7 +1206,7 @@ void AVIOutputFile::WriteIndexAVI2(AVISUPERINDEX *asi, _avisuperindex_entry *asi
 
 	{
 		uint32 left = mIndexEntries;
-		tIndex::const_iterator it(mIndex.begin());
+		auto it(mIndex.cbegin());
 		while(left) {
 			const IndexEntryBlock& block = **it;
 			++it;
@@ -1247,12 +1241,12 @@ index_complete:
 
 	// For now, use a O(n^2) algorithm to find the optimal size.
 
-	int blocksize = mSubIndexLimit;
+	uint32 blocksize = mSubIndexLimit;
 
 	while(blocksize > 1) {
-		int i;
+		uint32 i;
 		int nextblock = 0;
-		sint64 offset;
+		uint64 offset;
 
 		for(i=0; i<size; i++) {
 			if (i == nextblock) {
@@ -1260,20 +1254,22 @@ index_complete:
 				offset = asie2[i].offset;
 			}
 
-			if (asie2[i].offset >= offset + 0x100000000i64)
+			if (asie2[i].offset >= offset + 0x100000000i64) {
 				break;
+			}
 		}
 
-		if (i >= size)
+		if (i >= size) {
 			break;
+		}
 
 		--blocksize;
 	}
 
-	int blockcount = (size - 1) / blocksize + 1;
+	uint32 blockcount = (size - 1) / blocksize + 1;
 
 	if (blockcount > mSuperIndexLimit)
-		throw MyError("AVIOutput: Not enough superindex entries to index AVI file.  (%d slots required, %d slots preallocated)",
+		throw MyError("AVIOutput: Not enough superindex entries to index AVI file.  (%u slots required, %u slots preallocated)",
 			blockcount, mSuperIndexLimit);
 
 	// Write out the actual index blocks.
@@ -1282,9 +1278,9 @@ index_complete:
 
 	memset(asie, 0, sizeof(_avisuperindex_entry)*mSuperIndexLimit);
 
-	int indexnum=0;
+	uint32 indexnum=0;
 	while(size > 0) {
-		int tc = std::min<int>(size, blocksize);
+		uint32 tc = std::min(size, blocksize);
 
 		WriteSubIndexAVI2(&asie[indexnum++], asie2, tc, chunkID, dwSampleSize);
 

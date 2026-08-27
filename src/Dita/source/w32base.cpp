@@ -1,7 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2004 Avery Lee
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -345,11 +345,7 @@ LRESULT VDUIBaseWindowW32::WndProc(UINT msg, WPARAM wParam, LPARAM lParam) {
 					r.right  -= mInsets.right;
 					r.bottom -= mInsets.bottom;
 
-					tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
-
-					for(; it!=itEnd; ++it) {
-						IVDUIWindow *pWin = *it;
-
+					for(const auto& pWin : mChildren) {
 						pWin->PostLayout(r);
 					}
 				}
@@ -447,12 +443,9 @@ void VDUIBaseWindowW32::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) 
 
 	// Layout children.
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
 	vduisize minsize(0, 0);
 
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PreLayout(rcConstraints);
 
 		const VDUILayoutSpecs& prispecs = pWin->GetLayoutSpecs();
@@ -477,12 +470,9 @@ void VDUIBaseWindowW32::PostLayoutBase(const vduirect& target) {
 	rc.right -= mInsets.right;
 	rc.bottom -= mInsets.bottom;
 
-	tChildren::iterator it(mChildren.begin()), itEnd(mChildren.end());
 	vduisize minsize(0, 0);
 
-	for(; it!=itEnd; ++it) {
-		IVDUIWindow *pWin = *it;
-
+	for(const auto& pWin : mChildren) {
 		pWin->PostLayout(rc);
 	}
 }
@@ -494,13 +484,10 @@ void VDUIBaseWindowW32::RebuildLinkUpdateMap() {
 	mbLinkUpdateMapDirty = false;
 
 	mLinkUpdateMap.clear();
-	for(tLinkList::const_iterator it(mLinkList.begin()), itEnd(mLinkList.end()); it != itEnd; ++it) {
-		const tLinkList::value_type& data = *it;
+	for(const auto& data : mLinkList) {
 		const LinkEntry& linkEntry = data.second;
 
-		for(std::vector<uint32>::const_iterator itLink(linkEntry.mLinkSources.begin()), itLinkEnd(linkEntry.mLinkSources.end()); itLink != itLinkEnd; ++itLink) {
-			const uint32 sourceID = *itLink;
-
+		for(const auto& sourceID : linkEntry.mLinkSources) {
 			mLinkUpdateMap.insert(tLinkUpdateMap::value_type(sourceID, &data));
 		}
 	}
@@ -517,8 +504,8 @@ void VDUIBaseWindowW32::ExecuteAllLinks() {
 	uint32 last = 0;
 
 	std::list<uint32> queue;
-	for(tControls::const_iterator it(mControls.begin()), itEnd(mControls.end()); it!=itEnd; ++it) {
-		uint32 id = (*it).first;
+	for(const auto& item : mControls) {
+		uint32 id = item.first;
 
 		if (last != id) {
 			last = id;

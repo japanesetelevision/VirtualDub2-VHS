@@ -1,6 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 1998-2004 Avery Lee
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -172,9 +173,7 @@ void VDUIGrid::PreLayoutBase(const VDUILayoutSpecs& parentConstraints) {
 	mCols.BeginLayout();
 
 	// phase I: constraint gathering
-	tItems::const_iterator itItem(mItems.begin()), itItemEnd(mItems.end());
-	for(; itItem != itItemEnd; ++itItem) {
-		const GridItem& item = *itItem;
+	for(const auto& item : mItems) {
 		const vduirect& cells = item.mPos;
 
 		VDUILayoutSpecs cellConstraints;
@@ -202,9 +201,7 @@ void VDUIGrid::PostLayoutBase(const vduirect& target) {
 	// phase II: layout columns
 	mCols.Layout(target.left, target.width(), pad.w);
 
-	tItems::const_iterator itItem(mItems.begin()), itItemEnd(mItems.end());
-	for(; itItem != itItemEnd; ++itItem) {
-		const GridItem& item = *itItem;
+	for(const auto& item : mItems) {
 		const vduirect& cells = item.mPos;
 
 		VDUILayoutSpecs cellConstraints;
@@ -223,10 +220,7 @@ void VDUIGrid::PostLayoutBase(const vduirect& target) {
 	// phase III: final layout
 	mRows.Layout(target.top, target.height(), pad.h);
 
-	itItem = mItems.begin();
-	itItemEnd = mItems.end();
-	for(; itItem != itItemEnd; ++itItem) {
-		const GridItem& item = *itItem;
+	for(const auto& item : mItems) {
 		const vduirect& cells = item.mPos;
 
 		item.mpWin->PostLayout(vduirect(mCols.GetStart(cells.left), mRows.GetStart(cells.top), mCols.GetEnd(cells.right-1), mRows.GetEnd(cells.bottom-1)));
@@ -282,23 +276,22 @@ void VDUIGrid::Axis::SetBehavior(int cell, int minsize, int maxsize, int affinit
 		ent.affinity = affinity;
 }
 
-void VDUIGrid::Axis::BeginLayout() {
-	tEntries::iterator it(mEntries.begin()), itEnd(mEntries.end());
-
+void VDUIGrid::Axis::BeginLayout()
+{
 	int affinitysum = 0;
 	int maxsizesum = 0;
-	for(; it!=itEnd; ++it) {
-		Entry& ent = *it;
 
+	for(auto& ent : mEntries) {
 		ent.mincursize = ent.minsize;
 		ent.affinitysum = affinitysum;
 		ent.maxsizesum = maxsizesum;
 		affinitysum += ent.affinity;
 
-		if (ent.maxsize == INT_MAX)
+		if (ent.maxsize == INT_MAX) {
 			++maxsizesum;
-		else
+		} else {
 			maxsizesum += ent.maxsize << 12;
+		}
 	}
 }
 

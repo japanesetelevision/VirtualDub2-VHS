@@ -2,14 +2,13 @@
 //
 // Copyright (C) 1998-2001 Avery Lee
 // Copyright (C) 2015-2019 Anton Shekhovtsov
-// Copyright (C) 2023-2025 v0lt
+// Copyright (C) 2023-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 
 #include "stdafx.h"
 
-#include <windows.h>
 #include <commctrl.h>
 #include <vfw.h>
 #include <shellapi.h>
@@ -22,7 +21,6 @@
 #include "oshelper.h"
 #include "prefs.h"
 #include "auxdlg.h"
-#include <vd2/system/error.h>
 #include "gui.h"
 #include "filters.h"
 #include "command.h"
@@ -35,7 +33,6 @@
 #include <vd2/system/registrymemory.h>
 #include <vd2/system/filesys.h>
 #include <vd2/system/w32assist.h>
-#include <vd2/system/VDString.h>
 #include <vd2/system/cmdline.h>
 #include <vd2/system/cpuaccel.h>
 #include <vd2/system/protscope.h>
@@ -44,6 +41,7 @@
 #include <vd2/VDDisplay/display.h>
 #include <vd2/Riza/direct3d.h>
 #include <vd2/Riza/videocodec.h>
+#include <vd2/Riza/bitmap.h>
 #include <vd2/VDLib/PortableRegistry.h>
 #include <vd2/VDLib/win32/DebugOutputFilter.h>
 #include "crash.h"
@@ -59,6 +57,7 @@
 #include "AudioDisplay.h"
 #include "RTProfileDisplay.h"
 #include "plugins.h"
+#include "misc.h"
 
 #include "project.h"
 #include "projectui.h"
@@ -70,6 +69,7 @@
 #include "AVIOutputPlugin.h"
 #include "FilterInstance.h"
 #include "InputFile.h"
+#include <ranges>
 
 #pragma comment(lib, "shlwapi")
 
@@ -149,13 +149,14 @@ namespace {
 }
 
 const char *VDGetStartupArgument(int index) {
-	tArguments::const_iterator it(g_VDStartupArguments.begin()), itEnd(g_VDStartupArguments.end());
+	auto it(g_VDStartupArguments.cbegin()), itEnd(g_VDStartupArguments.cend());
 
-	for(; it!=itEnd && index; ++it, --index)
-		;
+	for (; it != itEnd && index; ++it, --index) {
+	}
 
-	if (it == itEnd)
+	if (it == itEnd) {
 		return NULL;
+	}
 
 	return (*it).c_str();
 }
@@ -355,6 +356,112 @@ void VDEnableExceptionsFromUserCallbacksW32() {
 	}
 }
 
+std::list<VDStringW> g_pluginVfwCodec;
+
+static void VDInstallVfwCodecs(const VDStringW& pathmask)
+{
+	VDDirectoryIterator it(pathmask.c_str());
+
+	while (it.Next()) {
+		VDDEBUG(L"VfW codecs: Attempting to load \"%s\"\n", it.GetFullPath().c_str());
+		VDStringW path(it.GetFullPath());
+
+		for (const auto& vfwCodec : g_pluginVfwCodec) {
+			if (vfwCodec == path) {
+				continue;
+			}
+		}
+
+		HMODULE module = LoadLibraryW(path.c_str());
+		if (!module) {
+			continue;
+		}
+
+		DWORD fccHandler = 0;
+		ICINFO icinfo = { sizeof(ICINFO) };
+
+		if (!GetProcAddress(module, "VDDriverProc")) {
+			// only regular VfW encoders
+
+			DriverProc* proc = (DriverProc*)GetProcAddress(module, "DriverProc");
+			if (proc) {
+				ICOPEN icopen = {
+					.dwSize     = sizeof(ICOPEN),
+					.fccType    = ICTYPE_VIDEO,
+					.fccHandler = 0,
+					.dwFlags    = ICMODE_QUERY
+				};
+
+				try {
+					DWORD_PTR obj = (DWORD_PTR)proc(0, 0, DRV_OPEN, 0, (LPARAM)&icopen);
+					if (obj) {
+						LRESULT res = proc(obj, 0, ICM_GETINFO, (LPARAM)&icinfo, sizeof(icinfo));
+						if (res) {
+							fccHandler = icinfo.fccHandler;
+						}
+					}
+				}
+				catch (...) {
+					VDLog(kVDLogError, VDStringW().sprintf(L"VfW codecs: DriverProc execution failed: %s", it.GetFullPath().c_str()));
+				}
+			}
+		}
+
+		FreeLibrary(module);
+
+		if (!fccHandler) {
+			continue;
+		}
+
+		BOOL ret = ::ICInfo(ICTYPE_VIDEO, fccHandler, &icinfo);
+		if (ret && VDDoesPathExist(icinfo.szDriver)) {
+			// the codec is already installed
+			VDDEBUG(L"VfW codecs: %s ('%s') is already installed\n",
+				VDFileSplitPath(icinfo.szDriver),
+				printW_fourcc(icinfo.fccHandler).c_str());
+			continue;
+		}
+
+		ret = ::ICInstall(ICTYPE_VIDEO, icinfo.fccHandler, (LPARAM)path.c_str(), nullptr, ICINSTALL_DRIVERW);
+		if (ret) {
+			g_pluginVfwCodec.emplace_back(path);
+		}
+	}
+}
+
+static void VDRemoveVfwCodecs(const VDStringW& path)
+{
+	size_t pathlen = path.length();
+	ICINFO icinfo = { sizeof(ICINFO) };
+
+	if (pathlen < std::size(icinfo.szDriver)) {
+		std::vector<DWORD> fccHandlers;
+
+		for (int i = 0; ::ICInfo(ICTYPE_VIDEO, i, &icinfo); i++) {
+			size_t len = wcsnlen_s(icinfo.szDriver, std::size(icinfo.szDriver));
+			if (_wcsnicmp(icinfo.szDriver, path.c_str(), pathlen) == 0) {
+				fccHandlers.emplace_back(icinfo.fccHandler);
+			}
+		}
+
+		if (fccHandlers.size()) {
+			for (const auto& fccHandler : fccHandlers | std::views::reverse) {
+				::ICRemove(ICTYPE_VIDEO, fccHandler, 0);
+			}
+			// For some reason ICRemove doesn't work!
+			// Therefore, we will remove it manually from the registry.
+			VDRegistryKey key("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\DRIVERS32");
+			if (key.isReady()) {
+				for (const auto& fccHandler : fccHandlers | std::views::reverse) {
+					VDStringA valueName("vidc.");
+					valueName += print_fourcc(fccHandler);
+					key.removeValue(valueName.c_str());
+				}
+			}
+		}
+	}
+}
+
 bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 {
 //#ifdef _DEBUG
@@ -364,7 +471,9 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 	VDSetThreadDebugName(GetCurrentThreadId(), "Main");
 	VDInitProtectedScopeHook();
 
-	VDSetDataPath(VDGetProgramPath().c_str());
+	const VDStringW programPath(VDGetProgramPath());
+
+	VDSetDataPath(programPath.c_str());
 
 	const wchar_t* pDataPath = VDGetDataPath();
 	VDSetCrashDumpPath(pDataPath);
@@ -434,7 +543,7 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 	if (portableAltFile) {
 		portableRegPath = portableAltFile;
 	} else {
-		portableRegPath = VDMakePath(VDGetProgramPath().c_str(), L"VirtualDub2.ini");
+		portableRegPath = VDMakePath(programPath.c_str(), L"VirtualDub2.ini");
 	}
 
 	if (portableAltFile || cmdLine.FindAndRemoveSwitch(L"portable") || VDDoesPathExist(portableRegPath.c_str())) {
@@ -514,8 +623,6 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 	vdprotected("autoloading filters at startup") {
 		int f, s;
 
-		VDStringW programPath(VDGetProgramPath());
-
 		VDLoadPlugins(VDMakePath(programPath.c_str(), L"plugins"), s, f);
 		pluginsSucceeded += s;
 		pluginsFailed += f;
@@ -582,6 +689,12 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 		guiSetStatus("Autoloaded %d filter(s).", 255, pluginsSucceeded);
 	}
 
+	// Load VfW coders from special folder
+
+	vdprotected("autoloading VfW codecs from folder at startup") {
+		VDInstallVfwCodecs(VDMakePath(programPath.c_str(), L"vfwcodecs\\*.dll"));
+	}
+
 	// Detect DivX.
 
 	DetectDivX();
@@ -646,6 +759,8 @@ void Deinit() {
 	VDCHECKPOINT;
 
 	AVIFileExit();
+
+	VDRemoveVfwCodecs(VDMakePath(VDGetProgramPath().c_str(), L"vfwcodecs\\"));
 
 	_CrtCheckMemory();
 

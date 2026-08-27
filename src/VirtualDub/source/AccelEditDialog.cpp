@@ -8,8 +8,6 @@
 //
 
 #include "stdafx.h"
-#include <windows.h>
-#include <commctrl.h>
 #include <vd2/system/filesys.h>
 #include <vd2/VDLib/Dialog.h>
 #include <vd2/VDLib/UIProxies.h>

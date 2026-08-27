@@ -1,7 +1,7 @@
 // VirtualDub - Video processing and capture application
 //
 // Copyright (C) 2016-2019 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -144,8 +144,7 @@ struct VDTool {
 std::vector<VDTool*> g_VDTools;
 
 void VDShutdownTools() {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		delete p;
 	}
 	g_VDTools.clear();
@@ -195,12 +194,13 @@ void VDInitTools() {
 }
 
 void VDToolInsertMenu(HMENU menu, int pos) {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		{for(int id=0; ; id++) {
 			char name[256];
 			bool enabled = true;
-			if (!p->object->GetMenuInfo(id,name,sizeof(name),&enabled)) break;
+			if (!p->object->GetMenuInfo(id, name, sizeof(name), &enabled)) {
+				break;
+			}
 
 			MENUITEMINFOA mii = {0};
 			mii.cbSize = sizeof(mii);
@@ -216,8 +216,7 @@ void VDToolInsertMenu(HMENU menu, int pos) {
 }
 
 void VDToolExecuteCommand(int id, HWND parent) {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		if (id >= p->command_first && id <= p->command_last) {
 			p->object->ExecuteMenu(id-p->command_first,(VDXHWND)parent);
 			break;
@@ -231,9 +230,10 @@ bool VDToolCatchError(FileNameCommand* cmd, const MyError& e) {
 }
 
 bool VDCheckToolsDialogs(LPMSG pMsg) {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
-		if (p->object->TranslateMessage(*pMsg)) return true;
+	for(const auto& p : g_VDTools) {
+		if (p->object->TranslateMessage(*pMsg)) {
+			return true;
+		}
 	}
 	return false;
 }
@@ -245,8 +245,7 @@ void VDToolsHandleFileOpen(const wchar_t* fname, IVDInputDriver *pDriver) {
 	const wchar_t* driver_name = pDriver->GetSignatureName();
 	HWND parent = g_projectui->GetHwnd();
 
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		p->object->HandleFileOpen(fname, driver_name, (VDXHWND)parent);
 	}
 }
@@ -260,10 +259,10 @@ bool VDToolsHandleFileOpenError(const wchar_t* fname, const wchar_t* driver_name
 
 	HWND parent = g_projectui->GetHwnd();
 
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
-		if (p->version<2) continue;
-
+	for(const auto& p : g_VDTools) {
+		if (p->version < 2) {
+			continue;
+		}
 		if (p->object->HandleFileOpenError(fname, driver_name, (VDXHWND)parent, VDTextWToU8(e.c_str()).c_str(), line)) {
 			return true;
 		}
@@ -273,15 +272,13 @@ bool VDToolsHandleFileOpenError(const wchar_t* fname, const wchar_t* driver_name
 }
 
 void VDToolsAttach(HWND hwnd) {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		p->object->Attach((VDXHWND)hwnd);
 	}
 }
 
 void VDToolsDetach(HWND hwnd) {
-	for(std::vector<VDTool*>::const_iterator it(g_VDTools.begin()), itEnd(g_VDTools.end()); it!=itEnd; ++it) {
-		VDTool *p = *it;
+	for(const auto& p : g_VDTools) {
 		p->object->Detach((VDXHWND)hwnd);
 	}
 }

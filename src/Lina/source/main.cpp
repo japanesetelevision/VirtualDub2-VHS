@@ -1,12 +1,10 @@
 // Lina - HTML compiler for VirtualDub help system
 //
 // Copyright (C) 1998-2003 Avery Lee
-// Copyright (C) 2024 v0lt
+// Copyright (C) 2024-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
-
-#pragma warning(disable: 4786)
 
 #include <sys/stat.h>
 #include <direct.h>
@@ -19,6 +17,7 @@
 #include <set>
 #include <vector>
 #include <utility>
+#include <ranges>
 #include "document.h"
 #include "parser.h"
 
@@ -42,15 +41,16 @@ struct Context {
 	Context() : pre_count(0), cdata_count(0), eat_next_space(true), holding_space(false) {}
 
 	const TreeNode *find_tag(std::string name) {
-		std::list<const TreeNode *>::reverse_iterator it(invocation_stack.rbegin()), itEnd(invocation_stack.rend());
 		const TreeNode *t = NULL;
-		
-		for(; it!=itEnd; ++it) {
-			t = (*it)->Child(name);
-			if (t)
+
+		for(const auto item : invocation_stack | std::views::reverse) {
+			t = item->Child(name);
+			if (t) {
 				break;
-			if (!name.empty() && name[0]=='/')
+			}
+			if (!name.empty() && name[0] == '/') {
 				break;
+			}
 		}
 
 		return t;
@@ -69,12 +69,11 @@ tFileCopies g_fileCopies;
 
 //////////////////////////////////////////////////////////////
 
-void error(const Context& ctx, const char *format, ...) {
+void error(const Context& ctx, const char *format, ...)
+{
 	va_list val;
 
-	std::list<const TreeNode *>::const_reverse_iterator it(ctx.stack.rbegin()), itEnd(ctx.stack.rend());
-
-	printf("%s(%d): Error! ", (*it)->mpLocation->mName.c_str(), (*it)->mLineno);
+	printf("%s(%d): Error! ", ctx.stack.back()->mpLocation->mName.c_str(), ctx.stack.back()->mLineno);
 
 	va_start(val, format);
 	vprintf(format, val);
@@ -82,15 +81,15 @@ void error(const Context& ctx, const char *format, ...) {
 	putchar('\n');
 
 	int indent = 3;
-	for(++it; it!=itEnd; ++it) {
-		const TreeNode& tag = **it;
+	for (const auto item : ctx.stack | std::views::reverse) {
+		const TreeNode& tag = *item;
 		printf("%*c%s(%d): while processing tag <%s>\n", indent, ' ', tag.mpLocation->mName.c_str(), tag.mLineno, tag.mName.c_str());
 		indent += 3;
 	}
 
 	indent = 3;
-	for(it=ctx.invocation_stack.rbegin(), itEnd=ctx.invocation_stack.rend(); it!=itEnd; ++it) {
-		const TreeNode& tag = **it;
+	for (const auto item : ctx.invocation_stack | std::views::reverse) {
+		const TreeNode& tag = *item;
 		printf("%*c%s(%d): while invoked from tag <%s> (%zu children)\n", indent, ' ', tag.mpLocation->mName.c_str(), tag.mLineno, tag.mName.c_str(), tag.mChildren.size());
 		indent += 3;
 	}
@@ -184,9 +183,8 @@ void dump_parse_tree(const TreeNode& tag, int indent = 0) {
 	} else {
 		printf("%*c<%s>\n", indent, ' ', tag.mName.c_str());
 
-		std::list<TreeNode *>::const_iterator it(tag.mChildren.begin()), itEnd(tag.mChildren.end());
-		for(; it!=itEnd; ++it) {
-			dump_parse_tree(**it, indent+3);
+		for(const auto& child : tag.mChildren) {
+			dump_parse_tree(*child, indent+3);
 		}
 
 		printf("%*c</%s>\n", indent, ' ', tag.mName.c_str());
@@ -195,30 +193,26 @@ void dump_parse_tree(const TreeNode& tag, int indent = 0) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void output_tag_attributes(std::string& out, const TreeNode& tag) {
-	std::list<TreeAttribute>::const_iterator itAtt(tag.mAttribs.begin()), itAttEnd(tag.mAttribs.end());
+void output_tag_attributes(std::string& out, const TreeNode& tag)
+{
 	bool is_anchor = (tag.mName == "a");
 	
-	for(; itAtt!=itAttEnd; ++itAtt) {
-		const TreeAttribute& att = *itAtt;
-
+	for(const auto& att : tag.mAttribs) {
 		out += ' ';
 		out += att.mName;
 
 		if (!att.mbNoValue) {
-			std::string::const_iterator its(att.mValue.begin()), itsEnd(att.mValue.end());
-			for(;its!=itsEnd; ++its)
-				if (!issafevaluechar(*its))
+			auto its(att.mValue.cbegin()), itsEnd(att.mValue.cend());
+			for (; its != itsEnd; ++its) {
+				if (!issafevaluechar(*its)) {
 					break;
+				}
+			}
 
 			std::string value(att.mValue);
 
 			if (is_anchor && att.mName == "href") {
-				std::list<std::pair<std::string, bool> >::const_iterator it(g_truncateURLs.begin()), itEnd(g_truncateURLs.end());
-
-				for(; it!=itEnd; ++it) {
-					const std::pair<std::string, bool>& entry = *it;
-
+				for(const auto& entry : g_truncateURLs) {
 					if (value.length() >= entry.first.length() && !value.compare(0, entry.first.length(), entry.first)) {
 						if (entry.second) {
 							int l = value.length();
@@ -258,12 +252,12 @@ void output_tag_contents(Context& ctx, std::string *out, const TreeNode& tag) {
 
 	++recursion_depth;
 
-	if (recursion_depth > 64)
+	if (recursion_depth > 64) {
 		error(ctx, "recursion exceeded limits");
+	}
 
-	std::list<TreeNode *>::const_iterator it(tag.mChildren.begin()), itEnd(tag.mChildren.end());
-	for(; it!=itEnd; ++it) {
-		output_tag(ctx, out, **it);
+	for(const auto& child : tag.mChildren) {
+		output_tag(ctx, out, *child);
 	}
 
 	--recursion_depth;
@@ -307,32 +301,26 @@ void output_standard_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 				if (ctx.pre_count) {
 					*out += tag.mName;
 				} else {
-					std::string::const_iterator it(tag.mName.begin()), itEnd(tag.mName.end());
-
-					for(; it!=itEnd; ++it) {
-						const char c = *it;
-
+					for(const char c : tag.mName) {
 						if (isspace(c)) {
 							ctx.holding_space = true;
 						} else {
-							if (ctx.eat_next_space)
+							if (ctx.eat_next_space) {
 								ctx.eat_next_space = false;
-							else if (ctx.holding_space)
+							}
+							else if (ctx.holding_space) {
 								*out += ' ';
-
+							}
 							ctx.holding_space = false;
 							*out += c;
 						}
 					}
 				}
 			} else {
-				std::string::const_iterator it(tag.mName.begin()), itEnd(tag.mName.end());
-
-				for(; it!=itEnd; ++it) {
-					const char c = *it;
-
-					if (!isspace(c))
+				for(const char c : tag.mName) {
+					if (!isspace(c)) {
 						error(ctx, "inline text not allowed");
+					}
 				}
 			}
 		}
@@ -374,13 +362,11 @@ void output_standard_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 		--ctx.pre_count;
 }
 
-std::string HTMLize(const std::string& s) {
-	std::string::const_iterator it(s.begin()), itEnd(s.end());
+std::string HTMLize(const std::string& s)
+{
 	std::string t;
 
-	for(; it!=itEnd; ++it) {
-		char c = *it;
-
+	for(const char c : s) {
 		switch(c) {
 		case '"':	t.append("&quot;"); break;
 		case '<':	t.append("&lt;"); break;
@@ -413,11 +399,10 @@ void output_source_tags(Context& ctx, std::string *out, const TreeNode& tag) {
 
 		out->append("<ul marker=none>");
 
-		std::list<TreeNode *>::const_iterator itBegin(tag.mChildren.begin()), it(itBegin), itEnd(tag.mChildren.end());
-		for(; it!=itEnd; ++it) {
-		out->append("<li>");
-			output_source_tags(ctx, out, **it);
-		out->append("</li>");
+		for(const auto& child : tag.mChildren) {
+			out->append("<li>");
+			output_source_tags(ctx, out, *child);
+			out->append("</li>");
 		}
 
 		out->append("</ul>");
@@ -433,28 +418,26 @@ void output_source_tags(Context& ctx, std::string *out, const TreeNode& tag) {
 		out->append("<br>");
 }
 
-void dump_stack(Context& ctx) {
-	std::list<const TreeNode *>::reverse_iterator it(ctx.stack.rbegin()), itEnd(ctx.stack.rend());
-
+void dump_stack(Context& ctx)
+{
 	printf("Current execution stack:\n");
 	int indent = 3;
-	for(++it; it!=itEnd; ++it) {
-		const TreeNode& tag = **it;
+	for (const auto item : ctx.stack | std::views::reverse) {
+		const TreeNode& tag = *item;
 		printf("%*c%s(%d): processing <%s>\n", indent, ' ', tag.mpLocation->mName.c_str(), tag.mLineno, tag.mName.c_str());
 		indent += 3;
 	}
 
 	indent = 3;
-	std::list<TreeNode *>::reverse_iterator it2(ctx.construction_stack.rbegin()), it2End(ctx.construction_stack.rend());
-	for(; it2!=it2End; ++it2) {
-		const TreeNode& tag = **it2;
+	for (const auto item : ctx.construction_stack | std::views::reverse) {
+		const TreeNode& tag = *item;
 		printf("%*c%s(%d): while creating tag <%s>\n", indent, ' ', tag.mpLocation->mName.c_str(), tag.mLineno, tag.mName.c_str());
 		indent += 3;
 	}
 
 	indent = 3;
-	for(it=ctx.invocation_stack.rbegin(), itEnd=ctx.invocation_stack.rend(); it!=itEnd; ++it) {
-		const TreeNode& tag = **it;
+	for (const auto item : ctx.invocation_stack | std::views::reverse) {
+		const TreeNode& tag = *item;
 		printf("%*c%s(%d): while invoked from tag <%s>\n", indent, ' ', tag.mpLocation->mName.c_str(), tag.mLineno, tag.mName.c_str());
 		indent += 3;
 	}
@@ -482,25 +465,24 @@ void output_toc_node(FILE *f, const TreeNode& node) {
 	output_toc_children(f, node);
 }
 
-void output_toc_children(FILE *f, const TreeNode& node) {
+void output_toc_children(FILE *f, const TreeNode& node)
+{
 	bool nodesFound = false;
 
-	TreeNode::Children::const_iterator it(node.mChildren.begin()), itEnd(node.mChildren.end());
-	for(; it!=itEnd; ++it) {
-		const TreeNode& childNode = **it;
-
-		if (!childNode.mbIsText) {
+	for(const auto& childNode : node.mChildren) {
+		if (!childNode->mbIsText) {
 			if (!nodesFound) {
 				nodesFound = true;
 				fputs("<UL>\n", f);
 			}
 
-			output_toc_node(f, childNode);
+			output_toc_node(f, *childNode);
 		}
 	}
 
-	if (nodesFound)
+	if (nodesFound) {
 		fputs("</UL>\n", f);
+	}
 }
 
 void output_toc(FILE *f, const TreeNode& root) {
@@ -604,7 +586,7 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 		if (ctx.invocation_stack.empty())
 			error(ctx, "<lina:arg> can only be used during macro expansion");
 
-		std::list<const TreeNode *>::const_iterator it(ctx.invocation_stack.end());
+		auto it(ctx.invocation_stack.cend());
 		--it;
 
 		int levels = 1;
@@ -613,8 +595,9 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 			++levels;
 			++name;
 
-			if (it == ctx.invocation_stack.begin())
+			if (it == ctx.invocation_stack.cbegin()) {
 				error(ctx, "Number of up-scope markers in name exceeds macro nesting level");
+			}
 
 			--it;
 		}
@@ -720,51 +703,51 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 		std::string node_name;
 		const TreeNode *parent;
 		if (ctx.invocation_stack.empty()) {
-			if (!a->mValue.empty() && a->mValue[0] == '/')
+			if (!a->mValue.empty() && a->mValue[0] == '/') {
 				parent = ctx.mpDocument->mpRoot->ResolvePath(a->mValue.substr(1), node_name);
-			else
+			} else {
 				error(ctx, "path must be absolute if not in macro context");
+			}
 		} else {
-			std::list<const TreeNode *>::reverse_iterator it(ctx.invocation_stack.rbegin()), itEnd(ctx.invocation_stack.rend());
-			
-			for(; it!=itEnd; ++it) {
-				parent = (*it)->ResolvePath(a->mValue, node_name);
-				if(parent)
+			for (const auto item : ctx.invocation_stack | std::views::reverse) {
+				parent = item->ResolvePath(a->mValue, node_name);
+				if (parent) {
 					break;
-				if (!a->mValue.empty() && a->mValue[0] == '/')
+				}
+				if (!a->mValue.empty() && a->mValue[0] == '/') {
 					break;
+				}
 			}
 		}
 
-		if (!parent)
+		if (!parent) {
 			error(ctx, "cannot resolve path \"%s\"", a->mValue.c_str());
-
-		std::list<TreeNode *>::const_iterator it2(parent->mChildren.begin()), it2End(parent->mChildren.end());
+		}
 
 		ctx.invocation_stack.push_back(NULL);
-		for(; it2!=it2End; ++it2) {
-			if ((*it2)->mName == node_name) {
-				ctx.invocation_stack.back() = *it2;
+		for(const auto child : parent->mChildren) {
+			if (child->mName == node_name) {
+				ctx.invocation_stack.back() = child;
 				output_tag_contents(ctx, out, tag);
 			}
 		}
 		ctx.invocation_stack.pop_back();
 	} else if (tag.mName == "lina:apply") {
 		const TreeAttribute *a = tag.Attrib("name");
-		if (!a)
+		if (!a) {
 			error(ctx, "<lina:apply> must have NAME attribute");
+		}
 
 		std::map<std::string, TreeNode *>::const_iterator it(ctx.mpDocument->mMacros.find(a->mValue));
 
-		if (it == ctx.mpDocument->mMacros.end())
+		if (it == ctx.mpDocument->mMacros.end()) {
 			error(ctx, "macro \"%s\" undeclared", a->mValue.c_str());
+		}
 		
-		std::list<TreeNode *>::const_iterator it2(tag.mChildren.begin()), it2End(tag.mChildren.end());
-
 		ctx.invocation_stack.push_back(NULL);
-		for(; it2!=it2End; ++it2) {
-			if (!(*it2)->mbIsText) {
-				ctx.invocation_stack.back() = *it2;
+		for(const auto& child : tag.mChildren) {
+			if (!child->mbIsText) {
+				ctx.invocation_stack.back() = child;
 				output_tag_contents(ctx, out, *(*it).second);
 			}
 		}
@@ -807,9 +790,8 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 			output_tag_contents(ctx, out, tag);
 		--ctx.cdata_count;
 	} else if (tag.mName == "lina:delay") {
-		std::list<TreeNode *>::const_iterator it(tag.mChildren.begin()), itEnd(tag.mChildren.end());
-		for(; it!=itEnd; ++it) {
-			output_standard_tag(ctx, out, **it);
+		for(const auto& child : tag.mChildren) {
+			output_standard_tag(ctx, out, *child);
 		}
 	} else if (tag.mName == "lina:dump-stack") {
 		dump_stack(ctx);
@@ -885,9 +867,8 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 		// do nothing
 	} else if (tag.mName == "lina:source") {
 		if (out) {
-			std::list<TreeNode *>::const_iterator itBegin(tag.mChildren.begin()), it(itBegin), itEnd(tag.mChildren.end());
-			for(; it!=itEnd; ++it) {
-				output_source_tags(ctx, out, **it);
+			for(const auto& child : tag.mChildren) {
+				output_source_tags(ctx, out, *child);
 			}
 		}
 	} else if (tag.mName == "lina:htmlhelp-toc") {
@@ -970,12 +951,11 @@ void output_special_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 			, title_val->mValue.c_str()
 			);
 
-		std::list<std::string>::const_iterator it(g_htmlHelpFiles.begin()), itEnd(g_htmlHelpFiles.end());
-		for(; it!=itEnd; ++it) {
-			fprintf(f, "%s\n", (*it).c_str());
+		for(const auto helpgile : g_htmlHelpFiles) {
+			fprintf(f, "%s\n", helpgile.c_str());
 		}
 
-		fclose(f);		
+		fclose(f);
 	} else if (tag.mName == "lina:htmlhelp-addfile") {
 		const TreeAttribute *file_val = tag.Attrib("file");
 		if (!file_val || file_val->mbNoValue)
@@ -1012,8 +992,9 @@ void output_tag(Context& ctx, std::string *out, const TreeNode& tag) {
 	ctx.stack.pop_back();
 }
 
-int main(int argc, char **argv) {
-	TreeNode::SetSupportsCDATA("p",		true);
+int main(int argc, char **argv)
+{
+	TreeNode::SetSupportsCDATA("p",			true);
 	TreeNode::SetSupportsCDATA("h1",		true);
 	TreeNode::SetSupportsCDATA("h2",		true);
 	TreeNode::SetSupportsCDATA("h3",		true);
@@ -1023,9 +1004,9 @@ int main(int argc, char **argv) {
 	TreeNode::SetSupportsCDATA("td",		true);
 	TreeNode::SetSupportsCDATA("th",		true);
 	TreeNode::SetSupportsCDATA("li",		true);
-	TreeNode::SetSupportsCDATA("style",	true);
+	TreeNode::SetSupportsCDATA("style",		true);
 	TreeNode::SetSupportsCDATA("script",	true);
-	TreeNode::SetSupportsCDATA("title",	true);
+	TreeNode::SetSupportsCDATA("title",		true);
 	TreeNode::SetSupportsCDATA("div",		true);
 	TreeNode::SetSupportsCDATA("dt",		true);
 	TreeNode::SetSupportsCDATA("dd",		true);
@@ -1045,12 +1026,8 @@ int main(int argc, char **argv) {
 
 	// copy files
 
-	tFileCopies::const_iterator it(g_fileCopies.begin()), itEnd(g_fileCopies.end());
-
-	for(; it!=itEnd; ++it) {
-		const tFileCopies::value_type& info = *it;
-
-		copy_file(info.first, info.second);
+	for(const auto& [dstfile, srcfile)] : g_fileCopies) {
+		copy_file(dstfile, srcfile);
 	}
 
 	printf("No errors.\n");
