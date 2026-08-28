@@ -414,19 +414,23 @@ static void VDInstallVfwCodecs(const VDStringW& pathmask)
 		}
 
 		BOOL ret = ::ICInfo(ICTYPE_VIDEO, fccHandler, &icinfo);
-		if (ret && VDDoesPathExist(icinfo.szDriver)) {
+		if (ret) {
 			// the codec is already installed
-			VDDEBUG(L"VfW codecs: %s ('%s') is already installed\n",
-				VDFileSplitPath(icinfo.szDriver),
-				printW_fourcc(icinfo.fccHandler).c_str());
+			VDDEBUG(L"VfW codecs: '%s' (%s) is already installed\n",
+				printW_fourcc(icinfo.fccHandler).c_str(),
+				VDFileSplitPath(icinfo.szDriver));
 			continue;
 		}
 
 		ret = ::ICInstall(ICTYPE_VIDEO, icinfo.fccHandler, (LPARAM)path.c_str(), nullptr, ICINSTALL_DRIVERW);
 		if (ret) {
 			g_pluginVfwCodec.emplace_back(path);
+			VDDEBUG(L"VfW codecs: '%s' (%s) was temporarily installed\n",
+				printW_fourcc(icinfo.fccHandler).c_str(),
+				VDFileSplitPath(path.c_str()));
 		}
 	}
+	VDDEBUG(L"VfW codecs: %zu codecs installed\n", g_pluginVfwCodec.size());
 }
 
 static void VDRemoveVfwCodecs(const VDStringW& path)
