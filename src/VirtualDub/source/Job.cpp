@@ -601,9 +601,9 @@ void JobCreateScript(JobScriptOutput& output, bool project_relative, const DubOp
 				}
 
 				const vdfastvector<sint64>& marker = g_project->GetTimeline().GetMarker();
-				{for(int i=0; i<marker.size(); i++){
+				for (int i = 0; i < marker.size(); i++) {
 					output.addf("VirtualDub.video.AddMarker(%I64d);", marker[i]);
-				}}
+				}
 			}
 			break;
 
