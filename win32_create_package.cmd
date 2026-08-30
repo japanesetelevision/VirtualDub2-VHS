@@ -24,6 +24,11 @@ IF NOT EXIST "..\scripted_vdplugin\_bin\Release_x86\scripted\scripted.vdplugin" 
   GOTO :END
 )
 
+IF NOT EXIST "..\MPEG2_vdplugin\_bin\Release_x86\MPEG2.vdplugin" (
+  ECHO MPEG2_vdplugin not compiled.
+  GOTO :END
+)
+
 REM -------------------------------------
 
 FOR /F "tokens=2*" %%A IN (
@@ -74,6 +79,10 @@ COPY /Y /V "..\avlib_vdplugin\history.txt"                        "%PCKG_DIR%\pl
 COPY /Y /V "..\scripted_vdplugin\_bin\Release_x86\scripted\scripted.vdplugin" "%PCKG_DIR%\plugins32\scripted.vdplugin"
 COPY /Y /V "..\scripted_vdplugin\Readme.md"                                   "%PCKG_DIR%\plugins32\scripted_Readme.md"
 COPY /Y /V "..\scripted_vdplugin\history.txt"                                 "%PCKG_DIR%\plugins32\scripted_history.txt"
+
+COPY /Y /V "..\MPEG2_vdplugin\_bin\Release_x86\MPEG2.vdplugin"    "%PCKG_DIR%\plugins32\MPEG2.vdplugin"
+COPY /Y /V "..\MPEG2_vdplugin\Readme.txt"                         "%PCKG_DIR%\plugins32\MPEG2_Readme.txt"
+COPY /Y /V "..\MPEG2_vdplugin\history.txt"                        "%PCKG_DIR%\plugins32\MPEG2_history.txt"
 
 REM -------------------------------------
 
