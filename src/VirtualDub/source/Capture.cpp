@@ -1610,11 +1610,7 @@ void VDCaptureProject::ValidateAudioFormat() {
 	GetAudioFormat(currentFormat);
 	GetAvailableAudioFormats(aformats);
 
-	auto it(aformats.cbegin()), itEnd(aformats.cend());
-
-	for(int idx=0; it!=itEnd; ++it, ++idx) {
-		const vdstructex<VDWaveFormat>& wfex = *it;
-
+	for(const auto& wfex : aformats) {
 		if (wfex == currentFormat) {
 			return;
 		}
@@ -1768,19 +1764,18 @@ void VDCaptureProject::IncrementFileIDUntilClear() {
 	}
 }
 
-void VDCaptureProject::ScanForDrivers() {
-	auto itSys(mSystems.cbegin()), itSysEnd(mSystems.cend());
+void VDCaptureProject::ScanForDrivers()
+{
 	int systemID = 0;
 
-	for(; itSys != itSysEnd; ++itSys, ++systemID) {
-		IVDCaptureSystem *pSystem = *itSys;
-
+	for(const auto pSystem : mSystems) {
 		pSystem->EnumerateDrivers();
 
 		const int nDevices = pSystem->GetDeviceCount();
 		for (int dev = 0; dev < nDevices; ++dev) {
 			mDrivers.push_back(DriverEntry(pSystem->GetDeviceName(dev), systemID, dev));
 		}
+		++systemID;
 	}
 
 	if (mpCB) {
