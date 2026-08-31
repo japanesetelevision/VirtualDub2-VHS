@@ -170,9 +170,11 @@ void VDInitTools() {
 		tool->version = info->mTypeAPIVersionUsed;
 		tool->command_first = command;
 		tool->command_last = -1;
-		{for(int id=0; ; id++) {
+		for (int id = 0; ; id++) {
 			char name[256];
-			if (!object->GetCommandId(id,name,sizeof(name))) break;
+			if (!object->GetCommandId(id, name, sizeof(name))) {
+				break;
+			}
 
 			tool->command_last = command;
 			VDStringA s(name);
@@ -183,7 +185,7 @@ void VDInitTools() {
 			kCommandList.push_back(cmd);
 
 			command++;
-		}}
+		}
 
 		g_VDTools.push_back(tool);
 		plugins.pop_back();
@@ -195,23 +197,23 @@ void VDInitTools() {
 
 void VDToolInsertMenu(HMENU menu, int pos) {
 	for(const auto& p : g_VDTools) {
-		{for(int id=0; ; id++) {
+		for (int id = 0; ; id++) {
 			char name[256];
 			bool enabled = true;
 			if (!p->object->GetMenuInfo(id, name, sizeof(name), &enabled)) {
 				break;
 			}
 
-			MENUITEMINFOA mii = {0};
+			MENUITEMINFOA mii = { 0 };
 			mii.cbSize = sizeof(mii);
 			mii.fMask = MIIM_TYPE | MIIM_STATE | MIIM_ID;
 			mii.fType = MFT_STRING;
 			mii.fState = enabled ? 0 : MFS_DISABLED;
-			mii.wID	= p->command_first-id;
-			mii.dwTypeData	= name;
+			mii.wID = p->command_first - id;
+			mii.dwTypeData = name;
 			InsertMenuItemA(menu, pos, TRUE, &mii);
 			pos++;
-		}}
+		}
 	}
 }
 

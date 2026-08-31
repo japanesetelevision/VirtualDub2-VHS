@@ -4,6 +4,10 @@ VirtualDub2.x change log
 -----------------------
 The VFW codec from the "vfwcodecs" folder will not be temporarily installed if the same codec is installed on the system.
 
+Updated avlib-1.vdplugin.
+
+Updated MPEG2.vdplugin.
+
 
 2.5.3.1197 - 2026-08-25
 -----------------------
