@@ -1,4 +1,4 @@
-﻿# VirtualDub2 version 2.4
+﻿# VirtualDub2 version 2.5
 
 VirtualDub2 is a video capture/processing utility for Windows.
 
@@ -21,6 +21,7 @@ To run the x64 version on Windows 7, you will need to find and replace the FFmpe
 * [VirtualDub2        ](https://github.com/v0lt/VirtualDub2)
 * [avlib_vdplugin     ](https://github.com/v0lt/avlib_vdplugin)
 * [scripted_vdplugin  ](https://github.com/v0lt/scripted_vdplugin)
+* [MPEG2_vdplugin     ](https://github.com/v0lt/MPEG2_vdplugin)
 
 ## Links
 * [VirtualDub website ](https://www.virtualdub.org/)
