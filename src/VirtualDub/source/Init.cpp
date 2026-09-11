@@ -356,23 +356,25 @@ void VDEnableExceptionsFromUserCallbacksW32() {
 	}
 }
 
-std::list<VDStringW> g_pluginVfwCodec;
-
-static void VDInstallVfwCodecs(const VDStringW& pathmask)
+static void VDInstallVfwCodecs(const VDStringW& path)
 {
-	VDDirectoryIterator it(pathmask.c_str());
+	if (path.length() >= 128 - 4) {
+		// the path and the short filename '.dll' must not exceed 128 characters
+		return;
+	}
+
+	VDDirectoryIterator it((path + L"*.dll").c_str());
 
 	while (it.Next()) {
-		VDDEBUG(L"VfW codecs: Attempting to load \"%s\"\n", it.GetFullPath().c_str());
-		VDStringW path(it.GetFullPath());
+		const VDStringW dllpath(it.GetFullPath());
+		VDDEBUG(L"VfW codecs: Attempting to load \"%s\"\n", dllpath.c_str());
 
-		for (const auto& vfwCodec : g_pluginVfwCodec) {
-			if (vfwCodec == path) {
-				continue;
-			}
+		if (dllpath.length() >= 128) {
+			// dll path length is limited ICINFO::szDriver[128]
+			continue;
 		}
 
-		HMODULE module = LoadLibraryW(path.c_str());
+		HMODULE module = LoadLibraryW(dllpath.c_str());
 		if (!module) {
 			continue;
 		}
@@ -422,47 +424,50 @@ static void VDInstallVfwCodecs(const VDStringW& pathmask)
 			continue;
 		}
 
-		ret = ::ICInstall(ICTYPE_VIDEO, icinfo.fccHandler, (LPARAM)path.c_str(), nullptr, ICINSTALL_DRIVERW);
-		if (ret) {
-			g_pluginVfwCodec.emplace_back(path);
+		VDStringA name("vidc.");
+		name += print_fourcc(fccHandler);
+		VDStringW value;
+
+		VDRegistryKey key("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\DRIVERS32");
+
+		if (key.getString(name.c_str(), value)) {
+			continue;
+		}
+
+		//ret = ::ICInstall(ICTYPE_VIDEO, icinfo.fccHandler, (LPARAM)dllpath.c_str(), nullptr, ICINSTALL_DRIVERW);
+		//if (ret) {
+		// we do not use ICInstall and install the codec manually
+		if (key.setString(name.c_str(), dllpath.c_str())) {
 			VDDEBUG(L"VfW codecs: '%s' (%s) was temporarily installed\n",
 				printW_fourcc(icinfo.fccHandler).c_str(),
-				VDFileSplitPath(path.c_str()));
+				VDFileSplitPath(dllpath.c_str()));
 		}
 	}
-	VDDEBUG(L"VfW codecs: %zu codecs installed\n", g_pluginVfwCodec.size());
 }
 
 static void VDRemoveVfwCodecs(const VDStringW& path)
 {
-	size_t pathlen = path.length();
-	ICINFO icinfo = { sizeof(ICINFO) };
+	const size_t pathlen = path.length();
+	VDStringW value;
+	std::vector<VDStringA> codecnames;
 
-	if (pathlen < std::size(icinfo.szDriver)) {
-		std::vector<DWORD> fccHandlers;
+	VDRegistryKey key("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\DRIVERS32");
+	VDRegistryValueIterator it(key);
 
-		for (int i = 0; ::ICInfo(ICTYPE_VIDEO, i, &icinfo); i++) {
-			size_t len = wcsnlen_s(icinfo.szDriver, std::size(icinfo.szDriver));
-			if (_wcsnicmp(icinfo.szDriver, path.c_str(), pathlen) == 0) {
-				fccHandlers.emplace_back(icinfo.fccHandler);
-			}
-		}
-
-		if (fccHandlers.size()) {
-			for (const auto& fccHandler : fccHandlers | std::views::reverse) {
-				::ICRemove(ICTYPE_VIDEO, fccHandler, 0);
-			}
-			// For some reason ICRemove doesn't work!
-			// Therefore, we will remove it manually from the registry.
-			VDRegistryKey key("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\DRIVERS32");
-			if (key.isReady()) {
-				for (const auto& fccHandler : fccHandlers | std::views::reverse) {
-					VDStringA valueName("vidc.");
-					valueName += print_fourcc(fccHandler);
-					key.removeValue(valueName.c_str());
+	while (const char* name = it.Next()) {
+		if (_strnicmp(name, "vidc.", 5) == 0) {
+			if (key.getString(name, value)) {
+				if (_wcsnicmp(value.c_str(), path.c_str(), pathlen) == 0) {
+					codecnames.emplace_back(name);
 				}
 			}
 		}
+	}
+
+	for (const auto& name : codecnames) {
+		// ::ICRemove(ICTYPE_VIDEO, fccHandler, 0) doesn't work!
+		// Therefore, we will remove it manually from the registry.
+		key.removeValue(name.c_str());
 	}
 }
 
@@ -696,7 +701,7 @@ bool Init(HINSTANCE hInstance, int nCmdShow, VDCommandLine& cmdLine)
 	// Load VfW coders from special folder
 
 	vdprotected("autoloading VfW codecs from folder at startup") {
-		VDInstallVfwCodecs(VDMakePath(programPath.c_str(), L"vfwcodecs\\*.dll"));
+		VDInstallVfwCodecs(VDMakePath(programPath.c_str(), L"vfwcodecs\\"));
 	}
 
 	// Detect DivX.
