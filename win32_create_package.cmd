@@ -4,7 +4,7 @@ CD /D %~dp0
 
 REM -------------------------------------
 
-IF NOT EXIST "_out\Release\VirtualDub2.exe" (
+IF NOT EXIST "_out\Release_Win32\VirtualDub2.exe" (
   ECHO VirtualDub2 not compiled.
   GOTO :END
 )
@@ -52,16 +52,16 @@ MKDIR %PCKG_DIR%\vfwcodecs
 COPY /Y /V "docs\Changes.txt"                   "%PCKG_DIR%\Changes.txt"
 COPY /Y /V "LICENSE.txt"                        "%PCKG_DIR%\LICENSE.txt"
 COPY /Y /V "Readme.md"                          "%PCKG_DIR%\Readme.md"
-COPY /Y /V "_out\Release\vdub2.exe"             "%PCKG_DIR%\vdub2.exe"
-COPY /Y /V "_out\Release\VirtualDub2.exe"       "%PCKG_DIR%\VirtualDub2.exe"
-COPY /Y /V "_out\Release\VirtualDub2.vdi"       "%PCKG_DIR%\VirtualDub2.vdi"
+COPY /Y /V "_out\Release_Win32\vdub2.exe"       "%PCKG_DIR%\vdub2.exe"
+COPY /Y /V "_out\Release_Win32\VirtualDub2.exe" "%PCKG_DIR%\VirtualDub2.exe"
+COPY /Y /V "_out\Release_Win32\VirtualDub2.vdi" "%PCKG_DIR%\VirtualDub2.vdi"
 COPY /Y /V "dist\VirtualDub.chm"                "%PCKG_DIR%\VirtualDub.chm"
 
-COPY /Y /V "_out\Release\auxsetup.exe"          "%PCKG_DIR%\extra\auxsetup.exe"
-COPY /Y /V "_out\Release\vdicmdrv.dll"          "%PCKG_DIR%\extra\vdicmdrv.dll"
-COPY /Y /V "_out\Release\vdlaunch.exe"          "%PCKG_DIR%\extra\vdlaunch.exe"
-COPY /Y /V "_out\Release\vdremote.dll"          "%PCKG_DIR%\extra\vdremote.dll"
-COPY /Y /V "_out\Release\vdsvrlnk.dll"          "%PCKG_DIR%\extra\vdsvrlnk.dll"
+COPY /Y /V "_out\Release_Win32\auxsetup.exe"    "%PCKG_DIR%\extra\auxsetup.exe"
+COPY /Y /V "_out\Release_Win32\vdicmdrv.dll"    "%PCKG_DIR%\extra\vdicmdrv.dll"
+COPY /Y /V "_out\Release_Win32\vdlaunch.exe"    "%PCKG_DIR%\extra\vdlaunch.exe"
+COPY /Y /V "_out\Release_Win32\vdremote.dll"    "%PCKG_DIR%\extra\vdremote.dll"
+COPY /Y /V "_out\Release_Win32\vdsvrlnk.dll"    "%PCKG_DIR%\extra\vdsvrlnk.dll"
 COPY /Y /V "dist\win32\."                       "%PCKG_DIR%\."
 COPY /Y /V "dist\win32\plugins32\."             "%PCKG_DIR%\plugins32\."
 COPY /Y /V "dist\win32\vfwcodecs\."             "%PCKG_DIR%\vfwcodecs\."

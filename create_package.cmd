@@ -4,7 +4,7 @@ CD /D %~dp0
 
 REM -------------------------------------
 
-IF NOT EXIST "_out\ReleaseAMD64\VirtualDub2.exe" (
+IF NOT EXIST "_out\Release_x64\VirtualDub2.exe" (
   ECHO VirtualDub2 not compiled.
   GOTO :END
 )
@@ -53,16 +53,16 @@ MKDIR %PCKG_DIR%\vfwcodecs
 COPY /Y /V "docs\Changes.txt"                   "%PCKG_DIR%\Changes.txt"
 COPY /Y /V "LICENSE.txt"                        "%PCKG_DIR%\LICENSE.txt"
 COPY /Y /V "Readme.md"                          "%PCKG_DIR%\Readme.md"
-COPY /Y /V "_out\ReleaseAMD64\vdub2.exe"        "%PCKG_DIR%\vdub2.exe"
-COPY /Y /V "_out\ReleaseAMD64\VirtualDub2.exe"  "%PCKG_DIR%\VirtualDub2.exe"
-COPY /Y /V "_out\ReleaseAMD64\VirtualDub2.vdi"  "%PCKG_DIR%\VirtualDub2.vdi"
+COPY /Y /V "_out\Release_x64\vdub2.exe"         "%PCKG_DIR%\vdub2.exe"
+COPY /Y /V "_out\Release_x64\VirtualDub2.exe"   "%PCKG_DIR%\VirtualDub2.exe"
+COPY /Y /V "_out\Release_x64\VirtualDub2.vdi"   "%PCKG_DIR%\VirtualDub2.vdi"
 COPY /Y /V "dist\VirtualDub.chm"                "%PCKG_DIR%\VirtualDub.chm"
 
-COPY /Y /V "_out\ReleaseAMD64\auxsetup.exe"     "%PCKG_DIR%\extra\auxsetup.exe"
-COPY /Y /V "_out\ReleaseAMD64\vdicmdrv.dll"     "%PCKG_DIR%\extra\vdicmdrv.dll"
-COPY /Y /V "_out\ReleaseAMD64\vdlaunch.exe"     "%PCKG_DIR%\extra\vdlaunch.exe"
-COPY /Y /V "_out\ReleaseAMD64\vdremote.dll"     "%PCKG_DIR%\extra\vdremote.dll"
-COPY /Y /V "_out\ReleaseAMD64\vdsvrlnk.dll"     "%PCKG_DIR%\extra\vdsvrlnk.dll"
+COPY /Y /V "_out\Release_x64\auxsetup.exe"      "%PCKG_DIR%\extra\auxsetup.exe"
+COPY /Y /V "_out\Release_x64\vdicmdrv.dll"      "%PCKG_DIR%\extra\vdicmdrv.dll"
+COPY /Y /V "_out\Release_x64\vdlaunch.exe"      "%PCKG_DIR%\extra\vdlaunch.exe"
+COPY /Y /V "_out\Release_x64\vdremote.dll"      "%PCKG_DIR%\extra\vdremote.dll"
+COPY /Y /V "_out\Release_x64\vdsvrlnk.dll"      "%PCKG_DIR%\extra\vdsvrlnk.dll"
 COPY /Y /V "dist\x64\."               		    "%PCKG_DIR%\."
 COPY /Y /V "dist\x64\plugins64\."               "%PCKG_DIR%\plugins64\."
 COPY /Y /V "dist\x64\vfwcodecs\."               "%PCKG_DIR%\vfwcodecs\."
