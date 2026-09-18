@@ -3,16 +3,6 @@
   <PropertyGroup Label="UserMacros">
     <ML>/Dxmmword=qword</ML>
   </PropertyGroup>
-  <PropertyGroup>
-    <IncludePath>$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <DisableSpecificWarnings>4244;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <PreprocessorDefinitions>VD_CPU_SSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <BuildMacro Include="ML">
       <Value>$(ML)</Value>
