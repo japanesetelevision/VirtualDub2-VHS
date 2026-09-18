@@ -21,6 +21,7 @@ extern const VDXFilterDefinition
 #endif
 	filterDef_curves,
 	filterDef_resize,
+	filterDef_resize_zimg,
 	filterDef_canvas,
 	filterDef_fill,
 	filterDef_test;
@@ -35,6 +36,7 @@ extern FilterDefinition
 static const FilterDefinition *const builtin_filters[]={
 	&filterDef_fill,
 	&filterDef_resize,
+	&filterDef_resize_zimg,
 	&filterDef_canvas,
 	&filterDef_levels,
 	&filterDef_logo,

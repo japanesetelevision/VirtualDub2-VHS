@@ -157,6 +157,9 @@
     <ClCompile Include="source\uberblit_rgb64.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\zimg_resample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="h\bitutils.h">
@@ -275,6 +278,9 @@
     </ClInclude>
     <ClInclude Include="h\stdafx.h">
       <Filter>Precompiled Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\h\vd2\Kasumi\zimg_resample.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -709,6 +709,9 @@
     <ClCompile Include="source\tool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\f_resize_zimg.cpp">
+      <Filter>Filters\Source - Filters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="h\afiltdlg.h">
