@@ -35,19 +35,15 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\VirtualDub-IX86.props" />
-    <Import Project="..\VirtualDub-Release.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\VirtualDub-IX86.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\VirtualDub-AMD64.props" />
-    <Import Project="..\VirtualDub-Release.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
@@ -346,6 +342,7 @@ yasm -g cv8 -f win64 -o "$(IntDir)verstub.obj" verstub.asm
     <ClCompile Include="source\Filters.cpp" />
     <ClCompile Include="source\FilterSystem.cpp" />
     <ClCompile Include="source\FrameSubset.cpp" />
+    <ClCompile Include="source\f_resize_zimg.cpp" />
     <ClCompile Include="source\gui.cpp" />
     <ClCompile Include="source\Histogram.cpp" />
     <ClCompile Include="source\image.cpp" />

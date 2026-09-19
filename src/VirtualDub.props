@@ -1,18 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros">
-    <VDBaseDir>..\..</VDBaseDir>
     <VDDirTag>$(Configuration)_$(Platform)</VDDirTag>
-    <VDLibPath>$(VDBaseDir)\_lib\$(VDDirTag)</VDLibPath>
-    <VDOutputPath>$(VDBaseDir)\_out\$(VDDirTag)</VDOutputPath>
-    <VDObjPath>$(VDBaseDir)\_obj\$(VDDirTag)\$(ProjectName)</VDObjPath>
+    <VDLibPath>$(SolutionDir)_lib\$(VDDirTag)</VDLibPath>
+    <VDOutputPath>$(SolutionDir)_out\$(VDDirTag)</VDOutputPath>
+    <VDObjPath>$(SolutionDir)_obj\$(VDDirTag)\$(ProjectName)</VDObjPath>
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(VDObjPath)\</IntDir>
+	<IncludePath>$(DXSDK_DIR)Include;$(IncludePath)</IncludePath>
+	<LibraryPath Condition="'$(Platform)'=='Win32'">$(DXSDK_DIR)Lib\x86;$(LibraryPath)</LibraryPath>
+	<LibraryPath Condition="'$(Platform)'=='x64'">$(DXSDK_DIR)Lib\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='Win32'">
+    <ClCompile>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <ClCompile>
+      <DisableSpecificWarnings>4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <PreprocessorDefinitions>VD_CPU_SSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <Optimization>MaxSpeed</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>h;..\h;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -24,13 +46,10 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4838;4456;4458;4457;4459;26451;26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4244;4456;4457;4458;4459;4838;26451;26812;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <BuildMacro Include="VDBaseDir">
-      <Value>$(VDBaseDir)</Value>
-    </BuildMacro>
     <BuildMacro Include="VDDirTag">
       <Value>$(VDDirTag)</Value>
     </BuildMacro>

@@ -34,13 +34,10 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\VirtualDub-IX86.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\VirtualDub-IX86.props" />
-    <Import Project="..\VirtualDub-Release.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
@@ -51,7 +48,6 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\VirtualDub-AMD64.props" />
-    <Import Project="..\VirtualDub-Release.props" />
     <Import Project="..\VirtualDub.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -223,8 +219,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="source\zimg_resample.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\h\vd2\Kasumi\zimg_resample.h" />
     <ClInclude Include="h\bitutils.h" />
     <ClInclude Include="h\blt_setup.h" />
     <ClInclude Include="h\blt_spanutils.h" />
@@ -354,6 +352,11 @@
     <ProjectReference Include="..\Asuka\Asuka.vcxproj">
       <Project>{6aa99a18-196f-4334-a3de-d9eea62cd5e9}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\zimg\zimg.vcxproj">
+      <Project>{c8629e57-4d6f-40fa-82fc-b39824195932}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
