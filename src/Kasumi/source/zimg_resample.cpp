@@ -16,7 +16,7 @@
 #include <vd2/system/cpuaccel.h>
 #include <vd2/Kasumi/pixmap.h>
 #include <vd2/Kasumi/pixmaputils.h>
-#include <vd2/Kasumi/resample.h>
+#include <vd2/Kasumi/zimg_resample.h>
 #include "uberblit_gen.h"
 
 #include "../../src/zimg/api/zimg++.hpp"
@@ -88,7 +88,7 @@ static const FormatZimgDesc_t& GetFormatDesc(const VDPixmapFormat format)
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// the resampler
+// the zimg resampler
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -97,13 +97,13 @@ public:
 	VDPixmapZimgResampler();
 	~VDPixmapZimgResampler();
 
-	void SetSplineFactor(double A) { mSplineFactor = A; }
-	void SetFilters(FilterMode h, FilterMode v, bool interpolationOnly);
-	bool Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat);
-	bool Init(const vdrect32f& dstrect, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect, uint32 sw, uint32 sh, int srcformat);
-	void Shutdown();
+	void SetSplineFactor(double A) override { mSplineFactor = A; }
+	void SetFilters(FilterMode h, FilterMode v, bool interpolationOnly) override;
+	bool Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat) override;
+	bool Init(const vdrect32f& dstrect, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect, uint32 sw, uint32 sh, int srcformat) override;
+	void Shutdown() override;
 
-	void Process(const VDPixmap& dst, const VDPixmap& src);
+	void Process(const VDPixmap& dst, const VDPixmap& src) override;
 
 protected:
 	void ApplyFilters(VDPixmapUberBlitterGenerator& gen, uint32 dw, uint32 dh, float xoffset, float yoffset, float xfactor, float yfactor);
@@ -114,7 +114,6 @@ protected:
 	bool				mbInterpOnly;
 
 	vdrect32			mDstRectPlane0;
-	vdrect32			mDstRectPlane12;
 
 	FormatZimgDesc_t mFmtDesc = FormatZimgDescNull;
 
@@ -157,12 +156,12 @@ bool VDPixmapZimgResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh
 {
 	Shutdown();
 
-	if (dstformat != srcformat)
+	if (dstformat != srcformat) {
 		return false;
+	}
 
 	// supported formats
 	mFmtDesc = GetFormatDesc((VDPixmapFormat)srcformat);
-
 	if (mFmtDesc.format == kPixFormat_Null) {
 		return false;
 	}
@@ -183,14 +182,6 @@ bool VDPixmapZimgResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh
 
 	mDstFormat.width  = dw;
 	mDstFormat.height = dh;
-
-	mGraph = { zimgxx::FilterGraph::build(mSrcFormat, mDstFormat, &mParams) };
-
-	unsigned input_buffering = mGraph.get_input_buffering();
-	unsigned output_buffering = mGraph.get_output_buffering();
-
-	size_t tmp_size = mGraph.get_tmp_size();
-	mTempBuffer.reset(_aligned_malloc(tmp_size, 64));
 
 	// convert destination flips to source flips
 	vdrect32f dstrect(dstrect0);
@@ -246,16 +237,24 @@ bool VDPixmapZimgResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh
 	float xoffset = (((float)mDstRectPlane0.left + 0.5f) - dstrect.left) * xfactor + srcrect.left;
 	float yoffset = (((float)mDstRectPlane0.top  + 0.5f) - dstrect.top ) * yfactor + srcrect.top;
 
-	// compute plane 1/2 dest rect and stepping parameters
-	float xoffset2 = 0.0f;
-	float yoffset2 = 0.0f;
+	mSrcFormat.active_region.left   = srcrect.left;
+	mSrcFormat.active_region.top    = srcrect.top;
+	mSrcFormat.active_region.width  = srcrect.width();
+	mSrcFormat.active_region.height = srcrect.height();
+
+	mGraph = { zimgxx::FilterGraph::build(mSrcFormat, mDstFormat, &mParams) };
+
+	//unsigned input_buffering = mGraph.get_input_buffering();
+	//unsigned output_buffering = mGraph.get_output_buffering();
+
+	size_t tmp_size = mGraph.get_tmp_size();
+	mTempBuffer.reset(_aligned_malloc(tmp_size, 64));
 
 	return true;
 }
 
 void VDPixmapZimgResampler::Shutdown()
 {
-
 }
 
 void VDPixmapZimgResampler::Process(const VDPixmap& dst, const VDPixmap& src)
