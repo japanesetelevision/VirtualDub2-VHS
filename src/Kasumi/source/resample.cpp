@@ -26,18 +26,19 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
-class VDPixmapResampler : public IVDPixmapResampler {
+class VDPixmapResampler : public IVDPixmapResampler
+{
 public:
 	VDPixmapResampler();
 	~VDPixmapResampler();
 
-	void SetSplineFactor(double A) { mSplineFactor = A; }
-	void SetFilters(FilterMode h, FilterMode v, bool interpolationOnly);
-	bool Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat);
-	bool Init(const vdrect32f& dstrect, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect, uint32 sw, uint32 sh, int srcformat);
-	void Shutdown();
+	void SetSplineFactor(double A) override { mSplineFactor = A; }
+	void SetFilters(FilterMode h, FilterMode v, bool interpolationOnly) override;
+	bool Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat) override;
+	bool Init(const vdrect32f& dstrect, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect, uint32 sw, uint32 sh, int srcformat) override;
+	void Shutdown() override;
 
-	void Process(const VDPixmap& dst, const VDPixmap& src);
+	void Process(const VDPixmap& dst, const VDPixmap& src) override;
 
 protected:
 	void ApplyFilters(VDPixmapUberBlitterGenerator& gen, uint32 dw, uint32 dh, float xoffset, float yoffset, float xfactor, float yfactor);
@@ -63,29 +64,34 @@ VDPixmapResampler::VDPixmapResampler()
 {
 }
 
-VDPixmapResampler::~VDPixmapResampler() {
+VDPixmapResampler::~VDPixmapResampler()
+{
 	Shutdown();
 }
 
-void VDPixmapResampler::SetFilters(FilterMode h, FilterMode v, bool interpolationOnly) {
+void VDPixmapResampler::SetFilters(FilterMode h, FilterMode v, bool interpolationOnly)
+{
 	mFilterH = h;
 	mFilterV = v;
 	mbInterpOnly = interpolationOnly;
 }
 
-bool VDPixmapResampler::Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat) {
+bool VDPixmapResampler::Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat)
+{
 	vdrect32f rSrc(0.0f, 0.0f, (float)sw, (float)sh);
 	vdrect32f rDst(0.0f, 0.0f, (float)dw, (float)dh);
 	return Init(rDst, dw, dh, dstformat, rSrc, sw, sh, srcformat);
 }
 
-bool VDPixmapResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect0, uint32 sw, uint32 sh, int srcformat) {
-	using namespace nsVDPixmap;
-
+bool VDPixmapResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh, int dstformat, const vdrect32f& srcrect0, uint32 sw, uint32 sh, int srcformat)
+{
 	Shutdown();
 
-	if (dstformat != srcformat)
+	if (dstformat != srcformat) {
 		return false;
+	}
+
+	using namespace nsVDPixmap;
 	
 	switch(srcformat) {
 	case kPixFormat_XRGB8888:
@@ -394,16 +400,18 @@ bool VDPixmapResampler::Init(const vdrect32f& dstrect0, uint32 dw, uint32 dh, in
 	return true;
 }
 
-void VDPixmapResampler::Shutdown() {
+void VDPixmapResampler::Shutdown()
+{
 	mpBlitter = NULL;
 	mpBlitter2 = NULL;
 }
 
-void VDPixmapResampler::Process(const VDPixmap& dst, const VDPixmap& src) {
-	using namespace nsVDPixmap;
-
+void VDPixmapResampler::Process(const VDPixmap& dst, const VDPixmap& src)
+{
 	if (!mpBlitter)
 		return;
+
+	using namespace nsVDPixmap;
 
 	switch(dst.format) {
 	case kPixFormat_XRGB8888:
@@ -527,7 +535,8 @@ void VDPixmapResampler::Process(const VDPixmap& dst, const VDPixmap& src) {
 	}
 }
 
-void VDPixmapResampler::ApplyFilters(VDPixmapUberBlitterGenerator& gen, uint32 dw, uint32 dh, float xoffset, float yoffset, float xfactor, float yfactor) {
+void VDPixmapResampler::ApplyFilters(VDPixmapUberBlitterGenerator& gen, uint32 dw, uint32 dh, float xoffset, float yoffset, float xfactor, float yfactor)
+{
 	switch(mFilterH) {
 		case kFilterPoint:
 			gen.pointh(xoffset, xfactor, dw);
@@ -565,7 +574,8 @@ void VDPixmapResampler::ApplyFilters(VDPixmapUberBlitterGenerator& gen, uint32 d
 	}
 }
 
-bool VDPixmapResample(const VDPixmap& dst, const VDPixmap& src, IVDPixmapResampler::FilterMode filter) {
+bool VDPixmapResample(const VDPixmap& dst, const VDPixmap& src, IVDPixmapResampler::FilterMode filter)
+{
 	VDPixmapResampler r;
 
 	r.SetFilters(filter, filter, false);
