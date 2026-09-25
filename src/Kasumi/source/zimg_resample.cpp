@@ -92,7 +92,8 @@ static const FormatZimgDesc_t& GetFormatDesc(const VDPixmapFormat format)
 //
 ///////////////////////////////////////////////////////////////////////////
 
-class VDPixmapZimgResampler : public IVDPixmapResampler {
+class VDPixmapZimgResampler : public IVDPixmapResampler
+{
 public:
 	VDPixmapZimgResampler();
 	~VDPixmapZimgResampler();
@@ -136,17 +137,20 @@ VDPixmapZimgResampler::VDPixmapZimgResampler()
 {
 }
 
-VDPixmapZimgResampler::~VDPixmapZimgResampler() {
+VDPixmapZimgResampler::~VDPixmapZimgResampler()
+{
 	Shutdown();
 }
 
-void VDPixmapZimgResampler::SetFilters(FilterMode h, FilterMode v, bool interpolationOnly) {
+void VDPixmapZimgResampler::SetFilters(FilterMode h, FilterMode v, bool interpolationOnly)
+{
 	mFilterH = h;
 	mFilterV = v;
 	mbInterpOnly = interpolationOnly;
 }
 
-bool VDPixmapZimgResampler::Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat) {
+bool VDPixmapZimgResampler::Init(uint32 dw, uint32 dh, int dstformat, uint32 sw, uint32 sh, int srcformat)
+{
 	vdrect32f rSrc(0.0f, 0.0f, (float)sw, (float)sh);
 	vdrect32f rDst(0.0f, 0.0f, (float)dw, (float)dh);
 	return Init(rDst, dw, dh, dstformat, rSrc, sw, sh, srcformat);
