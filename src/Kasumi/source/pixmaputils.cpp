@@ -192,23 +192,27 @@ bool VDPixmapFormatGray(sint32 format) {
 	return false;
 }
 
-VDPixmap VDPixmap::copy(const VDXPixmap& a) {
+VDPixmap VDPixmap::copy(const VDXPixmap& a)
+{
 	VDPixmap b;
-	b.data = a.data;
+	b.data    = a.data;
 	b.palette = a.palette;
-	b.w = a.w;
-	b.h = a.h;
-	b.pitch = a.pitch;
-	b.format = a.format;
-	b.data2 = a.data2;
-	b.pitch2 = a.pitch2;
-	b.data3 = a.data3;
-	b.pitch3 = a.pitch3;
+	b.w       = a.w;
+	b.h       = a.h;
+	b.pitch   = a.pitch;
+	b.format  = a.format;
+	b.data2   = a.data2;
+	b.pitch2  = a.pitch2;
+	b.data3   = a.data3;
+	b.pitch3  = a.pitch3;
 
 	if (VDPixmapFormatHasAlphaPlane(a.format)) {
 		const VDXPixmapAlpha& aa = (const VDXPixmapAlpha&)a;
-		b.data4 = aa.data4;
+		b.data4  = aa.data4;
 		b.pitch4 = aa.pitch4;
+	} else {
+		b.data4  = nullptr;
+		b.pitch4 = 0;
 	}
 
 	return b;
@@ -1639,13 +1643,13 @@ void VDPixmapBuffer::init(sint32 width, sint32 height, int f)
 	pitch	= mainpitch;
 	p += mainsize;
 
-	palette	= NULL;
-	data2	= NULL;
-	pitch2	= NULL;
-	data3	= NULL;
-	pitch3	= NULL;
-	data4	= NULL;
-	pitch4	= NULL;
+	palette	= nullptr;
+	data2	= nullptr;
+	pitch2	= 0;
+	data3	= nullptr;
+	pitch3	= 0;
+	data4	= nullptr;
+	pitch4	= 0;
 	w		= width;
 	h		= height;
 	format	= f;
