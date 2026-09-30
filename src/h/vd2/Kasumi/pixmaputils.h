@@ -131,9 +131,10 @@ struct MatchFilterFormat {
 	int backup;
 	int legacy;
 
-	MatchFilterFormat(VDPixmapFormatEx originalFormat) {
-		original = VDPixmapFormatNormalize(originalFormat);
-		format = originalFormat;
+	MatchFilterFormat(VDPixmapFormatEx originalFormat)
+		: original(VDPixmapFormatNormalize(originalFormat))
+		, format(originalFormat)
+	{
 		initMask();
 		initBase();
 		backup = 0;
