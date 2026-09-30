@@ -139,18 +139,18 @@ struct VDPixmap {
 	FilterModPixmapInfo info;
 
 	void clear() {
-		data = 0;
-		palette = 0;
-		w = 0;
-		h = 0;
-		pitch = 0;
-		format = 0;
-		data2 = 0;
-		pitch2 = 0;
-		data3 = 0;
-		pitch3 = 0;
-		data4 = 0;
-		pitch4 = 0;
+		data    = nullptr;
+		palette = nullptr;
+		w       = 0;
+		h       = 0;
+		pitch   = 0;
+		format  = 0;
+		data2   = nullptr;
+		pitch2  = 0;
+		data3   = nullptr;
+		pitch3  = 0;
+		data4   = nullptr;
+		pitch4  = 0;
 		info.clear();
 	}
 
