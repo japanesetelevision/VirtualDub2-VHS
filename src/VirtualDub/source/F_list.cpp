@@ -21,7 +21,9 @@ extern const VDXFilterDefinition
 #endif
 	filterDef_curves,
 	filterDef_resize,
+#if ENABLE_RESIZE_ZIMG
 	filterDef_resize_zimg,
+#endif
 	filterDef_canvas,
 	filterDef_fill,
 	filterDef_test;
@@ -36,7 +38,9 @@ extern FilterDefinition
 static const FilterDefinition *const builtin_filters[]={
 	&filterDef_fill,
 	&filterDef_resize,
+#if ENABLE_RESIZE_ZIMG
 	&filterDef_resize_zimg,
+#endif
 	&filterDef_canvas,
 	&filterDef_levels,
 	&filterDef_logo,
@@ -54,16 +58,20 @@ static const FilterDefinition *const builtin_filters[]={
 	NULL
 };
 
-void InitBuiltinFilters() {
-	const FilterDefinition *cur, *const *cpp;
+void InitBuiltinFilters()
+{
+	const FilterDefinition* cur;
+	const FilterDefinition* const* cpp;
 
 	VDXVideoFilter::SetAPIVersion(VIRTUALDUB_FILTERDEF_VERSION);
 
 	cpp = builtin_filters;
-	while(cur = *cpp++)
+	while (cur = *cpp++) {
 		FilterAddBuiltin(cur);
+	}
 
 	cpp = VDVFGetList();
-	while(cur = *cpp++)
+	while (cur = *cpp++) {
 		FilterAddBuiltin(cur);
+	}
 }

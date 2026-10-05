@@ -3,6 +3,7 @@
 //
 // Copyright (C) 2013 Avery Lee
 // Copyright (C) 2016-2018 Anton Shekhovtsov
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -130,9 +131,10 @@ struct MatchFilterFormat {
 	int backup;
 	int legacy;
 
-	MatchFilterFormat(VDPixmapFormatEx originalFormat) {
-		original = VDPixmapFormatNormalize(originalFormat);
-		format = originalFormat;
+	MatchFilterFormat(VDPixmapFormatEx originalFormat)
+		: original(VDPixmapFormatNormalize(originalFormat))
+		, format(originalFormat)
+	{
 		initMask();
 		initBase();
 		backup = 0;
@@ -198,39 +200,24 @@ tpVDPixBltTable VDGetPixBltTableX86MMX();
 
 
 
-class VDPixmapBuffer : public VDPixmap {
+class VDPixmapBuffer : public VDPixmap
+{
 public:
-	VDPixmapBuffer() : mpBuffer(NULL), mLinearSize(0) { data = NULL; format = 0; }
+	VDPixmapBuffer();
 	explicit VDPixmapBuffer(const VDPixmap& src);
 	VDPixmapBuffer(const VDPixmapBuffer& src);
-	VDPixmapBuffer(sint32 w, sint32 h, int format) : mpBuffer(NULL), mLinearSize(0) {
-		init(w, h, format);
-	}
+	VDPixmapBuffer(sint32 w, sint32 h, int format);
 	explicit VDPixmapBuffer(const VDPixmapLayout& layout);
 
 	~VDPixmapBuffer();
 
-	void clear() {
-		if (mpBuffer)		// to reduce debug checks
-			delete[] mpBuffer;
-		mpBuffer = NULL;
-		mLinearSize = 0;
-		format = nsVDPixmap::kPixFormat_Null;
-	}
+	void clear();
 
-#ifdef _DEBUG
-	void *base() { return mpBuffer + (-(int)(uintptr)mpBuffer & 15) + 16; }
-	const void *base() const { return mpBuffer + (-(int)(uintptr)mpBuffer & 15) + 16; }
-	size_t size() const { return mLinearSize - 28; }
+	void* base();
+	const void* base() const;
+	size_t size() const;
 
 	void validate();
-#else
-	void *base() { return mpBuffer + (-(int)(uintptr)mpBuffer & 15); }
-	const void *base() const { return mpBuffer + (-(int)(uintptr)mpBuffer & 15); }
-	size_t size() const { return mLinearSize; }
-
-	void validate() {}
-#endif
 
 	void init(sint32 w, sint32 h, int format);
 	void init(const VDPixmapLayout&, uint32 additionalPadding = 0);
@@ -240,8 +227,8 @@ public:
 	void swap(VDPixmapBuffer&);
 
 protected:
-	char *mpBuffer;
-	size_t	mLinearSize;
+	void* mpBuffer = nullptr;
+	size_t mLinearSize = 0;
 };
 
 

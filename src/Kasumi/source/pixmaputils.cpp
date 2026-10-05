@@ -3,7 +3,7 @@
 //
 // Copyright (C) 1998-2009 Avery Lee
 // Copyright (C) 2015-2019 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -16,97 +16,97 @@
 #include <vd2/system/memory.h>
 
 extern VDPixmapFormatInfo g_vdPixmapFormats[] = {
-                                    // name         qchnk qw qh qwb qhb  qs ab aw ah as   ps
-    /* Null */                      { "null",       false, 1, 1,  0,  0,  0, 0, 0, 0, 0,   0 },
-    /* Pal1 */                      { "Pal1",        true, 8, 1,  3,  0,  1, 0, 0, 0, 0,   2 },
-    /* Pal2 */                      { "Pal2",        true, 4, 1,  2,  0,  1, 0, 0, 0, 0,   4 },
-    /* Pal4 */                      { "Pal4",        true, 2, 1,  1,  0,  1, 0, 0, 0, 0,  16 },
-    /* Pal8 */                      { "Pal8",       false, 1, 1,  0,  0,  1, 0, 0, 0, 0, 256 },
-    /* RGB16_555 */                 { "XRGB1555",   false, 1, 1,  0,  0,  2, 0, 0, 0, 0,   0 },
-    /* RGB16_565 */                 { "RGB565",     false, 1, 1,  0,  0,  2, 0, 0, 0, 0,   0 },
-    /* RGB24 */                     { "RGB24",      false, 1, 1,  0,  0,  3, 0, 0, 0, 0,   0 },
-    /* RGB32 */                     { "RGBA32",     false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* Y8 */                        { "Y8",         false, 1, 1,  0,  0,  1, 0, 0, 0, 0,   0 },
-    /* YUV422_UYVY */               { "UYVY",        true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV422_YUYV */               { "YUYV",        true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_XVYU */               { "XVYU",       false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_Planar */             { "YUV444",     false, 1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
-    /* YUV422_Planar */             { "YUV422",     false, 1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
-    /* YUV420_Planar */             { "YUV420",     false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV411_Planar */             { "YUV411",     false, 1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
-    /* YUV410_Planar */             { "YUV410",     false, 1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
-    /* YUV422_Planar_Centered */    { "YUV422C",    false, 1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
-    /* YUV420_Planar_Centered */    { "YUV420C",    false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV422_Planar_16F */         { "YUV422_16F", false, 1, 1,  0,  0,  2, 2, 1, 0, 2,   0 },
-    /* V210 */                      { "v210",        true,24, 1,  2,  0, 64, 0, 0, 0, 1,   0 },
-    /* YUV422_UYVY_709 */           { "UYVY-709",    true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* NV12 */                      { "NV12",       false, 1, 1,  0,  0,  1, 1, 1, 1, 2,   0 },
-    /* Y8-FR */                     { "Y8-FR",      false, 1, 1,  1,  0,  1, 0, 0, 0, 0,   0 },
-    /* YUV422_YUYV_709 */           { "YUYV-709",    true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_Planar_709 */         { "YUV444-709", false, 1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
-    /* YUV422_Planar_709 */         { "YUV422-709", false, 1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
-    /* YUV420_Planar_709 */         { "YUV420-709", false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV411_Planar_709 */         { "YUV411-709", false, 1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
-    /* YUV410_Planar_709 */         { "YUV410-709", false, 1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
-    /* YUV422_UYVY_FR */            { "UYVY-FR",     true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV422_YUYV_FR */            { "YUYV-FR",     true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_Planar_FR */          { "YUV444-FR",  false, 1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
-    /* YUV422_Planar_FR */          { "YUV422-FR",  false, 1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
-    /* YUV420_Planar_FR */          { "YUV420-FR",  false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV411_Planar_FR */          { "YUV411-FR",  false, 1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
-    /* YUV410_Planar_FR */          { "YUV410-FR",  false, 1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
-                                    // name              qchnk qw qh qwb qhb  qs ab aw ah as   ps
-    /* YUV422_UYVY_FR_709 */        { "UYVY-709-FR",     true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV422_YUYV_FR_709 */        { "YUYV-709-FR",     true, 2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_Planar_FR_709 */      { "YUV444-709-FR",  false, 1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
-    /* YUV422_Planar_FR_709 */      { "YUV422-709-FR",  false, 1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
-    /* YUV420_Planar_FR_709 */      { "YUV420-709-FR",  false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV411_Planar_FR_709 */      { "YUV411-709-FR",  false, 1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
-    /* YUV410_Planar_FR_709 */      { "YUV410-709-FR",  false, 1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
-    /* YUV420i_Planar */            { "YUV420i",        false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420i_Planar_FR */         { "YUV420i-FR",     false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420i_Planar_709 */        { "YUV420i-709",    false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420i_Planar_709_FR */     { "YUV420i-709-FR", false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420it_Planar */           { "YUV420it",       false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420it_Planar_FR */        { "YUV420it-FR",    false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420it_Planar_709 */       { "YUV420it-709",   false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420it_Planar_709_FR */    { "YUV420it-709-FR",false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420ib_Planar */           { "YUV420ib",       false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420ib_Planar_FR */        { "YUV420ib-FR",    false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420ib_Planar_709 */       { "YUV420ib-709",   false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* YUV420ib_Planar_709_FR */    { "YUV420ib-709-FR",false, 1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
-    /* RGB64 */                     { "RGBA64",         false, 1, 1,  0,  0,  8, 0, 0, 0, 0,   0 },
-    /* YUV444_Planar16 */           { "YUV444P16",      false, 1, 1,  0,  0,  2, 2, 0, 0, 2,   0 },
-    /* YUV422_Planar16 */           { "YUV422P16",      false, 1, 1,  0,  0,  2, 2, 1, 0, 2,   0 },
-    /* YUV420_Planar16 */           { "YUV420P16",      false, 1, 1,  0,  0,  2, 2, 1, 1, 2,   0 },
-    /* Y16 */                       { "Y16",            false, 1, 1,  1,  0,  2, 0, 0, 0, 0,   0 },
-    /* YUVA444_Y416 */              { "Y416",           false, 1, 1,  0,  0,  8, 0, 0, 0, 0,   0 },
-    /* YUV444_V410 */               { "v410",           false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_Y410 */               { "Y410",           false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* r210 */                      { "r210",           false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* r10k */                      { "R10k",           false, 1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
-    /* YUV444_V308 */               { "v308",           false, 1, 1,  0,  0,  3, 0, 0, 0, 0,   0 },
-    /* YUV422_P210 */               { "P210",           false, 1, 1,  0,  0,  2, 1, 1, 0, 4,   0 },
-    /* YUV420_P010 */               { "P010",           false, 1, 1,  0,  0,  2, 1, 1, 1, 4,   0 },
-    /* YUV422_P216 */               { "P216",           false, 1, 1,  0,  0,  2, 1, 1, 0, 4,   0 },
-    /* YUV420_P016 */               { "P016",           false, 1, 1,  0,  0,  2, 1, 1, 1, 4,   0 },
-                                    // name              qchnk qw qh qwb qhb  qs ab aw ah as   ps  as4
-    /* YUV444_Alpha_Planar */       { "YUVA444",        false, 1, 1,  0,  0,  1, 3, 0, 0, 1,   0,  1 },
-    /* YUV422_Alpha_Planar */       { "YUVA422",        false, 1, 1,  0,  0,  1, 3, 1, 0, 1,   0,  1 },
-    /* YUV420_Alpha_Planar */       { "YUVA420",        false, 1, 1,  0,  0,  1, 3, 1, 1, 1,   0,  1 },
-    /* YUV444_Alpha_Planar16 */     { "YUVA444P16",     false, 1, 1,  0,  0,  2, 3, 0, 0, 2,   0,  2 },
-    /* YUV422_Alpha_Planar16 */     { "YUVA422P16",     false, 1, 1,  0,  0,  2, 3, 1, 0, 2,   0,  2 },
-    /* YUV420_Alpha_Planar16 */     { "YUVA420P16",     false, 1, 1,  0,  0,  2, 3, 1, 1, 2,   0,  2 },
-    /* YUV422_YU64 */               { "YU64",           true,  2, 1,  1,  0,  8, 0, 0, 0, 0,   0,  0 },
-    /* B64A */                      { "b64a",           false, 1, 1,  0,  0,  8, 0, 0, 0, 0,   0,  0 },
-    /* RGB_Planar */                { "RGB-P8",         false, 1, 1,  0,  0,  1, 2, 0, 0, 1,   0,  0 },
-    /* RGB_Planar16 */              { "RGB-P16",        false, 1, 1,  0,  0,  2, 2, 0, 0, 2,   0,  0 },
-    /* RGB_Planar32F */             { "RGB-Float",      false, 1, 1,  0,  0,  4, 2, 0, 0, 4,   0,  0 },
-    /* RGBA_Planar */               { "RGBA-P8",        false, 1, 1,  0,  0,  1, 3, 0, 0, 1,   0,  1 },
-    /* RGBA_Planar16 */             { "RGBA-P16",       false, 1, 1,  0,  0,  2, 3, 0, 0, 2,   0,  2 },
-    /* RGBA_Planar32F */            { "RGBA-Float",     false, 1, 1,  0,  0,  4, 3, 0, 0, 4,   0,  4 },
-    /* R_32F */                     { "R-Float",        false, 1, 1,  0,  0,  4, 0, 0, 0, 4,   0,  0 },
-    /* B48R */                      { "b48r",           false, 1, 1,  0,  0,  6, 0, 0, 0, 0,   0,  0 },
+                                  // name             qchnk  qw qh qwb qhb  qs ab aw ah as   ps
+     /* Null */                   { "null",           false,  1, 1,  0,  0,  0, 0, 0, 0, 0,   0 },
+     /* Pal1 */                   { "Pal1",            true,  8, 1,  3,  0,  1, 0, 0, 0, 0,   2 },
+     /* Pal2 */                   { "Pal2",            true,  4, 1,  2,  0,  1, 0, 0, 0, 0,   4 },
+     /* Pal4 */                   { "Pal4",            true,  2, 1,  1,  0,  1, 0, 0, 0, 0,  16 },
+     /* Pal8 */                   { "Pal8",           false,  1, 1,  0,  0,  1, 0, 0, 0, 0, 256 },
+     /* RGB16_555 */              { "XRGB1555",       false,  1, 1,  0,  0,  2, 0, 0, 0, 0,   0 },
+     /* RGB16_565 */              { "RGB565",         false,  1, 1,  0,  0,  2, 0, 0, 0, 0,   0 },
+     /* RGB24 */                  { "RGB24",          false,  1, 1,  0,  0,  3, 0, 0, 0, 0,   0 },
+     /* RGB32 */                  { "RGBA32",         false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* Y8 */                     { "Y8",             false,  1, 1,  0,  0,  1, 0, 0, 0, 0,   0 },
+     /* YUV422_UYVY */            { "UYVY",            true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV422_YUYV */            { "YUYV",            true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_XVYU */            { "XVYU",           false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_Planar */          { "YUV444",         false,  1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
+     /* YUV422_Planar */          { "YUV422",         false,  1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
+     /* YUV420_Planar */          { "YUV420",         false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV411_Planar */          { "YUV411",         false,  1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
+     /* YUV410_Planar */          { "YUV410",         false,  1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
+     /* YUV422_Planar_Centered */ { "YUV422C",        false,  1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
+     /* YUV420_Planar_Centered */ { "YUV420C",        false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV422_Planar_16F */      { "YUV422_16F",     false,  1, 1,  0,  0,  2, 2, 1, 0, 2,   0 },
+     /* V210 */                   { "v210",            true, 24, 1,  2,  0, 64, 0, 0, 0, 1,   0 },
+     /* YUV422_UYVY_709 */        { "UYVY-709",        true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* NV12 */                   { "NV12",           false,  1, 1,  0,  0,  1, 1, 1, 1, 2,   0 },
+     /* Y8-FR */                  { "Y8-FR",          false,  1, 1,  1,  0,  1, 0, 0, 0, 0,   0 },
+     /* YUV422_YUYV_709 */        { "YUYV-709",        true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_Planar_709 */      { "YUV444-709",     false,  1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
+     /* YUV422_Planar_709 */      { "YUV422-709",     false,  1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
+     /* YUV420_Planar_709 */      { "YUV420-709",     false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV411_Planar_709 */      { "YUV411-709",     false,  1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
+     /* YUV410_Planar_709 */      { "YUV410-709",     false,  1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
+     /* YUV422_UYVY_FR */         { "UYVY-FR",         true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV422_YUYV_FR */         { "YUYV-FR",         true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_Planar_FR */       { "YUV444-FR",      false,  1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
+     /* YUV422_Planar_FR */       { "YUV422-FR",      false,  1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
+     /* YUV420_Planar_FR */       { "YUV420-FR",      false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV411_Planar_FR */       { "YUV411-FR",      false,  1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
+     /* YUV410_Planar_FR */       { "YUV410-FR",      false,  1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
+                                  // name             qchnk  qw qh qwb qhb  qs ab aw ah as   ps
+     /* YUV422_UYVY_FR_709 */     { "UYVY-709-FR",     true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV422_YUYV_FR_709 */     { "YUYV-709-FR",     true,  2, 1,  1,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_Planar_FR_709 */   { "YUV444-709-FR",  false,  1, 1,  0,  0,  1, 2, 0, 0, 1,   0 },
+     /* YUV422_Planar_FR_709 */   { "YUV422-709-FR",  false,  1, 1,  0,  0,  1, 2, 1, 0, 1,   0 },
+     /* YUV420_Planar_FR_709 */   { "YUV420-709-FR",  false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV411_Planar_FR_709 */   { "YUV411-709-FR",  false,  1, 1,  0,  0,  1, 2, 2, 0, 1,   0 },
+     /* YUV410_Planar_FR_709 */   { "YUV410-709-FR",  false,  1, 1,  0,  0,  1, 2, 2, 2, 1,   0 },
+     /* YUV420i_Planar */         { "YUV420i",        false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420i_Planar_FR */      { "YUV420i-FR",     false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420i_Planar_709 */     { "YUV420i-709",    false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420i_Planar_709_FR */  { "YUV420i-709-FR", false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420it_Planar */        { "YUV420it",       false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420it_Planar_FR */     { "YUV420it-FR",    false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420it_Planar_709 */    { "YUV420it-709",   false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420it_Planar_709_FR */ { "YUV420it-709-FR",false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420ib_Planar */        { "YUV420ib",       false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420ib_Planar_FR */     { "YUV420ib-FR",    false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420ib_Planar_709 */    { "YUV420ib-709",   false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* YUV420ib_Planar_709_FR */ { "YUV420ib-709-FR",false,  1, 1,  0,  0,  1, 2, 1, 1, 1,   0 },
+     /* RGB64 */                  { "RGBA64",         false,  1, 1,  0,  0,  8, 0, 0, 0, 0,   0 },
+     /* YUV444_Planar16 */        { "YUV444P16",      false,  1, 1,  0,  0,  2, 2, 0, 0, 2,   0 },
+     /* YUV422_Planar16 */        { "YUV422P16",      false,  1, 1,  0,  0,  2, 2, 1, 0, 2,   0 },
+     /* YUV420_Planar16 */        { "YUV420P16",      false,  1, 1,  0,  0,  2, 2, 1, 1, 2,   0 },
+     /* Y16 */                    { "Y16",            false,  1, 1,  1,  0,  2, 0, 0, 0, 0,   0 },
+     /* YUVA444_Y416 */           { "Y416",           false,  1, 1,  0,  0,  8, 0, 0, 0, 0,   0 },
+     /* YUV444_V410 */            { "v410",           false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_Y410 */            { "Y410",           false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* r210 */                   { "r210",           false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* r10k */                   { "R10k",           false,  1, 1,  0,  0,  4, 0, 0, 0, 0,   0 },
+     /* YUV444_V308 */            { "v308",           false,  1, 1,  0,  0,  3, 0, 0, 0, 0,   0 },
+     /* YUV422_P210 */            { "P210",           false,  1, 1,  0,  0,  2, 1, 1, 0, 4,   0 },
+     /* YUV420_P010 */            { "P010",           false,  1, 1,  0,  0,  2, 1, 1, 1, 4,   0 },
+     /* YUV422_P216 */            { "P216",           false,  1, 1,  0,  0,  2, 1, 1, 0, 4,   0 },
+     /* YUV420_P016 */            { "P016",           false,  1, 1,  0,  0,  2, 1, 1, 1, 4,   0 },
+                                  // name             qchnk  qw qh qwb qhb  qs ab aw ah as   ps as4
+     /* YUV444_Alpha_Planar */    { "YUVA444",        false,  1, 1,  0,  0,  1, 3, 0, 0, 1,   0, 1 },
+     /* YUV422_Alpha_Planar */    { "YUVA422",        false,  1, 1,  0,  0,  1, 3, 1, 0, 1,   0, 1 },
+     /* YUV420_Alpha_Planar */    { "YUVA420",        false,  1, 1,  0,  0,  1, 3, 1, 1, 1,   0, 1 },
+     /* YUV444_Alpha_Planar16 */  { "YUVA444P16",     false,  1, 1,  0,  0,  2, 3, 0, 0, 2,   0, 2 },
+     /* YUV422_Alpha_Planar16 */  { "YUVA422P16",     false,  1, 1,  0,  0,  2, 3, 1, 0, 2,   0, 2 },
+     /* YUV420_Alpha_Planar16 */  { "YUVA420P16",     false,  1, 1,  0,  0,  2, 3, 1, 1, 2,   0, 2 },
+     /* YUV422_YU64 */            { "YU64",           true,   2, 1,  1,  0,  8, 0, 0, 0, 0,   0, 0 },
+     /* B64A */                   { "b64a",           false,  1, 1,  0,  0,  8, 0, 0, 0, 0,   0, 0 },
+     /* RGB_Planar */             { "RGB-P8",         false,  1, 1,  0,  0,  1, 2, 0, 0, 1,   0, 0 },
+     /* RGB_Planar16 */           { "RGB-P16",        false,  1, 1,  0,  0,  2, 2, 0, 0, 2,   0, 0 },
+     /* RGB_Planar32F */          { "RGB-Float",      false,  1, 1,  0,  0,  4, 2, 0, 0, 4,   0, 0 },
+     /* RGBA_Planar */            { "RGBA-P8",        false,  1, 1,  0,  0,  1, 3, 0, 0, 1,   0, 1 },
+     /* RGBA_Planar16 */          { "RGBA-P16",       false,  1, 1,  0,  0,  2, 3, 0, 0, 2,   0, 2 },
+     /* RGBA_Planar32F */         { "RGBA-Float",     false,  1, 1,  0,  0,  4, 3, 0, 0, 4,   0, 4 },
+     /* R_32F */                  { "R-Float",        false,  1, 1,  0,  0,  4, 0, 0, 0, 4,   0, 0 },
+     /* B48R */                   { "b48r",           false,  1, 1,  0,  0,  6, 0, 0, 0, 0,   0, 0 },
 };
 
 bool VDPixmapFormatHasAlpha(sint32 format) {
@@ -192,23 +192,27 @@ bool VDPixmapFormatGray(sint32 format) {
 	return false;
 }
 
-VDPixmap VDPixmap::copy(const VDXPixmap& a) {
+VDPixmap VDPixmap::copy(const VDXPixmap& a)
+{
 	VDPixmap b;
-	b.data = a.data;
+	b.data    = a.data;
 	b.palette = a.palette;
-	b.w = a.w;
-	b.h = a.h;
-	b.pitch = a.pitch;
-	b.format = a.format;
-	b.data2 = a.data2;
-	b.pitch2 = a.pitch2;
-	b.data3 = a.data3;
-	b.pitch3 = a.pitch3;
+	b.w       = a.w;
+	b.h       = a.h;
+	b.pitch   = a.pitch;
+	b.format  = a.format;
+	b.data2   = a.data2;
+	b.pitch2  = a.pitch2;
+	b.data3   = a.data3;
+	b.pitch3  = a.pitch3;
 
 	if (VDPixmapFormatHasAlphaPlane(a.format)) {
 		const VDXPixmapAlpha& aa = (const VDXPixmapAlpha&)a;
-		b.data4 = aa.data4;
+		b.data4  = aa.data4;
 		b.pitch4 = aa.pitch4;
+	} else {
+		b.data4  = nullptr;
+		b.pitch4 = 0;
 	}
 
 	return b;
@@ -1260,10 +1264,13 @@ VDPixmap VDPixmapOffset(const VDPixmap& src, vdpixpos x, vdpixpos y) {
 	switch(info.auxbufs) {
 	case 3:
 		temp.data4 = (char *)temp.data4 + x*info.aux4size + y*temp.pitch4;
+		[[fallthrough]];
 	case 2:
 		temp.data3 = (char *)temp.data3 + (x >> info.auxwbits)*info.auxsize + (y >> info.auxhbits)*temp.pitch3;
+		[[fallthrough]];
 	case 1:
 		temp.data2 = (char *)temp.data2 + (x >> info.auxwbits)*info.auxsize + (y >> info.auxhbits)*temp.pitch2;
+		[[fallthrough]];
 	case 0:
 		temp.data = (char *)temp.data + x*info.qsize + y*temp.pitch;
 	}
@@ -1283,10 +1290,13 @@ VDPixmapLayout VDPixmapLayoutOffset(const VDPixmapLayout& src, vdpixpos x, vdpix
 	switch(info.auxbufs) {
 	case 3:
 		temp.data4 += x*info.aux4size + y*temp.pitch4;
+		[[fallthrough]];
 	case 2:
 		temp.data3 += -(-x >> info.auxwbits)*info.auxsize + -(-y >> info.auxhbits)*temp.pitch3;
+		[[fallthrough]];
 	case 1:
 		temp.data2 += -(-x >> info.auxwbits)*info.auxsize + -(-y >> info.auxhbits)*temp.pitch2;
+		[[fallthrough]];
 	case 0:
 		temp.data += x*info.qsize + y*temp.pitch;
 	}
@@ -1294,9 +1304,8 @@ VDPixmapLayout VDPixmapLayoutOffset(const VDPixmapLayout& src, vdpixpos x, vdpix
 	return temp;
 }
 
-uint32 VDPixmapCreateLinearLayout(VDPixmapLayout& layout, VDPixmapFormatEx format, vdpixsize w, vdpixsize h, int alignment) {
-	const ptrdiff_t alignmask = alignment - 1;
-
+uint32 VDPixmapCreateLinearLayout(VDPixmapLayout& layout, VDPixmapFormatEx format, vdpixsize w, vdpixsize h, int alignment)
+{
 	const VDPixmapFormatInfo& srcinfo = VDPixmapGetInfo(format);
 	sint32		qw			= (w + srcinfo.qw - 1) / srcinfo.qw;
 	sint32		qh			= -(-h >> srcinfo.qhbits);
@@ -1304,7 +1313,7 @@ uint32 VDPixmapCreateLinearLayout(VDPixmapLayout& layout, VDPixmapFormatEx forma
 	sint32		subh		= -(-h >> srcinfo.auxhbits);
 	sint32		auxsize		= srcinfo.auxsize;
 
-	ptrdiff_t	mainpitch	= (srcinfo.qsize * qw + alignmask) & ~alignmask;
+	ptrdiff_t	mainpitch	= VDAlignUp(srcinfo.qsize * qw, alignment);
 	size_t		mainsize	= mainpitch * qh;
 
 	layout.data		= 0;
@@ -1322,7 +1331,7 @@ uint32 VDPixmapCreateLinearLayout(VDPixmapLayout& layout, VDPixmapFormatEx forma
 	layout.formatEx	= format;
 
 	if (srcinfo.auxbufs >= 1) {
-		ptrdiff_t	subpitch	= (subw * auxsize + alignmask) & ~alignmask;
+		ptrdiff_t	subpitch	= VDAlignUp(subw * auxsize, alignment);
 		size_t		subsize		= subpitch * subh;
 
 		layout.data2	= mainsize;
@@ -1337,7 +1346,7 @@ uint32 VDPixmapCreateLinearLayout(VDPixmapLayout& layout, VDPixmapFormatEx forma
 	}
 
 	if (srcinfo.auxbufs >= 3) {
-		ptrdiff_t	apitch	= (srcinfo.aux4size * w + alignmask) & ~alignmask;
+		ptrdiff_t	apitch	= VDAlignUp(srcinfo.aux4size * w, alignment);
 		size_t		asize	= apitch * h;
 
 		layout.data4	= mainsize;
@@ -1517,94 +1526,130 @@ VDPixmap VDPixmapExtractField(const VDPixmap& src, bool field2) {
 
 ///////////////////////////////////////////////////////////////////////////
 
+constexpr size_t VDPIXMAP_ALIGNMENT = std::max<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__, 32);
+
+template <typename T>
+constexpr T VDPixmap_AlignUp(const T value) // align up: round up to next boundary
+{
+	constexpr T align_mask = (T)VDPIXMAP_ALIGNMENT - 1;
+	return (value + align_mask) & ~align_mask;
+};
+
+#ifdef _DEBUG
+	#define VDPIXMAP_DEBUG_HEAD_BYTES (VDPIXMAP_ALIGNMENT)
+	#define VDPIXMAP_DEBUG_TAIL_BYTES (VDPIXMAP_ALIGNMENT)
+#endif
+
+VDPixmapBuffer::VDPixmapBuffer()
+{
+	VDPixmap::clear();
+}
+
 VDPixmapBuffer::VDPixmapBuffer(const VDPixmap& src)
-	: mpBuffer(NULL)
-	, mLinearSize(0)
 {
 	assign(src);
 }
 
 VDPixmapBuffer::VDPixmapBuffer(const VDPixmapBuffer& src)
-	: mpBuffer(NULL)
-	, mLinearSize(0)
 {
 	assign(src);
 }
 
-VDPixmapBuffer::VDPixmapBuffer(const VDPixmapLayout& layout) {
+VDPixmapBuffer::VDPixmapBuffer(sint32 w, sint32 h, int format)
+{
+	init(w, h, format);
+}
+
+VDPixmapBuffer::VDPixmapBuffer(const VDPixmapLayout& layout)
+{
 	init(layout);
 }
 
-VDPixmapBuffer::~VDPixmapBuffer() {
+VDPixmapBuffer::~VDPixmapBuffer()
+{
 #ifdef _DEBUG
 	validate();
 #endif
 
-	delete[] mpBuffer;
+	VDAlignedFree(mpBuffer);
 }
 
-void VDPixmapBuffer::init(sint32 width, sint32 height, int f) {
+void VDPixmapBuffer::clear()
+{
+	VDAlignedFree(mpBuffer);
+	mpBuffer = nullptr;
+	mLinearSize = 0;
+	format = nsVDPixmap::kPixFormat_Null;
+}
+
+void VDPixmapBuffer::init(sint32 width, sint32 height, int f)
+{
 	const VDPixmapFormatInfo& srcinfo = VDPixmapGetInfo(f);
 	sint32		qw			= (width + srcinfo.qw - 1) / srcinfo.qw;
 	sint32		qh			= -(-height >> srcinfo.qhbits);
 	sint32		subw		= -(-width >> srcinfo.auxwbits);
 	sint32		subh		= -(-height >> srcinfo.auxhbits);
-	ptrdiff_t	mainpitch	= (srcinfo.qsize * qw + 15) & ~15;
-	ptrdiff_t	subpitch	= (srcinfo.auxsize * subw + 15) & ~15;
-	ptrdiff_t	apitch		= (srcinfo.aux4size * width + 15) & ~15;
+	ptrdiff_t	mainpitch	= VDPixmap_AlignUp(srcinfo.qsize * qw);
+	ptrdiff_t	subpitch	= VDPixmap_AlignUp(srcinfo.auxsize * subw);
+	ptrdiff_t	apitch		= VDPixmap_AlignUp(srcinfo.aux4size * width);
 	uint64		mainsize	= (uint64)mainpitch * qh;
 	uint64		subsize		= (uint64)subpitch * subh;
 	uint64		asize		= (uint64)apitch * height;
-	uint64		totalsize64	= mainsize + 4 * srcinfo.palsize;
 
+	uint64 totalsize64	= mainsize;
 	switch (srcinfo.auxbufs) {
 	case 3:
 		totalsize64 += asize;
+		[[fallthrough]];
 	case 2:
 		totalsize64 += subsize;
+		[[fallthrough]];
 	case 1:
 		totalsize64 += subsize;
 	}
+	totalsize64 += srcinfo.palsize * 4;
 
 #ifdef _DEBUG
-	totalsize64 += 28;
+	totalsize64 += VDPIXMAP_DEBUG_HEAD_BYTES + VDPIXMAP_DEBUG_TAIL_BYTES;
 #endif
 
 	// reject huge allocations
-	if (totalsize64 > (size_t)-1 - 4096)
+	if (totalsize64 > (uint32)-1 - 4096) {
 		throw MyMemoryError();
+	}
 
 	size_t totalsize = (uint32)totalsize64;
 
 	if (mLinearSize != totalsize) {
 		clear();
-		mpBuffer = new_nothrow char[totalsize + 15];
-		if (!mpBuffer)
-			throw MyMemoryError(totalsize + 15);
+		mpBuffer = VDAlignedMalloc(totalsize, VDPIXMAP_ALIGNMENT);
+		if (!mpBuffer) {
+			throw MyMemoryError(totalsize);
+		}
 		mLinearSize = totalsize;
 	}
 
-	char *p = mpBuffer + (-(int)(uintptr)mpBuffer & 15);
+	char *p = (char*)mpBuffer;
 
 #ifdef _DEBUG
-	*(uint32 *)p = totalsize;
-	for(int i=0; i<12; ++i)
-		p[4+i] = (char)(0xa0 + i);
-
-	p += 16;
+	*(uint32*)p = totalsize;
+	for (int i = sizeof(uint32); i < VDPIXMAP_DEBUG_HEAD_BYTES; ++i) {
+		p[i] = (char)(0xa0 + i);
+	}
+	p += VDPIXMAP_DEBUG_HEAD_BYTES;
 #endif
 
 	data	= p;
 	pitch	= mainpitch;
 	p += mainsize;
 
-	palette	= NULL;
-	data2	= NULL;
-	pitch2	= NULL;
-	data3	= NULL;
-	pitch3	= NULL;
-	data4	= NULL;
-	pitch4	= NULL;
+	palette	= nullptr;
+	data2	= nullptr;
+	pitch2	= 0;
+	data3	= nullptr;
+	pitch3	= 0;
+	data4	= nullptr;
+	pitch4	= 0;
 	w		= width;
 	h		= height;
 	format	= f;
@@ -1634,12 +1679,14 @@ void VDPixmapBuffer::init(sint32 width, sint32 height, int f) {
 	}
 
 #ifdef _DEBUG
-	for(int j=0; j<12; ++j)
+	for (int j = 0; j < VDPIXMAP_DEBUG_TAIL_BYTES; ++j) {
 		p[j] = (char)(0xb0 + j);
+	}
 #endif
 }
 
-void VDPixmapBuffer::init(const VDPixmapLayout& layout, uint32 additionalPadding) {
+void VDPixmapBuffer::init(const VDPixmapLayout& layout, uint32 additionalPadding)
+{
 	const VDPixmapFormatInfo& srcinfo = VDPixmapGetInfo(layout.format);
 	sint32		qw			= (layout.w + srcinfo.qw - 1) / srcinfo.qw;
 	sint32		qh			= -(-layout.h >> srcinfo.qhbits);
@@ -1686,37 +1733,39 @@ void VDPixmapBuffer::init(const VDPixmapLayout& layout, uint32 additionalPadding
 		}
 	}
 
-	sint64 linsize64 = ((maxo - mino + 3) & ~(uint64)3);
+	sint64 linsize64 = VDPixmap_AlignUp(maxo - mino);
 
-	sint64 totalsize64 = linsize64 + 4*srcinfo.palsize + additionalPadding;
+	sint64 totalsize64 = linsize64 + srcinfo.palsize * 4 + additionalPadding;
 
 #ifdef _DEBUG
-	totalsize64 += 28;
+	totalsize64 += VDPIXMAP_DEBUG_HEAD_BYTES + VDPIXMAP_DEBUG_TAIL_BYTES;
 #endif
 
 	// reject huge allocations
-	if (totalsize64 > (size_t)-1 - 4096)
+	if (totalsize64 > (uint32)-1 - 4096) {
 		throw MyMemoryError();
+	}
 
 	size_t totalsize = (uint32)totalsize64;
 	ptrdiff_t linsize = (uint32)linsize64;
 
 	if (mLinearSize != totalsize) {
 		clear();
-		mpBuffer = new_nothrow char[totalsize + 15];
-		if (!mpBuffer)
-			throw MyMemoryError(totalsize + 15);
+		mpBuffer = VDAlignedMalloc(totalsize, VDPIXMAP_ALIGNMENT);
+		if (!mpBuffer) {
+			throw MyMemoryError(totalsize);
+		}
 		mLinearSize = totalsize;
 	}
 
-	char *p = mpBuffer + (-(int)(uintptr)mpBuffer & 15);
+	char* p = (char*)mpBuffer;
 
 #ifdef _DEBUG
-	*(uint32 *)p = totalsize - 28;
-	for(int i=0; i<12; ++i)
-		p[4+i] = (char)(0xa0 + i);
-
-	p += 16;
+	*(uint32*)p = totalsize;
+	for (int i = sizeof(uint32); i < VDPIXMAP_DEBUG_HEAD_BYTES; ++i) {
+		p[i] = (char)(0xa0 + i);
+	}
+	p += VDPIXMAP_DEBUG_HEAD_BYTES;
 #endif
 
 	w		= layout.w;
@@ -1738,23 +1787,27 @@ void VDPixmapBuffer::init(const VDPixmapLayout& layout, uint32 additionalPadding
 	if (srcinfo.palsize) {
 		palette = (const uint32 *)(p + linsize);
 
-		if (layout.palette)
-			memcpy((void *)palette, layout.palette, 4*srcinfo.palsize);
+		if (layout.palette) {
+			memcpy((void*)palette, layout.palette, 4 * srcinfo.palsize);
+		}
 	}
 
 #ifdef _DEBUG
-	for(int j=0; j<12; ++j)
-		p[totalsize + j - 28] = (char)(0xb0 + j);
+	p = (char*)mpBuffer + totalsize - VDPIXMAP_DEBUG_TAIL_BYTES;
+	for (int j = 0; j < VDPIXMAP_DEBUG_TAIL_BYTES; ++j) {
+		p[j] = (char)(0xb0 + j);
+	}
 #endif
 
 	VDAssertValidPixmap(*this);
 }
 
-void VDPixmapBuffer::assign(const VDPixmap& src) {
+void VDPixmapBuffer::assign(const VDPixmap& src)
+{
 	if (!src.format) {
-		delete[] mpBuffer;
-		mpBuffer = NULL;
-		data = NULL;
+		VDAlignedFree(mpBuffer);
+		mpBuffer = nullptr;
+		data = nullptr;
 		format = 0;
 	} else {
 		init(src.w, src.h, src.format);
@@ -1772,36 +1825,79 @@ void VDPixmapBuffer::assign(const VDPixmap& src) {
 		switch(srcinfo.auxbufs) {
 		case 3:
 			VDMemcpyRect(data4, pitch4, src.data4, src.pitch4, src.w * srcinfo.aux4size, src.h);
+			[[fallthrough]];
 		case 2:
 			VDMemcpyRect(data3, pitch3, src.data3, src.pitch3, subw, subh);
+			[[fallthrough]];
 		case 1:
 			VDMemcpyRect(data2, pitch2, src.data2, src.pitch2, subw, subh);
+			[[fallthrough]];
 		case 0:
 			VDMemcpyRect(data, pitch, src.data, src.pitch, qw * srcinfo.qsize, qh);
 		}
 	}
 }
 
-void VDPixmapBuffer::swap(VDPixmapBuffer& dst) {
+void VDPixmapBuffer::swap(VDPixmapBuffer& dst)
+{
 	std::swap(mpBuffer, dst.mpBuffer);
 	std::swap(mLinearSize, dst.mLinearSize);
 	std::swap(static_cast<VDPixmap&>(*this), static_cast<VDPixmap&>(dst));
 }
 
+void* VDPixmapBuffer::base()
+{
 #ifdef _DEBUG
-void VDPixmapBuffer::validate() {
+	return (char*)mpBuffer + VDPIXMAP_DEBUG_HEAD_BYTES;
+#else
+	return mpBuffer;
+#endif
+}
+
+const void* VDPixmapBuffer::base() const
+{
+#ifdef _DEBUG
+	return (char*)mpBuffer + VDPIXMAP_DEBUG_HEAD_BYTES;
+#else
+	return mpBuffer;
+#endif
+}
+
+size_t VDPixmapBuffer::size() const
+{
+#ifdef _DEBUG
+	return mLinearSize - (VDPIXMAP_DEBUG_HEAD_BYTES + VDPIXMAP_DEBUG_TAIL_BYTES);
+#else
+	return mLinearSize;
+#endif
+}
+
+void VDPixmapBuffer::validate()
+{
+#ifdef _DEBUG
 	if (mpBuffer) {
-		char *p = (char *)(((uintptr)mpBuffer + 15) & ~(uintptr)15);
+		char* p = (char*)mpBuffer;
+
+		// verify size
+		if (*(uint32*)p != mLinearSize) {
+			VDASSERT(!"VDPixmapBuffer: Buffer underflow detected.\n");
+		}
 
 		// verify head bytes
-		for(int i=0; i<12; ++i)
-			if (p[i+4] != (char)(0xa0 + i))
+		for (int i = sizeof(uint32); i < VDPIXMAP_DEBUG_HEAD_BYTES; ++i) {
+			if (p[i] != (char)(0xa0 + i)) {
 				VDASSERT(!"VDPixmapBuffer: Buffer underflow detected.\n");
+			}
+		}
 
 		// verify tail bytes
-		for(int j=0; j<12; ++j)
-			if (p[mLinearSize - 12 + j] != (char)(0xb0 + j))
+		p = (char*)mpBuffer + mLinearSize - VDPIXMAP_DEBUG_TAIL_BYTES;
+
+		for (int j = 0; j < VDPIXMAP_DEBUG_TAIL_BYTES; ++j) {
+			if (p[j] != (char)(0xb0 + j)) {
 				VDASSERT(!"VDPixmapBuffer: Buffer overflow detected.\n");
+			}
+		}
 	}
-}
 #endif
+}

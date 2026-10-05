@@ -3,6 +3,7 @@
 //
 // Copyright (C) 2013 Avery Lee
 // Copyright (C) 2015-2019 Anton Shekhovtsov
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -138,18 +139,18 @@ struct VDPixmap {
 	FilterModPixmapInfo info;
 
 	void clear() {
-		data = 0;
-		palette = 0;
-		w = 0;
-		h = 0;
-		pitch = 0;
-		format = 0;
-		data2 = 0;
-		pitch2 = 0;
-		data3 = 0;
-		pitch3 = 0;
-		data4 = 0;
-		pitch4 = 0;
+		data    = nullptr;
+		palette = nullptr;
+		w       = 0;
+		h       = 0;
+		pitch   = 0;
+		format  = 0;
+		data2   = nullptr;
+		pitch2  = 0;
+		data3   = nullptr;
+		pitch3  = 0;
+		data4   = nullptr;
+		pitch4  = 0;
 		info.clear();
 	}
 
@@ -157,21 +158,15 @@ struct VDPixmap {
 };
 
 struct VDPixmapFormatEx {
-	sint32			format;
-	vd2::ColorSpaceMode colorSpaceMode;
-	vd2::ColorRangeMode colorRangeMode;
+	sint32 format = 0;
+	vd2::ColorSpaceMode colorSpaceMode = vd2::kColorSpaceMode_None;
+	vd2::ColorRangeMode colorRangeMode = vd2::kColorRangeMode_None;
 
 	operator int() const { return format; }
 
-	VDPixmapFormatEx() {
-		format = 0;
-		colorSpaceMode = vd2::kColorSpaceMode_None;
-		colorRangeMode = vd2::kColorRangeMode_None;
-	}
+	VDPixmapFormatEx() = default;
 	VDPixmapFormatEx(sint32 v) {
 		format = v;
-		colorSpaceMode = vd2::kColorSpaceMode_None;
-		colorRangeMode = vd2::kColorRangeMode_None;
 	}
 	VDPixmapFormatEx(const VDPixmap& v) {
 		format = v.format;
@@ -195,7 +190,7 @@ struct VDPixmapFormatEx {
 
 struct VDPixmapLayout {
 	ptrdiff_t		data;
-	const uint32	*palette;
+	const uint32*	palette;
 	vdpixsize		w;
 	vdpixsize		h;
 	vdpixoffset		pitch;
@@ -213,19 +208,19 @@ struct VDPixmapLayout {
 	VDPixmapFormatEx formatEx;
 
 	void clear() {
-		data = 0;
-		palette = 0;
-		w = 0;
-		h = 0;
-		pitch = 0;
-		format = 0;
-		data2 = 0;
-		pitch2 = 0;
-		data3 = 0;
-		pitch3 = 0;
-		data4 = 0;
-		pitch4 = 0;
-		formatEx = 0;
+		data     = 0;
+		palette  = nullptr;
+		w        = 0;
+		h        = 0;
+		pitch    = 0;
+		format   = 0;
+		data2    = 0;
+		pitch2   = 0;
+		data3    = 0;
+		pitch3   = 0;
+		data4    = 0;
+		pitch4   = 0;
+		formatEx = {};
 	}
 };
 

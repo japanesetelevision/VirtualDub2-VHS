@@ -3,7 +3,7 @@
 //
 // Copyright (C) 1998-2009 Avery Lee
 // Copyright (C) 2015-2019 Anton Shekhovtsov
-// Copyright (C) 2025 v0lt
+// Copyright (C) 2025-2026 v0lt
 //
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
@@ -652,8 +652,6 @@ void VDPixmapUberBlitter::Blit2Separated(const VDPixmap& px, const vdrect32 *rDs
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-VDPixmapUberBlitterGenerator::VDPixmapUberBlitterGenerator() {
-}
 
 VDPixmapUberBlitterGenerator::~VDPixmapUberBlitterGenerator() {
 	while(!mGenerators.empty()) {

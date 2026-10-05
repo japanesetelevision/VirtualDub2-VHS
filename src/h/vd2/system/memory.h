@@ -3,6 +3,7 @@
 //
 // Copyright (C) 1998-2004 Avery Lee, All Rights Reserved.
 // Copyright (C) 2016 Anton Shekhovtsov
+// Copyright (C) 2026 v0lt
 //
 // SPDX-License-Identifier: Zlib
 //
@@ -12,10 +13,23 @@
 
 #include <vd2/system/vdtypes.h>
 
-void *VDAlignedMalloc(size_t n, unsigned alignment);
+template <typename T, typename U>
+inline constexpr T VDAlignDown(const T value, const U align) // aligning downwards is just truncation
+{
+	return value & ~((T)align - 1);
+};
+
+template <typename T, typename U>
+inline constexpr T VDAlignUp(const T value, const U align) // align up: round up to next boundary
+{
+	const T align_mask = (T)align - 1;
+	return (value + align_mask) & ~align_mask;
+};
+
+void *VDAlignedMalloc(size_t n, size_t alignment);
 void VDAlignedFree(void *p);
 
-template<unsigned alignment>
+template<size_t alignment>
 struct VDAlignedObject {
 	inline void *operator new(size_t n) { return VDAlignedMalloc(n, alignment); }
 	inline void operator delete(void *p) { VDAlignedFree(p); }
