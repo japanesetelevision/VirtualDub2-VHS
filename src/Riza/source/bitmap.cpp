@@ -809,28 +809,31 @@ bool VDMakeBitmapFormatFromPixmapFormat(vdstructex<VDAVIBitmapInfoHeader>& dst, 
 	return true;
 }
 
-uint32 VDMakeBitmapCompatiblePixmapLayout(VDPixmapLayout& layout, sint32 w, sint32 h, int format, int variant, const uint32 *palette, int imageSize) {
+uint32 VDMakeBitmapCompatiblePixmapLayout(VDPixmapLayout& layout, sint32 w, sint32 h, int format, int variant, const uint32 *palette, int imageSize)
+{
 	using namespace nsVDPixmap;
 	int alignment = 4;
 
-	if (format == kPixFormat_YUV422_V210) {
-		// V210 requires 128 _byte_ (NOT bit!) alignment.
+	switch (format) {
+	case kPixFormat_YUV422_V210:
+		// v210 requires 128 byte (NOT bit!) alignment.
 		alignment = 128;
-	} else if (format == kPixFormat_R210) {
+		break;
+	case kPixFormat_R210:
 		alignment = 256;
-		if (imageSize && imageSize == w * h * 4) {
-			alignment = 1;
-		}
-	} else if (format == kPixFormat_YUV444_V308) {
+		break;
+	case kPixFormat_YUV444_V308:
 		alignment = 1;
 		if (imageSize && VDAlignUp(w, 4) * h == imageSize) {
 			alignment = 4;
 		}
-	} else if (format == kPixFormat_Y8) {
+		break;
+	case kPixFormat_Y8:
 		if (imageSize && w * h == imageSize) {
 			alignment = 1;
 		}
-	} else {
+		break;
+	default:
 		const VDPixmapFormatInfo& info = VDPixmapGetInfo(format);
 		if (info.auxbufs > 0) {
 			alignment = info.qsize;
