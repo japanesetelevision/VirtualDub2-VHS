@@ -818,16 +818,24 @@ uint32 VDMakeBitmapCompatiblePixmapLayout(VDPixmapLayout& layout, sint32 w, sint
 		alignment = 128;
 	} else if (format == kPixFormat_R210) {
 		alignment = 256;
-		if (imageSize && imageSize==w*h*4) alignment = 1;
+		if (imageSize && imageSize == w * h * 4) {
+			alignment = 1;
+		}
 	} else if (format == kPixFormat_YUV444_V308) {
 		alignment = 1;
 		if (imageSize && VDAlignUp(w, 4) * h == imageSize) {
 			alignment = 4;
 		}
 	} else if (format == kPixFormat_Y8) {
-		if (imageSize && w*h==imageSize) alignment = 1;
-	} else if (VDPixmapGetInfo(format).auxbufs > 1)
-		alignment = 1;
+		if (imageSize && w * h == imageSize) {
+			alignment = 1;
+		}
+	} else {
+		const VDPixmapFormatInfo& info = VDPixmapGetInfo(format);
+		if (info.auxbufs > 0) {
+			alignment = info.qsize;
+		}
+	}
 
 	uint32 linspace = VDPixmapCreateLinearLayout(layout, format, w, abs(h), alignment);
 	if (variant==0) variant = 1;
