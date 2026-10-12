@@ -42,7 +42,7 @@ static const char g_szHexWarning[]="Hex editor warning";
 
 static const char hexdig[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-static const struct RIFFFieldInfo {
+const struct RIFFFieldInfo {
 	int offset;
 	enum {
 		ksbyte,
@@ -53,8 +53,10 @@ static const struct RIFFFieldInfo {
 		kulong,
 		kfcc
 	} type;
-	const char *name;
-} g_Fields_strh[]={
+	const char* name;
+};
+
+static const RIFFFieldInfo g_Fields_strh[]={
 	{ 8, RIFFFieldInfo::kfcc, "fccType: stream type"},
 	{12, RIFFFieldInfo::kfcc, "fccHandler: stream handler"},
 	{16, RIFFFieldInfo::kulong, "dwFlags"},
@@ -109,6 +111,9 @@ static const struct RIFFFieldInfo {
 	{48}
 };
 
+// https://mediaarea.net/AVIMetaEdit/listinfo
+// https://exiftool.sourceforge.net/TagNames/RIFF.html
+
 static const struct RIFFChunkInfo {
 	unsigned long id;
 	const char *desc;
@@ -123,19 +128,37 @@ static const struct RIFFChunkInfo {
 	{ 'lrts', "AVI stream header block" },
 	{ 'lmdo', "AVI2 extended header block" },
 	{ 'ivom', "AVI data block" },
+	{ FCC('INFO'), "Information block"},
+	{ FCC('ncdt'), "NikonData"},
 	0,
 }, g_JustChunks[]={
 	{ 'KNUJ', "padding" },
 	{ 'hiva', "AVI file header", g_Fields_avih },
-	{ 'hrts', "AVI stream header", g_Fields_strh },
-	{ 'frts', "AVI stream format" },
-	{ 'drts', "AVI stream codec data" },
 	{ 'xdni', "AVI2 hierarchical indexing data" },
 	{ 'hlmd', "AVI2 extended header" },
 	{ '1xdi', "AVI legacy index" },
 	{ 'mges', "VirtualDub next segment pointer" },
 	{ 'atad', "Waveform data" },
 	{ ' tmf', "Wave format", g_Fields_strf_audio },
+	// RIFF Stream Tags
+	{ FCC('strd'), "Stream codec data" },
+	{ FCC('strf'), "Stream format" },
+	{ FCC('strh'), "Stream header", g_Fields_strh },
+	{ FCC('strn'), "Stream name" },
+	// LIST-INFO
+	{ FCC('IART'), "Artist" },
+	{ FCC('ICMT'), "Comments" },
+	{ FCC('ICOP'), "Copyright" },
+	{ FCC('ICRD'), "Creation date" },
+	{ FCC('INAM'), "Name (Title)" },
+	{ FCC('ISBJ'), "Subject" },
+	{ FCC('ISFT'), "Software" },
+	{ FCC('IDIT'), "Digitization Date" },
+	//
+	{ FCC('vprp'), "Video properties" },
+	//
+	{ FCC('TCDO'), "EndTimecode" },
+	{ FCC('TCOD'), "StartTimecode" },
 	0
 },
 g_Chunk_strf_audio={ 'strf', "AVI stream format (audio)", g_Fields_strf_audio },
@@ -2471,14 +2494,17 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 			if (!isValidFOURCC(chunk.ckid) || chunk.size > sizeleft-8) {
 				strcpy(dst, "invalid chunk");
 				sizeleft = 0;
-			} else if (isdigit(chunk.ckid&0xff) && isdigit((chunk.ckid>>8)&0xff)) {
-				int stream = 10*(chunk.ckid&15) + ((chunk.ckid&0x0f00)>>8);
+			}
+			else if (isdigit(chunk.ckid & 0xff) && isdigit((chunk.ckid >> 8) & 0xff)) {
+				int stream = 10 * (chunk.ckid & 15) + ((chunk.ckid & 0x0f00) >> 8);
 
 				sprintf(dst, "stream %d: byte pos %8I64d, chunk %ld", stream, rsi.size[stream], rsi.count[stream]);
 				rsi.size[stream] += chunk.size;
-				rsi.count[stream] ++;
-			} else
+				rsi.count[stream]++;
+			}
+			else {
 				strcpy(dst, LookupRIFFChunk(g_JustChunks, chunk.ckid));
+			}
 		}
 
 		const size_t len = strlen(buf);
