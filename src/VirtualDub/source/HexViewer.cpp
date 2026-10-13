@@ -1221,16 +1221,25 @@ void HexEditor::Open() {
 	}
 }
 
-void HexEditor::Open(const wchar_t *pszFile, bool bRW) {
+void HexEditor::Open(const wchar_t *pszFile, bool bRW)
+{
 	Close();
+
+	if (bRW) {
+		const DWORD attr = GetFileAttributesW(pszFile);
+		if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_READONLY)) {
+			bRW = false;
+		}
+	}
 
 	bEnableWrite = bRW;
 
 	try {
-		if (bRW)
+		if (bRW) {
 			mFile.open(pszFile, nsVDFile::kReadWrite | nsVDFile::kDenyNone | nsVDFile::kSequential | nsVDFile::kOpenExisting);
-		else
+		} else {
 			mFile.open(pszFile, nsVDFile::kRead | nsVDFile::kDenyNone | nsVDFile::kSequential | nsVDFile::kOpenExisting);
+		}
 
 		i64FileSize = mFile.size();
 	} catch(const MyError& e) {
