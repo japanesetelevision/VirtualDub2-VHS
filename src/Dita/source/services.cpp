@@ -381,7 +381,11 @@ struct VDGetFileNameHook {
 //   template, hook and stuff
 //   filename
 
-static const VDStringW VDGetFileName(bool bSaveAs, long nKey, VDGUIHandle ctxParent, const wchar_t *pszTitle, const wchar_t *pszFilters, const wchar_t *pszExt, const VDFileDialogOption *pOptions, int *pOptVals, OPENFILENAMEW *hookOptions) {
+static const VDStringW VDGetFileName(
+	bool bSaveAs, long nKey, VDGUIHandle ctxParent,
+	const wchar_t *pszTitle, const wchar_t *pszFilters, const wchar_t *pszExt,
+	const VDFileDialogOption *pOptions, int *pOptVals, OPENFILENAMEW *hookOptions)
+{
 	FilespecEntry fsent;
 	tFilespecMap::iterator it;
 
@@ -457,8 +461,9 @@ static const VDStringW VDGetFileName(bool bSaveAs, long nKey, VDGUIHandle ctxPar
 				VDASSERT(nReadOnlyIndex < 0);
 				nReadOnlyIndex = opt.mDstIdx;
 				ofn.Flags &= ~OFN_HIDEREADONLY;
-				if (pOptVals[nReadOnlyIndex])
+				if (pOptVals[nReadOnlyIndex]) {
 					ofn.Flags |= OFN_READONLY;
+				}
 				break;
 			case VDFileDialogOption::kSelectedFilter_always:
 				selectedFilterAlways = true;
@@ -495,8 +500,14 @@ static const VDStringW VDGetFileName(bool bSaveAs, long nKey, VDGUIHandle ctxPar
 		ofn.lpfnHook		= hookOptions->lpfnHook;
 		ofn.lCustData		= hookOptions->lCustData;
 
-		if (hookOptions->lpstrFile)
+		if (hookOptions->lpstrFile) {
 			init_filename = hookOptions->lpstrFile;
+		}
+	}
+	else if (pOptions && pOptVals && (ofn.Flags & OFN_ENABLETEMPLATEHANDLE) == 0) {
+		// fixed the display of the "Read only" checkbox in the HEX Editor's file open dialog
+		ofn.Flags |= OFN_ENABLETEMPLATE;
+		// TODÎ: fix the display of settings in the file open dialog for the "Create palettized AVI" command
 	}
 
 	bool existingFileName = false;
