@@ -45,16 +45,19 @@ static const char hexdig[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C
 const struct RIFFFieldInfo {
 	int offset;
 	enum {
-		ksbyte,
+		ksbyte = 0,
 		kubyte,
 		ksword,
 		kuword,
 		kslong,
 		kulong,
-		kfcc
+		kfcc,
+		k_count
 	} type;
 	const char* name;
 };
+
+static const int typesize[RIFFFieldInfo::k_count] = { 1, 1, 2, 2, 4, 4, 4 };
 
 static const RIFFFieldInfo g_Fields_strh[]={
 	{ 8, RIFFFieldInfo::kfcc, "fccType: stream type"},
@@ -98,14 +101,14 @@ static const RIFFFieldInfo g_Fields_strh[]={
 	{26}
 }, g_Fields_strf_video[]={
 	{ 8, RIFFFieldInfo::kulong, "biSize: size of bitmap structure (BITMAPINFOHEADER: 0x0028)"},
-	{12, RIFFFieldInfo::kulong, "biWidth: width of bitmap in pixels"},
-	{16, RIFFFieldInfo::kulong, "biHeight: height of bitmap in pixels"},
+	{12, RIFFFieldInfo::kslong, "biWidth: width of bitmap in pixels"},
+	{16, RIFFFieldInfo::kslong, "biHeight: height of bitmap in pixels"},
 	{20, RIFFFieldInfo::kuword, "biPlanes: number of bitplanes"},
 	{22, RIFFFieldInfo::kuword, "biBitCount: number of bits per pixel"},
 	{24, RIFFFieldInfo::kfcc,	"biCompression: encoding algorithm (0 = BI_RGB)"},
 	{28, RIFFFieldInfo::kulong, "biSizeImage: size of compressed image"},
-	{32, RIFFFieldInfo::kulong, "biXPelsPerMeter: horizontal resolution in pixels per meter (typically ignored)"},
-	{36, RIFFFieldInfo::kulong, "biYPelsPerMeter: vertical resolution in pixels per meter (typically ignored)"},
+	{32, RIFFFieldInfo::kslong, "biXPelsPerMeter: horizontal resolution in pixels per meter (typically ignored)"},
+	{36, RIFFFieldInfo::kslong, "biYPelsPerMeter: vertical resolution in pixels per meter (typically ignored)"},
 	{40, RIFFFieldInfo::kulong, "biClrUsed: number of palette entries used by bitmap"},
 	{44, RIFFFieldInfo::kulong, "biClrImportant: number of palette entries \"required\" to display bitmap"},
 	{48}
@@ -119,27 +122,26 @@ static const struct RIFFChunkInfo {
 	const char *desc;
 	const RIFFFieldInfo *fields;
 } g_RIFFChunks[]={
-	{ ' IVA', "Audio/video interleave file" },
+	{ FCC('AVI '), "Audio/video interleave file" },
 	{ 'XIVA', "AVI2 extension block" },
-	{ 'EVAW', "Sound waveform" },
+	{ FCC('WAVE'), "Sound waveform" },
 	0,
 }, g_LISTChunks[]={
 	{ 'lrdh', "AVI file header block" },
 	{ 'lrts', "AVI stream header block" },
-	{ 'lmdo', "AVI2 extended header block" },
+	{ FCC('odml'), "AVI2 extended header block"},
 	{ 'ivom', "AVI data block" },
 	{ FCC('INFO'), "Information block"},
 	{ FCC('ncdt'), "NikonData"},
+	{ FCC('adtl'), "AssociatedDataList"},
 	0,
 }, g_JustChunks[]={
-	{ 'KNUJ', "padding" },
+	{ FCC('JUNK'), "padding" },
 	{ 'hiva', "AVI file header", g_Fields_avih },
 	{ 'xdni', "AVI2 hierarchical indexing data" },
 	{ 'hlmd', "AVI2 extended header" },
 	{ '1xdi', "AVI legacy index" },
 	{ 'mges', "VirtualDub next segment pointer" },
-	{ 'atad', "Waveform data" },
-	{ ' tmf', "Wave format", g_Fields_strf_audio },
 	// RIFF Stream Tags
 	{ FCC('strd'), "Stream codec data" },
 	{ FCC('strf'), "Stream format" },
@@ -150,10 +152,18 @@ static const struct RIFFChunkInfo {
 	{ FCC('ICMT'), "Comments" },
 	{ FCC('ICOP'), "Copyright" },
 	{ FCC('ICRD'), "Creation date" },
+	{ FCC('IGNR'), "Genre" },
 	{ FCC('INAM'), "Name (Title)" },
+	{ FCC('IPRD'), "Product (Album)" },
 	{ FCC('ISBJ'), "Subject" },
 	{ FCC('ISFT'), "Software" },
+	{ FCC('ITRK'), "TrackNumber" },
 	{ FCC('IDIT'), "Digitization Date" },
+	//
+	{ FCC('fmt '), "Wave format", g_Fields_strf_audio },
+	{ FCC('fact'), "Number of samples (per channel)" },
+	{ FCC('data'), "Waveform data" },
+	{ FCC('id3 '), "ID3 Tags" },
 	//
 	{ FCC('vprp'), "Video properties" },
 	//
@@ -1087,7 +1097,7 @@ private:
 	void Commit();
 
 	const char *GetRow(sint64 start, int& len, long& modified_mask);
-	void UndoByte(sint64 byte);
+	void UndoByte(sint64 i64Position);
 	void ModifyByte(sint64 i64Position, char v, char mask);
 	void NewLocation(sint64 i64Position);
 
@@ -1268,7 +1278,7 @@ void HexEditor::Open(const wchar_t *pszFile, bool bRW)
 
 		const unsigned long *pHeader = (const unsigned long *)GetRow(0, len, mask);
 
-		bEnableAVIAssist = (pHeader[0] == 'FFIR' && pHeader[2]==' IVA');
+		bEnableAVIAssist = (pHeader[0] == FCC('RIFF') && pHeader[2]==FCC('AVI '));
 	}
 }
 
@@ -1334,7 +1344,8 @@ const char *HexEditor::GetRow(sint64 start, int& len, long& modified_mask) {
 	return pszData;
 }
 
-void HexEditor::UndoByte(sint64 i64Position) {
+void HexEditor::UndoByte(sint64 i64Position)
+{
 	sint64 i64Offset = i64Position & -16i64;
 
 	HVModifiedLine *pLine = FindModLine(i64Offset);
@@ -1424,9 +1435,11 @@ bool HexEditor::IsValidHeaderAt(sint64 i64Position, bool bChain, unsigned long& 
 
 	// If it is RIFF or LIST, the second FOURCC must also be alphanumeric.
 
-	if (longbuf[0] == 'TSIL')
-		if (!isValidFOURCC(longbuf[2]))
+	if (longbuf[0] == FCC('LIST')) {
+		if (!isValidFOURCC(longbuf[2])) {
 			return false;
+		}
+	}
 
 	// Size must fit in the remainder of file.
 
@@ -1475,7 +1488,7 @@ void HexEditor::NewLocation(sint64 i64Position) {
 				// bit and check if the previous chunk is the 'strh' chunk; it may be 56 or 64
 				// bytes depending on which utility wrote it.
 
-				if (ckid == 'frts') {
+				if (ckid == FCC('strf')) {
 					unsigned long len2, ckid2;
 
 					if (	IsValidHeaderAt(i64Position - 64, true, len2, ckid2)
@@ -1503,27 +1516,12 @@ void HexEditor::NewLocation(sint64 i64Position) {
 						int offset = (int)basepos - (int)i64Position;
 						int size;
 
-						while(rfi[0].name && rfi[1].offset <= offset)
+						while (rfi[0].name && rfi[1].offset <= offset) {
 							++rfi;
+						}
 
 						if (rfi[0].name) {
-							switch(rfi[0].type) {
-							case RIFFFieldInfo::kfcc:
-							case RIFFFieldInfo::kulong:
-							case RIFFFieldInfo::kslong:
-								size = 4;
-								break;
-							case RIFFFieldInfo::kuword:
-							case RIFFFieldInfo::ksword:
-								size = 2;
-								break;
-							case RIFFFieldInfo::kubyte:
-							case RIFFFieldInfo::ksbyte:
-								size = 1;
-								break;
-							default:
-								__assume(false);
-							}
+							size = typesize[rfi[0].type];
 
 							if (offset >= rfi[0].offset && offset < rfi[0].offset + size) {
 								mpView->SetMetaHighlight(rfi[0].offset, size);
@@ -2487,14 +2485,14 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 
 		// quick validation tests
 
-		if (chunk.ckid == 'TSIL' || chunk.ckid == 'FFIR') {		// RIFF or LIST
+		if (chunk.ckid == FCC('LIST') || chunk.ckid == FCC('RIFF')) {		// RIFF or LIST
 			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%-4.4s:%8lu]: ", pos, (const char *)&chunk.ckid, (const char *)&chunk.listid, chunk.size);
 
 			if (sizeleft < 12 || chunk.size < 4 || chunk.size > sizeleft-8 || !isValidFOURCC(chunk.listid)) {
 				strcpy(dst, "invalid LIST/RIFF chunk");
 				sizeleft = 0;
 			} else {
-				strcpy(dst, LookupRIFFChunk(chunk.ckid=='TSIL' ? g_LISTChunks : g_RIFFChunks, chunk.listid));
+				strcpy(dst, LookupRIFFChunk(chunk.ckid== FCC('LIST') ? g_LISTChunks : g_RIFFChunks, chunk.listid));
 				bExpand = true;
 			}
 		} else {
