@@ -123,25 +123,26 @@ static const struct RIFFChunkInfo {
 	const RIFFFieldInfo *fields;
 } g_RIFFChunks[]={
 	{ FCC('AVI '), "Audio/video interleave file" },
-	{ 'XIVA', "AVI2 extension block" },
+	{ FCC('AVIX'), "AVI2 extension block" },
 	{ FCC('WAVE'), "Sound waveform" },
 	0,
 }, g_LISTChunks[]={
-	{ 'lrdh', "AVI file header block" },
-	{ 'lrts', "AVI stream header block" },
+	{ FCC('hdrl'), "AVI file header block" },
+	{ FCC('strl'), "AVI stream header block" },
 	{ FCC('odml'), "AVI2 extended header block"},
-	{ 'ivom', "AVI data block" },
+	{ FCC('movi'), "AVI data block" },
 	{ FCC('INFO'), "Information block"},
 	{ FCC('ncdt'), "NikonData"},
 	{ FCC('adtl'), "AssociatedDataList"},
+	{ FCC('rec '), "" },
 	0,
 }, g_JustChunks[]={
 	{ FCC('JUNK'), "padding" },
-	{ 'hiva', "AVI file header", g_Fields_avih },
-	{ 'xdni', "AVI2 hierarchical indexing data" },
-	{ 'hlmd', "AVI2 extended header" },
-	{ '1xdi', "AVI legacy index" },
-	{ 'mges', "VirtualDub next segment pointer" },
+	{ FCC('avih'), "AVI file header", g_Fields_avih },
+	{ FCC('indx'), "AVI2 hierarchical indexing data" },
+	{ FCC('dmlh'), "AVI2 extended header" },
+	{ FCC('idx1'), "AVI legacy index" },
+	{ FCC('segm'), "VirtualDub next segment pointer" },
 	// RIFF Stream Tags
 	{ FCC('strd'), "Stream codec data" },
 	{ FCC('strf'), "Stream format" },
@@ -157,6 +158,7 @@ static const struct RIFFChunkInfo {
 	{ FCC('IPRD'), "Product (Album)" },
 	{ FCC('ISBJ'), "Subject" },
 	{ FCC('ISFT'), "Software" },
+	{ FCC('IRIP'), "RippedBy" },
 	{ FCC('ITRK'), "TrackNumber" },
 	{ FCC('IDIT'), "Digitization Date" },
 	//
@@ -171,8 +173,8 @@ static const struct RIFFChunkInfo {
 	{ FCC('TCOD'), "StartTimecode" },
 	0
 },
-g_Chunk_strf_audio={ 'strf', "AVI stream format (audio)", g_Fields_strf_audio },
-g_Chunk_strf_video={ 'strf', "AVI stream format (video)", g_Fields_strf_video };
+g_Chunk_strf_audio={ FCC('strf'), "AVI stream format (audio)", g_Fields_strf_audio },
+g_Chunk_strf_video={ FCC('strf'), "AVI stream format (video)", g_Fields_strf_video };
 
 
 static const char *LookupRIFFChunk(const RIFFChunkInfo *tbl, unsigned long ckid) {
