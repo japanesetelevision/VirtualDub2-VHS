@@ -42,19 +42,24 @@ static const char g_szHexWarning[]="Hex editor warning";
 
 static const char hexdig[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-static const struct RIFFFieldInfo {
+const struct RIFFFieldInfo {
 	int offset;
 	enum {
-		ksbyte,
+		ksbyte = 0,
 		kubyte,
 		ksword,
 		kuword,
 		kslong,
 		kulong,
-		kfcc
+		kfcc,
+		k_count
 	} type;
-	const char *name;
-} g_Fields_strh[]={
+	const char* name;
+};
+
+static const int typesize[RIFFFieldInfo::k_count] = { 1, 1, 2, 2, 4, 4, 4 };
+
+static const RIFFFieldInfo g_Fields_strh[]={
 	{ 8, RIFFFieldInfo::kfcc, "fccType: stream type"},
 	{12, RIFFFieldInfo::kfcc, "fccHandler: stream handler"},
 	{16, RIFFFieldInfo::kulong, "dwFlags"},
@@ -96,50 +101,80 @@ static const struct RIFFFieldInfo {
 	{26}
 }, g_Fields_strf_video[]={
 	{ 8, RIFFFieldInfo::kulong, "biSize: size of bitmap structure (BITMAPINFOHEADER: 0x0028)"},
-	{12, RIFFFieldInfo::kulong, "biWidth: width of bitmap in pixels"},
-	{16, RIFFFieldInfo::kulong, "biHeight: height of bitmap in pixels"},
+	{12, RIFFFieldInfo::kslong, "biWidth: width of bitmap in pixels"},
+	{16, RIFFFieldInfo::kslong, "biHeight: height of bitmap in pixels"},
 	{20, RIFFFieldInfo::kuword, "biPlanes: number of bitplanes"},
 	{22, RIFFFieldInfo::kuword, "biBitCount: number of bits per pixel"},
 	{24, RIFFFieldInfo::kfcc,	"biCompression: encoding algorithm (0 = BI_RGB)"},
 	{28, RIFFFieldInfo::kulong, "biSizeImage: size of compressed image"},
-	{32, RIFFFieldInfo::kulong, "biXPelsPerMeter: horizontal resolution in pixels per meter (typically ignored)"},
-	{36, RIFFFieldInfo::kulong, "biYPelsPerMeter: vertical resolution in pixels per meter (typically ignored)"},
+	{32, RIFFFieldInfo::kslong, "biXPelsPerMeter: horizontal resolution in pixels per meter (typically ignored)"},
+	{36, RIFFFieldInfo::kslong, "biYPelsPerMeter: vertical resolution in pixels per meter (typically ignored)"},
 	{40, RIFFFieldInfo::kulong, "biClrUsed: number of palette entries used by bitmap"},
 	{44, RIFFFieldInfo::kulong, "biClrImportant: number of palette entries \"required\" to display bitmap"},
 	{48}
 };
+
+// https://mediaarea.net/AVIMetaEdit/listinfo
+// https://exiftool.sourceforge.net/TagNames/RIFF.html
 
 static const struct RIFFChunkInfo {
 	unsigned long id;
 	const char *desc;
 	const RIFFFieldInfo *fields;
 } g_RIFFChunks[]={
-	{ ' IVA', "Audio/video interleave file" },
-	{ 'XIVA', "AVI2 extension block" },
-	{ 'EVAW', "Sound waveform" },
+	{ FCC('AVI '), "Audio/video interleave file" },
+	{ FCC('AVIX'), "AVI2 extension block" },
+	{ FCC('WAVE'), "Sound waveform" },
 	0,
 }, g_LISTChunks[]={
-	{ 'lrdh', "AVI file header block" },
-	{ 'lrts', "AVI stream header block" },
-	{ 'lmdo', "AVI2 extended header block" },
-	{ 'ivom', "AVI data block" },
+	{ FCC('hdrl'), "AVI file header block" },
+	{ FCC('strl'), "AVI stream header block" },
+	{ FCC('odml'), "AVI2 extended header block"},
+	{ FCC('movi'), "AVI data block" },
+	{ FCC('INFO'), "Information block"},
+	{ FCC('ncdt'), "NikonData"},
+	{ FCC('adtl'), "AssociatedDataList"},
+	{ FCC('rec '), "" },
 	0,
 }, g_JustChunks[]={
-	{ 'KNUJ', "padding" },
-	{ 'hiva', "AVI file header", g_Fields_avih },
-	{ 'hrts', "AVI stream header", g_Fields_strh },
-	{ 'frts', "AVI stream format" },
-	{ 'drts', "AVI stream codec data" },
-	{ 'xdni', "AVI2 hierarchical indexing data" },
-	{ 'hlmd', "AVI2 extended header" },
-	{ '1xdi', "AVI legacy index" },
-	{ 'mges', "VirtualDub next segment pointer" },
-	{ 'atad', "Waveform data" },
-	{ ' tmf', "Wave format", g_Fields_strf_audio },
+	{ FCC('JUNK'), "padding" },
+	{ FCC('avih'), "AVI file header", g_Fields_avih },
+	{ FCC('indx'), "AVI2 hierarchical indexing data" },
+	{ FCC('dmlh'), "AVI2 extended header" },
+	{ FCC('idx1'), "AVI legacy index" },
+	{ FCC('segm'), "VirtualDub next segment pointer" },
+	// RIFF Stream Tags
+	{ FCC('strd'), "Stream codec data" },
+	{ FCC('strf'), "Stream format" },
+	{ FCC('strh'), "Stream header", g_Fields_strh },
+	{ FCC('strn'), "Stream name" },
+	// LIST-INFO
+	{ FCC('IART'), "Artist" },
+	{ FCC('ICMT'), "Comments" },
+	{ FCC('ICOP'), "Copyright" },
+	{ FCC('ICRD'), "Creation date" },
+	{ FCC('IGNR'), "Genre" },
+	{ FCC('INAM'), "Name (Title)" },
+	{ FCC('IPRD'), "Product (Album)" },
+	{ FCC('ISBJ'), "Subject" },
+	{ FCC('ISFT'), "Software" },
+	{ FCC('IRIP'), "RippedBy" },
+	{ FCC('ITRK'), "TrackNumber" },
+	{ FCC('IDIT'), "Digitization Date" },
+	//
+	{ FCC('fmt '), "Wave format", g_Fields_strf_audio },
+	{ FCC('fact'), "Number of samples (per channel)" },
+	{ FCC('data'), "Waveform data" },
+	{ FCC('id3 '), "ID3 Tags" },
+	//
+	{ FCC('vprp'), "Video properties" },
+	//
+	{ FCC('TCDO'), "EndTimecode" },
+	{ FCC('TCOD'), "StartTimecode" },
 	0
 },
-g_Chunk_strf_audio={ 'strf', "AVI stream format (audio)", g_Fields_strf_audio },
-g_Chunk_strf_video={ 'strf', "AVI stream format (video)", g_Fields_strf_video };
+g_Chunk_strf_audio={ FCC('strf'), "AVI stream format (audio)", g_Fields_strf_audio },
+g_Chunk_strf_video={ FCC('strf'), "AVI stream format (video)", g_Fields_strf_video };
 
 
 static const char *LookupRIFFChunk(const RIFFChunkInfo *tbl, unsigned long ckid) {
@@ -1064,7 +1099,7 @@ private:
 	void Commit();
 
 	const char *GetRow(sint64 start, int& len, long& modified_mask);
-	void UndoByte(sint64 byte);
+	void UndoByte(sint64 i64Position);
 	void ModifyByte(sint64 i64Position, char v, char mask);
 	void NewLocation(sint64 i64Position);
 
@@ -1198,16 +1233,25 @@ void HexEditor::Open() {
 	}
 }
 
-void HexEditor::Open(const wchar_t *pszFile, bool bRW) {
+void HexEditor::Open(const wchar_t *pszFile, bool bRW)
+{
 	Close();
+
+	if (bRW) {
+		const DWORD attr = GetFileAttributesW(pszFile);
+		if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_READONLY)) {
+			bRW = false;
+		}
+	}
 
 	bEnableWrite = bRW;
 
 	try {
-		if (bRW)
+		if (bRW) {
 			mFile.open(pszFile, nsVDFile::kReadWrite | nsVDFile::kDenyNone | nsVDFile::kSequential | nsVDFile::kOpenExisting);
-		else
+		} else {
 			mFile.open(pszFile, nsVDFile::kRead | nsVDFile::kDenyNone | nsVDFile::kSequential | nsVDFile::kOpenExisting);
+		}
 
 		i64FileSize = mFile.size();
 	} catch(const MyError& e) {
@@ -1236,7 +1280,7 @@ void HexEditor::Open(const wchar_t *pszFile, bool bRW) {
 
 		const unsigned long *pHeader = (const unsigned long *)GetRow(0, len, mask);
 
-		bEnableAVIAssist = (pHeader[0] == 'FFIR' && pHeader[2]==' IVA');
+		bEnableAVIAssist = (pHeader[0] == FCC('RIFF') && pHeader[2]==FCC('AVI '));
 	}
 }
 
@@ -1302,7 +1346,8 @@ const char *HexEditor::GetRow(sint64 start, int& len, long& modified_mask) {
 	return pszData;
 }
 
-void HexEditor::UndoByte(sint64 i64Position) {
+void HexEditor::UndoByte(sint64 i64Position)
+{
 	sint64 i64Offset = i64Position & -16i64;
 
 	HVModifiedLine *pLine = FindModLine(i64Offset);
@@ -1392,9 +1437,11 @@ bool HexEditor::IsValidHeaderAt(sint64 i64Position, bool bChain, unsigned long& 
 
 	// If it is RIFF or LIST, the second FOURCC must also be alphanumeric.
 
-	if (longbuf[0] == 'TSIL')
-		if (!isValidFOURCC(longbuf[2]))
+	if (longbuf[0] == FCC('LIST')) {
+		if (!isValidFOURCC(longbuf[2])) {
 			return false;
+		}
+	}
 
 	// Size must fit in the remainder of file.
 
@@ -1443,7 +1490,7 @@ void HexEditor::NewLocation(sint64 i64Position) {
 				// bit and check if the previous chunk is the 'strh' chunk; it may be 56 or 64
 				// bytes depending on which utility wrote it.
 
-				if (ckid == 'frts') {
+				if (ckid == FCC('strf')) {
 					unsigned long len2, ckid2;
 
 					if (	IsValidHeaderAt(i64Position - 64, true, len2, ckid2)
@@ -1471,27 +1518,12 @@ void HexEditor::NewLocation(sint64 i64Position) {
 						int offset = (int)basepos - (int)i64Position;
 						int size;
 
-						while(rfi[0].name && rfi[1].offset <= offset)
+						while (rfi[0].name && rfi[1].offset <= offset) {
 							++rfi;
+						}
 
 						if (rfi[0].name) {
-							switch(rfi[0].type) {
-							case RIFFFieldInfo::kfcc:
-							case RIFFFieldInfo::kulong:
-							case RIFFFieldInfo::kslong:
-								size = 4;
-								break;
-							case RIFFFieldInfo::kuword:
-							case RIFFFieldInfo::ksword:
-								size = 2;
-								break;
-							case RIFFFieldInfo::kubyte:
-							case RIFFFieldInfo::ksbyte:
-								size = 1;
-								break;
-							default:
-								__assume(false);
-							}
+							size = typesize[rfi[0].type];
 
 							if (offset >= rfi[0].offset && offset < rfi[0].offset + size) {
 								mpView->SetMetaHighlight(rfi[0].offset, size);
@@ -2455,14 +2487,14 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 
 		// quick validation tests
 
-		if (chunk.ckid == 'TSIL' || chunk.ckid == 'FFIR') {		// RIFF or LIST
+		if (chunk.ckid == FCC('LIST') || chunk.ckid == FCC('RIFF')) {		// RIFF or LIST
 			char *dst = buf+sprintf(buf, "%08I64X [%-4.4s:%-4.4s:%8lu]: ", pos, (const char *)&chunk.ckid, (const char *)&chunk.listid, chunk.size);
 
 			if (sizeleft < 12 || chunk.size < 4 || chunk.size > sizeleft-8 || !isValidFOURCC(chunk.listid)) {
 				strcpy(dst, "invalid LIST/RIFF chunk");
 				sizeleft = 0;
 			} else {
-				strcpy(dst, LookupRIFFChunk(chunk.ckid=='TSIL' ? g_LISTChunks : g_RIFFChunks, chunk.listid));
+				strcpy(dst, LookupRIFFChunk(chunk.ckid== FCC('LIST') ? g_LISTChunks : g_RIFFChunks, chunk.listid));
 				bExpand = true;
 			}
 		} else {
@@ -2471,14 +2503,17 @@ TreeNode *HexEditor::RIFFScan(RIFFScanInfo &rsi, sint64 pos, sint64 sizeleft) {
 			if (!isValidFOURCC(chunk.ckid) || chunk.size > sizeleft-8) {
 				strcpy(dst, "invalid chunk");
 				sizeleft = 0;
-			} else if (isdigit(chunk.ckid&0xff) && isdigit((chunk.ckid>>8)&0xff)) {
-				int stream = 10*(chunk.ckid&15) + ((chunk.ckid&0x0f00)>>8);
+			}
+			else if (isdigit(chunk.ckid & 0xff) && isdigit((chunk.ckid >> 8) & 0xff)) {
+				int stream = 10 * (chunk.ckid & 15) + ((chunk.ckid & 0x0f00) >> 8);
 
 				sprintf(dst, "stream %d: byte pos %8I64d, chunk %ld", stream, rsi.size[stream], rsi.count[stream]);
 				rsi.size[stream] += chunk.size;
-				rsi.count[stream] ++;
-			} else
+				rsi.count[stream]++;
+			}
+			else {
 				strcpy(dst, LookupRIFFChunk(g_JustChunks, chunk.ckid));
+			}
 		}
 
 		const size_t len = strlen(buf);
