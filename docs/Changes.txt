@@ -6,6 +6,7 @@ Fixed the removal of temporary VFW codec registrations when both x86 and x64 ver
 Added the ability to override the "Scan type" ("Progressive" or "Interlaced") in the "alias format" video filter.
 Fixed support for uncompressed NV12 video with a width not divisible by 4.
 Fixed support for uncompressed r210 video with a width not divisible by 64.
+Minor fixes for HEX Editor.
 
 
 2.5.5.1212 - 2026-09-13
