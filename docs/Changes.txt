@@ -1,11 +1,16 @@
 VirtualDub2.x change log
 
-2.5.6.x dev
+2.5.7.1257 - 2026-10-17
 -----------------------
 Fixed the removal of temporary VFW codec registrations when both x86 and x64 versions of VirtualDub2 were running simultaneously.
 Added the ability to override the "Scan type" ("Progressive" or "Interlaced") in the "alias format" video filter.
 Fixed support for uncompressed NV12 video with a width not divisible by 4.
 Fixed support for uncompressed r210 video with a width not divisible by 64.
+Minor fixes for HEX Editor.
+
+Updated avlib-1.vdplugin 1.1.7.517.
+    The FFmpeg 8.1.3 x64 build from BtbN is used.
+    The FFmpeg 8.1.3 win32 build from Defisym is used.
 
 
 2.5.5.1212 - 2026-09-13
